@@ -1,5 +1,6 @@
 package biz.atamai.myai
 
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,9 +10,9 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,6 +20,9 @@ class MainActivity : AppCompatActivity() {
     private val fileAttachmentHandler = FileAttachmentHandler(this)
     private val chatItems: MutableList<ChatItem> = mutableListOf()
     private lateinit var chatAdapter: ChatAdapter
+    private lateinit var audioRecorder: AudioRecorder
+
+    private val REQUEST_AUDIO_PERMISSION_CODE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,8 +30,11 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
+        audioRecorder = AudioRecorder(this)
+
         setupListeners()
         setupChatAdapter()
+        setupRecordButton()
     }
 
     private fun setupChatAdapter() {
@@ -153,11 +160,45 @@ class MainActivity : AppCompatActivity() {
 
     fun Int.toPx(): Int = (this * resources.displayMetrics.density).toInt()
     // sending data to chat adapter
-    private fun addMessageToChat(message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
+    fun addMessageToChat(message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
         val chatItem = ChatItem(message = message, isUserMessage = true, imageUris = attachedImageUris, fileNames = attachedFiles)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()
+    }
+
+
+    // AUDIO RECORDER
+    private fun setupRecordButton() {
+        binding.btnRecord.setOnClickListener {
+            audioRecorder.handleRecordButtonClick()
+        }
+    }
+    fun setRecordButtonImageResource(resourceId: Int) {
+        binding.btnRecord.setImageResource(resourceId)
+    }
+
+    // handle permissions
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_AUDIO_PERMISSION_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    if (grantResults.size > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                        // Both RECORD_AUDIO and WRITE_EXTERNAL_STORAGE permissions have been granted
+                        Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
+                        // You can now start the recording or the functionality that requires these permissions
+                    } else {
+                        // Either RECORD_AUDIO or WRITE_EXTERNAL_STORAGE or both permissions were denied
+                        Toast.makeText(this, "Storage Permission Denied", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Either RECORD_AUDIO or WRITE_EXTERNAL_STORAGE or both permissions were denied
+                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+                    // You should disable the functionality that depends on these permissions or inform the user accordingly
+                }
+            }
+        }
     }
 
     override fun onPause() {
