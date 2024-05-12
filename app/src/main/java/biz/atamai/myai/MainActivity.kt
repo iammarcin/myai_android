@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
             // if its audio - add it directly to chat - so we can listen to it or transcribe it
             if (mimeType?.startsWith("audio/") == true) {
                 addMessageToChat("", listOf(), listOf(uri))
+                // and we dont need to do anything else here
                 return
             } else {
                 // Handle other files
@@ -157,5 +158,17 @@ class MainActivity : AppCompatActivity() {
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (isFinishing) {
+            chatAdapter.releaseMediaPlayers()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        chatAdapter.releaseMediaPlayers()  // Ensure all media players are released when the activity is destroyed
     }
 }
