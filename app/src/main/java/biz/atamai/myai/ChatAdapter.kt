@@ -35,6 +35,17 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
             } else {
                 binding.scrollViewImages.visibility = View.GONE
             }
+
+            if (chatItem.fileNames.isNotEmpty()) {
+                binding.audioPlayer.visibility = View.VISIBLE
+                //setupMediaPlayer(chatItem.fileUri)
+
+                // set transcribe button
+                binding.transcribeButton.visibility = View.VISIBLE
+                binding.transcribeButton.setOnClickListener {
+                    // Implement transcribe button click listener here
+                }
+            }
         }
     }
 

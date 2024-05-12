@@ -21,18 +21,19 @@ class FileAttachmentHandler(private val activity: MainActivity) {
         }
         fileChooserLauncher.launch(Intent.createChooser(intent, "Select File"))
     }
-    
+
     private fun handleActivityResult(result: ActivityResult) {
         if (result.resultCode == Activity.RESULT_OK) {
             val clipData = result.data?.clipData
+
             if (clipData != null) { // Multiple items selected
                 for (i in 0 until clipData.itemCount) {
                     val uri = clipData.getItemAt(i).uri
-                    activity.addImagePreview(uri)
+                    activity.addFilePreview(uri)
                 }
             } else { // Single item selected
                 result.data?.data?.let { uri ->
-                    activity.addImagePreview(uri)
+                    activity.addFilePreview(uri)
                 }
             }
         }

@@ -8,4 +8,5 @@
     <color name="accent_color">#4CAF50</color>
     <color name="ai_message_color">#66D9EF</color>
     <color name="user_message_color">#FFC107</color>
+    <color name="attached_file_placeholder">#505350</color>
 </resources>
