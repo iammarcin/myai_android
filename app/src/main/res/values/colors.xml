@@ -9,4 +9,6 @@
     <color name="ai_message_color">#66D9EF</color>
     <color name="user_message_color">#FFC107</color>
     <color name="attached_file_placeholder">#505350</color>
+    <color name="popupmenu_background">#252725</color>
+    <color name="chat_item_pressed_color">#252725</color>
 </resources>

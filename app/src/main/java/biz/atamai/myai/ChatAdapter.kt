@@ -1,19 +1,24 @@
 package biz.atamai.myai
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 
 class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val mediaPlayers: MutableList<MediaPlayer> = mutableListOf()
@@ -29,6 +34,18 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
     }
 
     inner class ChatViewHolder(private val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.root.setOnLongClickListener { view ->
+                showPopupMenu(view, adapterPosition)
+                true // Return true to indicate the callback consumed the long click
+            }
+
+            //binding.menuButton.setOnClickListener { view ->
+            //    showPopupMenu(view)
+            //}
+        }
+
         private var mediaPlayer: MediaPlayer? = null
         val handler = Handler(Looper.getMainLooper())
         fun bind(chatItem: ChatItem) {
@@ -81,6 +98,47 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
                     println(chatItem.fileNames)
                 }
             }
+        }
+
+        // little popup menu for chat items (when we can edit message etc)
+        private fun showPopupMenu(view: View, position: Int) {
+            val context = view.context
+            val chatItem = chatItems[position]
+
+            val popupMenu = PopupMenu(ContextThemeWrapper(context, R.style.PopupMenuStyle), view)
+
+            //val popupMenu = PopupMenu(context, view)
+            if (chatItem.isUserMessage) {
+                popupMenu.inflate(R.menu.user_message_menu)
+            } else {
+                popupMenu.inflate(R.menu.ai_message_menu)
+            }
+            popupMenu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.edit -> {
+                        // Handle edit action
+                        true
+                    }
+                    R.id.delete -> {
+                        // Handle delete action
+                        true
+                    }
+                    R.id.regenerate -> {
+                        // Handle regenerate action
+                        true
+                    }
+                    R.id.copy -> {
+                        // Copy text to clipboard
+                        val clipboard = ContextCompat.getSystemService(context, ClipboardManager::class.java)
+                        val clip = ClipData.newPlainText("Copied Message", chatItem.message)
+                        clipboard?.setPrimaryClip(clip)
+                        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popupMenu.show()
         }
 
         private fun setupMediaPlayer(audioUri: Uri?) {

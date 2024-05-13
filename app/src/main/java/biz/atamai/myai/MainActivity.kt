@@ -61,11 +61,16 @@ class MainActivity : AppCompatActivity() {
 
         // for situation where we start typing in edit text - we want other stuff to disappear
         binding.editTextMessage.setOnFocusChangeListener { _, hasFocus ->
+            println("hfdsiuhfsdiuhfsdiuhfsdiuhdfsuisfdhui 1")
             if (hasFocus) {
+                println("duifhsifusdhsuidfhfsdiu fidsuhiufsd h 2")
                 binding.layoutRecord.visibility = View.GONE
                 binding.btnSend.visibility = View.VISIBLE
                 (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
                 (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
+            } else {
+                println("ASNKDNASKDHASKUHDASKDASHUDASHU 3")
+                resetSendAndRecordArea()
             }
         }
 
@@ -148,12 +153,17 @@ class MainActivity : AppCompatActivity() {
         binding.editTextMessage.setText("")
         binding.imagePreviewContainer.removeAllViews()
         binding.scrollViewPreview.visibility = View.GONE
+        resetSendAndRecordArea()
+        // release focus of binding.editTextMessage
+        binding.editTextMessage.clearFocus()
+    }
+
+    // those few functions will be used in other places - so additional dedicated function needed
+    private fun resetSendAndRecordArea() {
         binding.layoutRecord.visibility = View.VISIBLE
         binding.btnSend.visibility = View.GONE
         (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
         (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
-        // release focus of binding.editTextMessage
-        binding.editTextMessage.clearFocus()
     }
 
     // AUDIO RECORDER
