@@ -15,13 +15,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private val fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
+    private lateinit var fileAttachmentHandler: FileAttachmentHandler
 
     private val chatItems: MutableList<ChatItem> = mutableListOf()
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var audioRecorder: AudioRecorder
-
-    private val REQUEST_AUDIO_PERMISSION_CODE = 1
+    private lateinit var permissionsUtil: PermissionsUtil
 
     private val apiUrl = "http://192.168.23.66:8000/chatstream"
 
@@ -35,10 +34,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         audioRecorder = AudioRecorder(this)
+        fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
 
         setupListeners()
         setupChatAdapter()
         setupRecordButton()
+
+        setupPermissions()
     }
 
     private fun setupChatAdapter() {
@@ -92,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         addMessageToChat(message, attachedImageUris, attachedFilePaths)
-        startStreaming(message)
+        //startStreaming(message)
         resetInputArea()
     }
 
@@ -152,27 +154,17 @@ class MainActivity : AppCompatActivity() {
         binding.btnRecord.setImageResource(resourceId)
     }
 
-    // handle permissions
+    // permissions
+    private fun setupPermissions() {
+        permissionsUtil = PermissionsUtil(this)
+
+        if (!permissionsUtil.checkPermissions()) {
+            permissionsUtil.requestPermissions()
+        }
+    }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_AUDIO_PERMISSION_CODE -> {
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    if (grantResults.size > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                        // Both RECORD_AUDIO and WRITE_EXTERNAL_STORAGE permissions have been granted
-                        Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-                        // You can now start the recording or the functionality that requires these permissions
-                    } else {
-                        // Either RECORD_AUDIO or WRITE_EXTERNAL_STORAGE or both permissions were denied
-                        Toast.makeText(this, "Storage Permission Denied", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    // Either RECORD_AUDIO or WRITE_EXTERNAL_STORAGE or both permissions were denied
-                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
-                    // You should disable the functionality that depends on these permissions or inform the user accordingly
-                }
-            }
-        }
+        permissionsUtil.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onPause() {
