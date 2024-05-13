@@ -14,7 +14,8 @@ class PermissionsUtil(private val activity: Activity) {
 
     private val requiredPermissions = arrayOf(
         Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.CAMERA,
     )
 
     fun checkPermissions(): Boolean {
@@ -40,6 +41,7 @@ class PermissionsUtil(private val activity: Activity) {
 
             val isRecordAudioGranted = permissionsMap[Manifest.permission.RECORD_AUDIO] ?: PackageManager.PERMISSION_DENIED
             val isWriteStorageGranted = permissionsMap[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: PackageManager.PERMISSION_DENIED
+            val isCameraGranted = permissionsMap[Manifest.permission.CAMERA] == PackageManager.PERMISSION_GRANTED
 
             if (isRecordAudioGranted == PackageManager.PERMISSION_GRANTED && isWriteStorageGranted == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(activity, "All permissions granted", Toast.LENGTH_SHORT).show()
@@ -50,6 +52,9 @@ class PermissionsUtil(private val activity: Activity) {
                 }
                 if (isWriteStorageGranted != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(activity, "Storage permission denied", Toast.LENGTH_SHORT).show()
+                }
+                if (!isCameraGranted) {
+                    Toast.makeText(activity, "Camera permission denied", Toast.LENGTH_SHORT).show()
                 }
                 // Inform the user that permissions were not granted
             }

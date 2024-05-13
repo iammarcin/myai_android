@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var fileAttachmentHandler: FileAttachmentHandler
+    private lateinit var cameraHandler: CameraHandler
 
     private val chatItems: MutableList<ChatItem> = mutableListOf()
     private lateinit var chatAdapter: ChatAdapter
@@ -34,6 +35,16 @@ class MainActivity : AppCompatActivity() {
 
         audioRecorder = AudioRecorder(this)
         fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
+
+        cameraHandler = CameraHandler(this, activityResultRegistry)
+        cameraHandler.setupTakePictureLauncher(
+            onSuccess = {
+                // Handle success, such as updating UI or saving the image information
+            },
+            onFailure = {
+                Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+            }
+        )
 
         setupListeners()
         setupChatAdapter()
@@ -70,6 +81,11 @@ class MainActivity : AppCompatActivity() {
         // main send button
         binding.btnSend.setOnClickListener {
             handleSendButtonClick()
+        }
+
+        //camera
+        binding.btnCamera.setOnClickListener {
+            cameraHandler.takePhoto()
         }
     }
 
