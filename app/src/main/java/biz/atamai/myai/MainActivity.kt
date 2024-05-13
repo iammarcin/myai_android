@@ -1,6 +1,5 @@
 package biz.atamai.myai
 
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -94,12 +93,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         addMessageToChat(message, attachedImageUris, attachedFilePaths)
-        //startStreaming(message)
+        startStreaming(message)
         resetInputArea()
     }
 
     private fun startStreaming(userInput: String) {
-        val testModel = TestModel(
+        val apiDataModel = APIDataModel(
             action = "text",
             userInput = mapOf("prompt" to userInput),
             userSettings = mapOf("generator" to "openai"),
@@ -107,33 +106,26 @@ class MainActivity : AppCompatActivity() {
         )
         val streamUrl = apiUrl
 
-        val responseItem = ChatItem(" ", false)
+        val responseItem = ChatItem("", false)
         chatItems.add(responseItem)
         currentResponseItemPosition = chatItems.size - 1
         chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
-        binding.chatContainer.scrollToPosition(currentResponseItemPosition!!)
+        scrollToEnd()
 
         StreamingResponseHandler({ chunk ->
             runOnUiThread {
                 currentResponseItemPosition?.let { position ->
                     chatItems[position].message += chunk
                     chatAdapter.notifyItemChanged(position)
-                    binding.chatContainer.scrollToPosition(position)
+                    scrollToEnd()
                 }
             }
         }, {
                 error ->
             runOnUiThread {
-                Toast.makeText(this, "Error: $error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
             }
-        }, {}).startStreaming(streamUrl, testModel)
-    }
-
-    // reset after submission - clean input text, images preview and scroll view in general
-    private fun resetInputArea() {
-        binding.editTextMessage.setText("")
-        binding.imagePreviewContainer.removeAllViews()
-        binding.scrollViewPreview.visibility = View.GONE
+        }, {}).startStreaming(streamUrl, apiDataModel)
     }
 
     // sending data to chat adapter
@@ -143,6 +135,15 @@ class MainActivity : AppCompatActivity() {
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()
     }
+
+    // reset after submission - clean input text, images preview and scroll view in general
+    private fun resetInputArea() {
+        binding.editTextMessage.setText("")
+        binding.imagePreviewContainer.removeAllViews()
+        binding.scrollViewPreview.visibility = View.GONE
+    }
+
+
 
     // AUDIO RECORDER
     private fun setupRecordButton() {

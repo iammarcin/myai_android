@@ -16,15 +16,18 @@ class StreamingResponseHandler(
     private val client = OkHttpClient()
     private val gson = GsonBuilder().create()
 
-    fun startStreaming(url: String, testModel: TestModel) {
+    fun startStreaming(url: String, APIDataModel: APIDataModel) {
         coroutineScope.launch {
             try {
-                val requestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(testModel).toByteArray())
+                val requestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(APIDataModel).toByteArray())
                 val request = Request.Builder().url(url).post(requestBody).build()
                 client.newCall(request).enqueue(object : Callback {
 
                     override fun onFailure(call: Call, e: IOException) {
                         e.printStackTrace()
+                        coroutineScope.launch(Dispatchers.Main) {
+                            onError(Exception("Network error: ${e.message}"))
+                        }
                     }
 
                     override fun onResponse(call: Call, response: Response) {
@@ -36,16 +39,21 @@ class StreamingResponseHandler(
                                     if (read == -1L) break
                                     var chunk = buffer.clone().readString(Charsets.UTF_8)
                                     chunk = cleanChunk(chunk)
-                                    onChunkReceived(chunk)
+                                    coroutineScope.launch(Dispatchers.Main) {
+                                        onChunkReceived(chunk)
+                                    }
                                     buffer.clear()
                                 }
                             }
                         }
-                        onStreamEnd()
+                        coroutineScope.launch(Dispatchers.Main) {
+                            onStreamEnd()
+                        }
                     }
+
                 })
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
+                coroutineScope.launch(Dispatchers.Main) {
                     onError(e)
                 }
             }

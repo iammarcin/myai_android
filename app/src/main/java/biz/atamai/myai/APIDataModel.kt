@@ -1,5 +1,5 @@
 package biz.atamai.myai
-data class TestModel(
+data class APIDataModel(
     val action: String = "",
     val userInput: Map<String, String> = emptyMap(),
     val userSettings: Map<String, String> = emptyMap(),

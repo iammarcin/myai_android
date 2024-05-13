@@ -55,26 +55,4 @@ class PermissionsUtil(private val activity: Activity) {
             }
         }
     }
-
-    /*
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when (requestCode) {
-            REQUEST_AUDIO_PERMISSION_CODE -> {
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    if (grantResults.size > 1 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                        // Both RECORD_AUDIO and WRITE_EXTERNAL_STORAGE permissions have been granted
-                        Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-                        // You can now start the recording or the functionality that requires these permissions
-                    } else {
-                        // Either RECORD_AUDIO or WRITE_EXTERNAL_STORAGE or both permissions were denied
-                        Toast.makeText(this, "Storage Permission Denied", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    // Either RECORD_AUDIO or WRITE_EXTERNAL_STORAGE or both permissions were denied
-                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
-                    // You should disable the functionality that depends on these permissions or inform the user accordingly
-                }
-            }
-        }
-    } */
 }
