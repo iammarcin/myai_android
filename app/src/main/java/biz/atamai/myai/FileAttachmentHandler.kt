@@ -30,7 +30,7 @@ class FileAttachmentHandler(
     fun openFileChooser() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "audio/*"))
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/mpeg", "audio/x-wav"))
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
         fileChooserLauncher.launch(Intent.createChooser(intent, "Select File"))

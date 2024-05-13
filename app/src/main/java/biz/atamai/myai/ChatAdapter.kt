@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import android.widget.SeekBar
+import android.widget.Toast
 
 class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val mediaPlayers: MutableList<MediaPlayer> = mutableListOf()
@@ -93,13 +94,21 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
 
                     // Play/Pause toggle button
                     binding.playButton.setOnClickListener {
-                        if (mp.isPlaying) {
-                            mp.pause()
-                            binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
-                        } else {
-                            mp.start()
-                            binding.playButton.setImageResource(R.drawable.baseline_pause_24)
-                            handler.post(updateSeekBarTask)  // Start updating the seek bar
+                        mediaPlayer?.let { mp ->
+                            if (mp.isPlaying) {
+                                mp.pause()
+                                binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
+                            } else {
+                                try {
+                                    mp.start()
+                                    binding.playButton.setImageResource(R.drawable.baseline_pause_24)
+                                    handler.post(updateSeekBarTask)  // Start updating the seek bar
+                                } catch (e: IllegalStateException) {
+                                    // Handle the situation when the media player is in an invalid state
+                                    Toast.makeText(binding.root.context, "Error playing audio", Toast.LENGTH_SHORT).show()
+                                    releaseMediaPlayer()  // Consider releasing and possibly reinitializing the media player
+                                }
+                            }
                         }
                     }
 
