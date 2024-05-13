@@ -141,9 +141,13 @@ class MainActivity : AppCompatActivity() {
         binding.editTextMessage.setText("")
         binding.imagePreviewContainer.removeAllViews()
         binding.scrollViewPreview.visibility = View.GONE
+        binding.layoutRecord.visibility = View.VISIBLE
+        binding.btnSend.visibility = View.GONE
+        (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+        (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+        // release focus of binding.editTextMessage
+        binding.editTextMessage.clearFocus()
     }
-
-
 
     // AUDIO RECORDER
     private fun setupRecordButton() {
