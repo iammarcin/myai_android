@@ -32,6 +32,12 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
         val handler = Handler(Looper.getMainLooper())
         fun bind(chatItem: ChatItem) {
             binding.messageTextView.text = chatItem.message
+            binding.nameTextView.text = if (chatItem.isUserMessage) "USER" else "AI"
+
+            binding.avatarImageView.setImageResource(
+                if (chatItem.isUserMessage) R.drawable.user_avatar_placeholder
+                else R.drawable.ai_avatar_placeholder
+            )
 
             // if URIs for images are set - those are images
             if (chatItem.imageUris.isNotEmpty()) {
