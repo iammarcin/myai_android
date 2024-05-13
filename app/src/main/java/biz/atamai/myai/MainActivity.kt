@@ -35,21 +35,12 @@ class MainActivity : AppCompatActivity() {
 
         audioRecorder = AudioRecorder(this)
         fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
-
         cameraHandler = CameraHandler(this, activityResultRegistry)
-        cameraHandler.setupTakePictureLauncher(
-            onSuccess = {
-                // Handle success, such as updating UI or saving the image information
-            },
-            onFailure = {
-                Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
-            }
-        )
 
         setupListeners()
         setupChatAdapter()
         setupRecordButton()
-
+        setupCamera()
         setupPermissions()
     }
 
@@ -173,6 +164,22 @@ class MainActivity : AppCompatActivity() {
     }
     fun setRecordButtonImageResource(resourceId: Int) {
         binding.btnRecord.setImageResource(resourceId)
+    }
+
+    // CAMERA
+    private fun setupCamera() {
+        cameraHandler.setupTakePictureLauncher(
+            onSuccess = { uri ->
+                uri?.let {
+                    fileAttachmentHandler.addFilePreview(uri)
+                    //Toast.makeText(this, "Photo captured: $uri", Toast.LENGTH_SHORT).show()
+                    // Here, you can handle the URI, such as updating the UI or saving the image information
+                }
+            },
+            onFailure = {
+                Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     // permissions

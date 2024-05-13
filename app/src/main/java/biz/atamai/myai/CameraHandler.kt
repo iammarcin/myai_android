@@ -17,12 +17,12 @@ class CameraHandler(private val activity: AppCompatActivity, private val registr
     private var photoUri: Uri? = null
 
     // This launcher is initialized in the activity where CameraHandler is used
-    lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
+    private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
 
-    fun setupTakePictureLauncher(onSuccess: () -> Unit, onFailure: () -> Unit) {
+    fun setupTakePictureLauncher(onSuccess: (Uri?) -> Unit, onFailure: () -> Unit) {
         takePictureLauncher = registry.register("takePictureKey", activity, ActivityResultContracts.TakePicture()) { success ->
             if (success) {
-                onSuccess()
+                onSuccess(photoUri)
             } else {
                 onFailure()
             }
