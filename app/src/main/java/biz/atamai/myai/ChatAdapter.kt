@@ -33,6 +33,7 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
         fun bind(chatItem: ChatItem) {
             binding.messageTextView.text = chatItem.message
 
+            // if URIs for images are set - those are images
             if (chatItem.imageUris.isNotEmpty()) {
                 binding.scrollViewImages.visibility = View.VISIBLE
                 binding.imageContainer.removeAllViews() // Clear old images
@@ -54,6 +55,8 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
                 binding.scrollViewImages.visibility = View.GONE
             }
 
+            // if filenames are set - those are non images but different kind of files
+            // for the moment - audio - but later maybe others
             if (chatItem.fileNames.isNotEmpty()) {
                 binding.audioPlayer.visibility = View.VISIBLE
 
