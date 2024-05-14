@@ -1,147 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <LinearLayout
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/background_primary"
-        android:orientation="vertical">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/background_primary"
-            android:paddingLeft="16dp"
-            android:paddingTop="1dp"
-            android:paddingRight="16dp"
-            android:paddingBottom="1dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <ImageButton
-                    android:id="@+id/menuLeft"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:background="?attr/selectableItemBackground"
-                    android:src="@drawable/ic_menu" />
-
-                <ImageButton
-                    android:id="@+id/menuRight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:background="?attr/selectableItemBackground"
-                    android:src="@drawable/ic_more_vert" />
-            </RelativeLayout>
-        </androidx.appcompat.widget.Toolbar>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chatContainer"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/bottomBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:layout_height="match_parent"
+            android:background="@color/background_primary"
+            android:orientation="vertical">
 
-            <HorizontalScrollView
-                android:id="@+id/scrollViewPreview"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:visibility="gone"
-                >
-
-                <LinearLayout
-                    android:id="@+id/imagePreviewContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"/>
-            </HorizontalScrollView>
-
-            <LinearLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="0dp">
+                android:background="@color/background_primary"
+                android:paddingLeft="16dp"
+                android:paddingTop="1dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="1dp">
 
-                <EditText
-                    android:id="@+id/editTextMessage"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    android:layout_gravity="bottom"
-                    android:backgroundTint="#E0E0E0"
-                    android:hint="Message"
-                    android:textColor="#E0E0E0" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-                <FrameLayout
-                    android:id="@+id/layoutRecord"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
                     <ImageButton
-                        android:id="@+id/btnRecord"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/rounded_background"
-                        android:src="@drawable/ic_mic_none"
-                        android:scaleType="center"
-                        android:padding="10dp"
-                        android:layout_gravity="center"/>
+                        android:id="@+id/menuLeft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:src="@drawable/ic_menu" />
 
-                </FrameLayout>
+                    <ImageButton
+                        android:id="@+id/menuRight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:src="@drawable/ic_more_vert" />
+                </RelativeLayout>
+            </androidx.appcompat.widget.Toolbar>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chatContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <LinearLayout
+                android:id="@+id/bottomBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <HorizontalScrollView
+                    android:id="@+id/scrollViewPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/imagePreviewContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical" />
+                </HorizontalScrollView>
 
                 <LinearLayout
-                    android:id="@+id/rightAttachmentBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_gravity="end"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.5"
-                    android:layout_height="match_parent">
-                    <ImageButton
-                        android:id="@+id/btnSend"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="bottom"
-                        android:visibility="gone"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_send"
-                        android:background="@color/background_primary"
-                        app:tint="#E0E0E0"/>
-                    <ImageButton
-                        android:id="@+id/btnAttach"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="bottom"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_attach_file"
-                        android:background="@color/background_primary"
-                        />
-                    <ImageButton
-                        android:id="@+id/btnCamera"
-                        android:layout_width="wrap_content"
-                        android:layout_gravity="bottom"
-                        android:layout_height="wrap_content"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_camera_alt"
-                        android:background="@color/background_primary"
-                        />
+                    android:padding="0dp">
 
+                    <EditText
+                        android:id="@+id/editTextMessage"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:layout_gravity="bottom"
+                        android:backgroundTint="#E0E0E0"
+                        android:hint="Message"
+                        android:textColor="#E0E0E0" />
+
+                    <FrameLayout
+                        android:id="@+id/layoutRecord"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+                        <ImageButton
+                            android:id="@+id/btnRecord"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:background="@drawable/rounded_background"
+                            android:src="@drawable/ic_mic_none"
+                            android:scaleType="center"
+                            android:padding="10dp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rightAttachmentBar"
+                        android:orientation="horizontal"
+                        android:layout_gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_weight="0.5"
+                        android:layout_height="match_parent">
+                        <ImageButton
+                            android:id="@+id/btnSend"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom"
+                            android:visibility="gone"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_send"
+                            android:background="@color/background_primary"
+                            app:tint="#E0E0E0" />
+                        <ImageButton
+                            android:id="@+id/btnAttach"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_attach_file"
+                            android:background="@color/background_primary" />
+                        <ImageButton
+                            android:id="@+id/btnCamera"
+                            android:layout_width="wrap_content"
+                            android:layout_gravity="bottom"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_camera_alt"
+                            android:background="@color/background_primary" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navigationView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/searchEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Search" />
+
+                <!-- Add your menu items here -->
+
+            </LinearLayout>
+        </com.google.android.material.navigation.NavigationView>
+    </androidx.drawerlayout.widget.DrawerLayout>
 </layout>
