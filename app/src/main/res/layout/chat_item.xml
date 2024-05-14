@@ -65,14 +65,14 @@
                 android:id="@+id/transcribeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/baseline_transcribe_24"
+                android:src="@drawable/ic_transcribe_24"
                 />
 
             <ImageButton
                 android:id="@+id/play_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/baseline_play_arrow_24" />
+                android:src="@drawable/ic_play_arrow_24" />
 
             <SeekBar
                 android:id="@+id/seek_bar"

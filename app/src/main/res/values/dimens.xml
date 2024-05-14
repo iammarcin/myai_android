@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Other dimensions -->
+    <dimen name="character_card_width">105dp</dimen>
+    <dimen name="character_card_margin">8dp</dimen>
+</resources>

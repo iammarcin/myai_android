@@ -29,11 +29,11 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
             setOnPreparedListener { mp ->
                 isPrepared = true
                 binding.seekBar.max = mp.duration  // Set maximum value of the seek bar
-                binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
+                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
             }
 
             setOnCompletionListener {
-                binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
+                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 binding.seekBar.progress = 0
                 isPrepared = false
             }
@@ -71,12 +71,12 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
             mediaPlayer?.let { mp ->
                 if (mp.isPlaying) {
                     mp.pause()
-                    binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
+                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 } else {
                     try {
                         if (isPrepared) {
                             mp.start()
-                            binding.playButton.setImageResource(R.drawable.baseline_pause_24)
+                            binding.playButton.setImageResource(R.drawable.ic_pause_24)
                             handler.post(updateSeekBarTask)  // Start updating the seek bar
                         } else {
                             resetAndPrepareMediaPlayer()
@@ -102,11 +102,11 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                     isPrepared = true
                     binding.seekBar.max = mp.duration
                     mp.start()
-                    binding.playButton.setImageResource(R.drawable.baseline_pause_24)
+                    binding.playButton.setImageResource(R.drawable.ic_pause_24)
                     handler.post(updateSeekBarTask)
                 }
                 setOnCompletionListener {
-                    binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
+                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     binding.seekBar.progress = 0
                     isPrepared = false
                 }

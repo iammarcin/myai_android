@@ -1,17 +1,21 @@
 package biz.atamai.myai
 
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import biz.atamai.myai.databinding.ActivityMainBinding
+import biz.atamai.myai.databinding.CharacterCardBinding
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +31,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var audioRecorder: AudioRecorder
     private lateinit var permissionsUtil: PermissionsUtil
+
+    // this is for AI characters in app
+    private lateinit var characterManager: CharacterManager
 
     private val apiUrl = "http://192.168.23.66:8000/chatstream"
 
@@ -50,6 +57,14 @@ class MainActivity : AppCompatActivity() {
         setupPermissions()
 
         setupTopMenus()
+
+        characterManager = CharacterManager(this)
+        characterManager.setupCharacterCards(binding)
+
+
+        // set status bar color (above app -where clock is)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
+
     }
 
     private fun setupChatAdapter() {

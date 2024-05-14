@@ -26,7 +26,7 @@ class AudioRecorder(private val activity: MainActivity) {
     @Suppress("DEPRECATION")
     private fun startRecording() {
         if (checkPermissions()) {
-            activity.setRecordButtonImageResource(R.drawable.baseline_stop_24)
+            activity.setRecordButtonImageResource(R.drawable.ic_stop_24)
             val timestamp = System.currentTimeMillis()
             audioFilePath = "${activity.externalCacheDir?.absolutePath}/audiorecord_${timestamp}.mp3"
 

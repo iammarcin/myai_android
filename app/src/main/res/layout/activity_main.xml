@@ -44,6 +44,23 @@
                 </RelativeLayout>
             </androidx.appcompat.widget.Toolbar>
 
+            <!-- Horizontal ScrollView with character cards -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/characterScrollView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="4dp"
+                    android:gravity="center" />
+            </HorizontalScrollView>
+
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/chatContainer"
                 android:layout_width="match_parent"
