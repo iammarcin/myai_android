@@ -16,6 +16,8 @@ class PermissionsUtil(private val activity: Activity) {
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.CAMERA,
+        Manifest.permission.BLUETOOTH,
+        Manifest.permission.BLUETOOTH_ADMIN
     )
 
     fun checkPermissions(): Boolean {
@@ -42,6 +44,8 @@ class PermissionsUtil(private val activity: Activity) {
             val isRecordAudioGranted = permissionsMap[Manifest.permission.RECORD_AUDIO] ?: PackageManager.PERMISSION_DENIED
             val isWriteStorageGranted = permissionsMap[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: PackageManager.PERMISSION_DENIED
             val isCameraGranted = permissionsMap[Manifest.permission.CAMERA] == PackageManager.PERMISSION_GRANTED
+            val isBluetoothGranted = permissionsMap[Manifest.permission.BLUETOOTH] == PackageManager.PERMISSION_GRANTED
+            val isBluetoothAdminGranted = permissionsMap[Manifest.permission.BLUETOOTH_ADMIN] == PackageManager.PERMISSION_GRANTED
 
             if (isRecordAudioGranted == PackageManager.PERMISSION_GRANTED && isWriteStorageGranted == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(activity, "All permissions granted", Toast.LENGTH_SHORT).show()
@@ -55,6 +59,12 @@ class PermissionsUtil(private val activity: Activity) {
                 }
                 if (!isCameraGranted) {
                     Toast.makeText(activity, "Camera permission denied", Toast.LENGTH_SHORT).show()
+                }
+                if (!isBluetoothGranted) {
+                    Toast.makeText(activity, "Bluetooth permission denied", Toast.LENGTH_SHORT).show()
+                }
+                if (!isBluetoothAdminGranted) {
+                    Toast.makeText(activity, "Bluetooth Admin permission denied", Toast.LENGTH_SHORT).show()
                 }
                 // Inform the user that permissions were not granted
             }
