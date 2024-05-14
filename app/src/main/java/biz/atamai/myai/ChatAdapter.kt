@@ -3,10 +3,7 @@ package biz.atamai.myai
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -14,23 +11,19 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
-import androidx.recyclerview.widget.RecyclerView
-import biz.atamai.myai.databinding.ChatItemBinding
-import android.widget.SeekBar
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
+import biz.atamai.myai.databinding.ChatItemBinding
 
 class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
-    private val mediaPlayers: MutableList<MediaPlayer> = mutableListOf()
+    private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
 
     fun releaseMediaPlayers() {
-        for (mediaPlayer in mediaPlayers) {
-            if (mediaPlayer.isPlaying) {
-                mediaPlayer.stop()
-            }
-            mediaPlayer.release()
+        for (audioPlayerManager in audioPlayerManagers) {
+            audioPlayerManager.releaseMediaPlayer()
         }
-        mediaPlayers.clear() // Clear the list after releasing
+        audioPlayerManagers.clear() // Clear the list after releasing
     }
 
     inner class ChatViewHolder(private val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -40,14 +33,8 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
                 showPopupMenu(view, adapterPosition)
                 true // Return true to indicate the callback consumed the long click
             }
-
-            //binding.menuButton.setOnClickListener { view ->
-            //    showPopupMenu(view)
-            //}
         }
 
-        private var mediaPlayer: MediaPlayer? = null
-        val handler = Handler(Looper.getMainLooper())
         fun bind(chatItem: ChatItem) {
             binding.messageTextView.text = chatItem.message
             binding.nameTextView.text = if (chatItem.isUserMessage) "USER" else "AI"
@@ -87,7 +74,9 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
-                setupMediaPlayer(chatItem.fileNames[0])
+                val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
+                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0])
+                audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button
                 binding.transcribeButton.visibility = View.VISIBLE
                 binding.transcribeButton.setOnClickListener {
@@ -107,7 +96,6 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
 
             val popupMenu = PopupMenu(ContextThemeWrapper(context, R.style.PopupMenuStyle), view)
 
-            //val popupMenu = PopupMenu(context, view)
             if (chatItem.isUserMessage) {
                 popupMenu.inflate(R.menu.user_message_menu)
             } else {
@@ -140,86 +128,6 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
             }
             popupMenu.show()
         }
-
-        private fun setupMediaPlayer(audioUri: Uri?) {
-            releaseMediaPlayer() // Release any existing player
-            mediaPlayer = MediaPlayer.create(binding.root.context, audioUri).apply {
-                // Add this MediaPlayer to the adapter's list
-                mediaPlayers.add(this)
-
-                setOnPreparedListener { mp ->
-                    binding.seekBar.max = mp.duration  // Set maximum value of the seek bar
-
-                    // Play/Pause toggle button
-                    binding.playButton.setOnClickListener {
-                        mediaPlayer?.let { mp ->
-                            if (mp.isPlaying) {
-                                mp.pause()
-                                binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
-                            } else {
-                                try {
-                                    mp.start()
-                                    binding.playButton.setImageResource(R.drawable.baseline_pause_24)
-                                    handler.post(updateSeekBarTask)  // Start updating the seek bar
-                                } catch (e: IllegalStateException) {
-                                    // Handle the situation when the media player is in an invalid state
-                                    Toast.makeText(binding.root.context, "Error playing audio", Toast.LENGTH_SHORT).show()
-                                    releaseMediaPlayer()  // Consider releasing and possibly reinitializing the media player
-                                }
-                            }
-                        }
-                    }
-
-                    // SeekBar change listener
-                    binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                            if (fromUser) {
-                                mp.seekTo(progress)
-                            }
-                        }
-
-                        override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                            // Optional: Pause playback while user is dragging the seek bar
-                            mp.pause()
-                        }
-
-                        override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                            // Optional: Resume playback after user releases the seek bar
-                            mp.start()
-                        }
-                    })
-                }
-
-                setOnCompletionListener {
-                    binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
-                    binding.seekBar.progress = 0
-                    releaseMediaPlayer()  // Automatically release when playback is complete
-                }
-            }
-        }
-
-        private fun releaseMediaPlayer() {
-            mediaPlayer?.stop()
-            mediaPlayer?.release()
-            mediaPlayers.remove(mediaPlayer)  // Remove from the adapter's list
-            handler.removeCallbacks(updateSeekBarTask)  // Stop updating the seek bar
-            mediaPlayer = null
-        }
-
-        protected fun finalize() {
-            releaseMediaPlayer()
-        }
-
-        private val updateSeekBarTask = object : Runnable {
-            override fun run() {
-                mediaPlayer?.let { mp ->
-                    if (mp.isPlaying) {
-                        binding.seekBar.progress = mp.currentPosition
-                        handler.postDelayed(this, 1000)  // Schedule the next update after 1 second
-                    }
-                }
-            }
-        }
     }
 
     private fun Int.dpToPx(context: Context): Int {
@@ -236,5 +144,4 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
     }
 
     override fun getItemCount(): Int = chatItems.size
-
 }
