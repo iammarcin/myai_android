@@ -40,13 +40,17 @@ class MainActivity : AppCompatActivity() {
     // needed for streaming
     private var currentResponseItemPosition: Int? = null
 
+    var useBluetoothIfConnected = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
 
-        audioRecorder = AudioRecorder(this)
+        audioRecorder = AudioRecorder(this).apply {
+            useBluetoothIfConnected = this@MainActivity.useBluetoothIfConnected
+        }
         fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
         cameraHandler = CameraHandler(this, activityResultRegistry)
 
@@ -61,10 +65,8 @@ class MainActivity : AppCompatActivity() {
         characterManager = CharacterManager(this)
         characterManager.setupCharacterCards(binding)
 
-
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
-
     }
 
     private fun setupChatAdapter() {
@@ -84,15 +86,12 @@ class MainActivity : AppCompatActivity() {
 
         // for situation where we start typing in edit text - we want other stuff to disappear
         binding.editTextMessage.setOnFocusChangeListener { _, hasFocus ->
-            println("hfdsiuhfsdiuhfsdiuhfsdiuhdfsuisfdhui 1")
             if (hasFocus) {
-                println("duifhsifusdhsuidfhfsdiu fidsuhiufsd h 2")
                 binding.layoutRecord.visibility = View.GONE
                 binding.btnSend.visibility = View.VISIBLE
                 (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
                 (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
             } else {
-                println("ASNKDNASKDHASKUHDASKDASHUDASHU 3")
                 resetSendAndRecordArea()
             }
         }
@@ -102,7 +101,7 @@ class MainActivity : AppCompatActivity() {
             handleSendButtonClick()
         }
 
-        //camera
+        // camera
         binding.btnCamera.setOnClickListener {
             cameraHandler.takePhoto()
         }
@@ -123,7 +122,6 @@ class MainActivity : AppCompatActivity() {
                 // if it's a file
                 val placeholder = frameLayout.getChildAt(0) as View
                 attachedFilePaths.add(placeholder.tag as Uri)
-
             }
         }
 
@@ -155,8 +153,7 @@ class MainActivity : AppCompatActivity() {
                     scrollToEnd()
                 }
             }
-        }, {
-                error ->
+        }, { error ->
             runOnUiThread {
                 Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
             }
@@ -195,6 +192,7 @@ class MainActivity : AppCompatActivity() {
             audioRecorder.handleRecordButtonClick()
         }
     }
+
     fun setRecordButtonImageResource(resourceId: Int) {
         binding.btnRecord.setImageResource(resourceId)
     }
@@ -205,8 +203,6 @@ class MainActivity : AppCompatActivity() {
             onSuccess = { uri ->
                 uri?.let {
                     fileAttachmentHandler.addFilePreview(uri)
-                    //Toast.makeText(this, "Photo captured: $uri", Toast.LENGTH_SHORT).show()
-                    // Here, you can handle the URI, such as updating the UI or saving the image information
                 }
             },
             onFailure = {
@@ -217,7 +213,7 @@ class MainActivity : AppCompatActivity() {
 
     // TOP MENUS
     private fun setupTopMenus() {
-        //using binding
+        // using binding
         drawerLayout = binding.drawerLayout
         navigationView = binding.navigationView
         binding.menuLeft.setOnClickListener {
@@ -227,7 +223,6 @@ class MainActivity : AppCompatActivity() {
         binding.menuRight.setOnClickListener { view ->
             showTopRightPopupMenu(view)
         }
-
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             // Handle menu item click events here
@@ -258,7 +253,6 @@ class MainActivity : AppCompatActivity() {
         popupMenu.show()
     }
 
-
     // permissions
     private fun setupPermissions() {
         permissionsUtil = PermissionsUtil(this)
@@ -267,6 +261,7 @@ class MainActivity : AppCompatActivity() {
             permissionsUtil.requestPermissions()
         }
     }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionsUtil.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -282,5 +277,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         chatAdapter.releaseMediaPlayers()  // Ensure all media players are released when the activity is destroyed
+        audioRecorder.release()  // Release resources held by AudioRecorder
     }
 }
