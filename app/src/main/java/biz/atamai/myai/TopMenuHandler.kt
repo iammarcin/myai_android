@@ -2,6 +2,7 @@
 package biz.atamai.myai
 
 import android.content.Context
+import android.graphics.Typeface
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -63,7 +64,9 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         val container = FrameLayout(context)
         container.layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
+            //FrameLayout.LayoutParams.WRAP_CONTENT
+            // set height to 40% of screen height
+            (context.resources.displayMetrics.heightPixels * 0.4).toInt()
         )
         container.id = View.generateViewId()
 
@@ -76,8 +79,6 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             val fragmentView = inflater.inflate(layoutId, container, false)
             fragmentView.id = View.generateViewId()
             container.addView(fragmentView)
-            Log.d("OptionsDialog", "Loaded fragment with layoutId: $layoutId")
-            Log.d("OptionsDialog", "Fragment view added to container: ${fragmentView.id}")
 
             container.visibility = View.VISIBLE
             fragmentView.visibility = View.VISIBLE
@@ -91,7 +92,12 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
 
         val btnGeneral = TextView(context).apply {
             text = "GENERAL"
+            typeface = Typeface.DEFAULT_BOLD
             setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
+
+            // make text bold
+            setTypeface(null, Typeface.BOLD)
+
             setPadding(8, 8, 8, 8)
             setOnClickListener {
                 Log.d("OptionsDialog", "General button clicked")
