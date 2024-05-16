@@ -20,7 +20,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.IOException
 
-class AudioRecorder(private val activity: MainActivity) {
+class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnected: Boolean) {
+
     private var mediaRecorder: MediaRecorder? = null
     private var audioFilePath: String? = null
     private var isRecording = false
@@ -33,7 +34,6 @@ class AudioRecorder(private val activity: MainActivity) {
     private var audioManager: AudioManager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var isBluetoothScoOn = false
 
-    var useBluetoothIfConnected = true
     // delay to ensure SCO connection is established
     private var bluetoothStartupDelay = 200L
 

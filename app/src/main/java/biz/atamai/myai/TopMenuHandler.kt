@@ -15,10 +15,12 @@ import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.TopRightPopupMenuLayoutBinding
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.text.Editable
+import android.text.TextWatcher
 
 class TopMenuHandler(private val context: Context, private val inflater: LayoutInflater) {
 
-    private var selectedModel: String = "GPT-4o" // default selection
+    private var textModelName: String = ConfigurationManager.getTextModelName()
 
     fun setupTopMenus(binding: ActivityMainBinding) {
         binding.menuLeft.setOnClickListener {
@@ -35,6 +37,8 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             }
             true
         }
+
+
     }
 
     private fun showTopRightPopupWindow(view: View) {
@@ -43,7 +47,6 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         // set static width
         val popupWidth = (context.resources.displayMetrics.density * 200).toInt()
 
-        // Set the width to 20% of the screen width
         val popupWindow = PopupWindow(popupBinding.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
@@ -51,7 +54,7 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
 
         // Update items to reflect the selected model
         items.forEach { item ->
-            val selected = item.text == selectedModel
+            val selected = item.text == textModelName
             item.setTypeface(null, if (selected) Typeface.BOLD else Typeface.NORMAL)
             item.setCompoundDrawablesWithIntrinsicBounds(0, 0, if (selected) R.drawable.ic_electric_bolt else 0, 0)
         }
@@ -83,7 +86,8 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
     }
 
     private fun handleModelSelection(model: String) {
-        selectedModel = model
+        ConfigurationManager.setString("text_model_name", model)
+        textModelName = model
         Toast.makeText(context, "$model selected", Toast.LENGTH_SHORT).show()
     }
 
@@ -170,8 +174,12 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSwitchRow("Use Bluetooth"))
-            addView(createSwitchRow("Test Data"))
+            addView(createSwitchRow("Use Bluetooth", ConfigurationManager.getUseBluetooth()) { isChecked ->
+                ConfigurationManager.setBoolean("general_use_bluetooth", isChecked)
+            })
+            addView(createSwitchRow("Test Data", ConfigurationManager.getUseTestData()) { isChecked ->
+                ConfigurationManager.setBoolean("general_test_data", isChecked)
+            })
         }
     }
 
@@ -180,9 +188,15 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSeekBarRow("Temperature", 1, 0.05f))
-            addView(createSeekBarRow("Memory Size", 2000, 1f))
-            addView(createSwitchRow("Streaming"))
+            addView(createSeekBarRow("Temperature", 1, 0.05f, ConfigurationManager.getTextTemperature()) { value ->
+                ConfigurationManager.setFloat("text_temperature", value)
+            })
+            addView(createSeekBarRow("Memory Size", 2000, 1f, ConfigurationManager.getTextMemorySize().toFloat()) { value ->
+                ConfigurationManager.setInt("text_memory_size", value.toInt())
+            })
+            addView(createSwitchRow("Streaming", ConfigurationManager.getIsStreamingEnabled()) { isChecked ->
+                ConfigurationManager.setBoolean("text_streaming", isChecked)
+            })
         }
     }
 
@@ -191,8 +205,12 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSeekBarRow("Stability", 1, 0.1f))
-            addView(createSeekBarRow("Similarity", 1, 0.1f))
+            addView(createSeekBarRow("Stability", 1, 0.05f, ConfigurationManager.getAudioStability()) { value ->
+                ConfigurationManager.setFloat("audio_stability", value)
+            })
+            addView(createSeekBarRow("Similarity", 1, 0.05f, ConfigurationManager.getAudioSimilarity()) { value ->
+                ConfigurationManager.setFloat("audio_similarity", value)
+            })
         }
     }
 
@@ -201,18 +219,26 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createTextEditRow("Language", "en"))
-            addView(createSeekBarRow("Temperature", 1, 0.05f))
+            addView(createTextEditRow("Language", ConfigurationManager.getSpeechLanguage()) { newValue ->
+                ConfigurationManager.setString("speech_language", newValue)
+            })
+            addView(createSeekBarRow("Temperature", 1, 0.05f, ConfigurationManager.getSpeechTemperature()) { value ->
+                ConfigurationManager.setFloat("speech_temperature", value)
+            })
         }
     }
 
-    private fun createSwitchRow(label: String): RelativeLayout {
+    private fun createSwitchRow(label: String, initialValue: Boolean, onValueChanged: (Boolean) -> Unit): RelativeLayout {
         return RelativeLayout(context).apply {
             val switch = SwitchCompat(context).apply {
                 id = View.generateViewId()
                 setPadding(0, 0, 16, 0)
                 thumbDrawable.setTint(ContextCompat.getColor(context, R.color.white))
                 trackDrawable.setTint(ContextCompat.getColor(context, R.color.colorPrimary))
+                isChecked = initialValue
+                setOnCheckedChangeListener { _, isChecked ->
+                    onValueChanged(isChecked)
+                }
             }
 
             val textView = TextView(context).apply {
@@ -239,7 +265,8 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
-    private fun createTextEditRow(label: String, defaultText: String): LinearLayout {
+
+    private fun createTextEditRow(label: String, initialValue: String, onValueChanged: (String) -> Unit): LinearLayout {
         return LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, 16, 0, 16)
@@ -251,10 +278,17 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             }
 
             val editText = EditText(context).apply {
-                setText(defaultText)
+                setText(initialValue)
                 textSize = 16f
                 setTextColor(ContextCompat.getColor(context, R.color.white))
                 setPadding(8, 0, 0, 0)
+                addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: Editable?) {
+                        onValueChanged(s.toString())
+                    }
+                })
             }
 
             addView(textView, LinearLayout.LayoutParams(
@@ -267,7 +301,8 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
-    private fun createSeekBarRow(label: String, max: Int, step: Float): LinearLayout {
+
+    private fun createSeekBarRow(label: String, max: Int, step: Float, initialValue: Float, onValueChanged: (Float) -> Unit): LinearLayout {
         return LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
 
@@ -278,7 +313,7 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             }
 
             val valueTextView = TextView(context).apply {
-                text = "0.0"
+                text = initialValue.toString()
                 setPadding(8, 0, 0, 0)
                 textSize = 16f
                 setTextColor(ContextCompat.getColor(context, R.color.white))
@@ -286,10 +321,12 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
 
             val seekBar = SeekBar(context).apply {
                 this.max = (max / step).toInt()
+                progress = (initialValue / step).toInt()
                 setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                         val value = progress * step
                         valueTextView.text = value.toString()
+                        onValueChanged(value)
                     }
 
                     override fun onStartTrackingTouch(seekBar: SeekBar) {}

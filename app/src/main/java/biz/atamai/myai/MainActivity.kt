@@ -31,9 +31,6 @@ class MainActivity : AppCompatActivity() {
     // needed for streaming
     private var currentResponseItemPosition: Int? = null
 
-    // to set if bluetooth is used for recording
-    var useBluetoothIfConnected = true
-
     // for editing message - if we choose edit on any message
     private var editingMessagePosition: Int? = null
 
@@ -41,12 +38,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        ConfigurationManager.init(this)
 
         setContentView(binding.root)
 
-        audioRecorder = AudioRecorder(this).apply {
-            useBluetoothIfConnected = this@MainActivity.useBluetoothIfConnected
-        }
+        audioRecorder = AudioRecorder(this, ConfigurationManager.getUseBluetooth())
+
         fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
         cameraHandler = CameraHandler(this, activityResultRegistry)
 
@@ -174,11 +171,30 @@ class MainActivity : AppCompatActivity() {
 
     private fun startStreaming(userInput: String) {
         val apiDataModel = APIDataModel(
-            action = "text",
+            action = "generate",
             userInput = mapOf("prompt" to userInput),
-            userSettings = mapOf("generator" to "openai"),
+            userSettings = mapOf(
+                "text" to mapOf(
+                    "generator" to "openai",
+                    "temperature" to ConfigurationManager.getTextTemperature(),
+                    "model" to ConfigurationManager.getTextModelName(),
+                    "memory_limit" to ConfigurationManager.getTextMemorySize(),
+                ),
+                "audio" to mapOf(
+                    "stability" to ConfigurationManager.getAudioStability(),
+                    "similarity_boost" to ConfigurationManager.getAudioSimilarity()
+                ),
+                "speech" to mapOf(
+                    "language" to ConfigurationManager.getSpeechLanguage(),
+                    "temperature" to ConfigurationManager.getSpeechTemperature()
+                ),
+                "general" to mapOf(
+                    "returnTestData" to ConfigurationManager.getUseTestData()
+                ),
+            ),
             customerId = 1
         )
+
         val streamUrl = apiUrl
 
         val responseItem = ChatItem("", false)
