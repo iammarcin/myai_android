@@ -151,7 +151,7 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSeekBarRow("Temperature", 100, 1f))
+            addView(createSeekBarRow("Temperature", 1, 0.05f))
             addView(createSeekBarRow("Memory Size", 2000, 1f))
             addView(createSwitchRow("Streaming"))
         }
@@ -162,8 +162,8 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSeekBarRow("Stability", 100, 1f))
-            addView(createSeekBarRow("Similarity", 2000, 1f))
+            addView(createSeekBarRow("Stability", 1, 0.1f))
+            addView(createSeekBarRow("Similarity", 1, 0.1f))
         }
     }
 
