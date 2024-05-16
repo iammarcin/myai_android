@@ -7,4 +7,10 @@
     </style>
 
     <style name="Theme.MyAI" parent="Base.Theme.MyAI" />
+
+    <style name="MySwitchStyle" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/colorSecondary</item>
+        <item name="android:textColorSecondary">@color/white</item>
+    </style>
+
 </resources>
