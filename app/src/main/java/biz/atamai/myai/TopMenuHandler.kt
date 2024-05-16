@@ -12,7 +12,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
-
+import biz.atamai.myai.databinding.TopRightPopupMenuLayoutBinding
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 
@@ -38,41 +38,43 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
     }
 
     private fun showTopRightPopupWindow(view: View) {
-        val popupView = inflater.inflate(R.layout.top_right_popup_menu_layout, null)
-        val popupWindow = PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        val popupBinding = TopRightPopupMenuLayoutBinding.inflate(inflater)
+
+        // set static width
+        val popupWidth = (context.resources.displayMetrics.density * 200).toInt()
+
+        // Set the width to 20% of the screen width
+        val popupWindow = PopupWindow(popupBinding.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val gpt4oItem = popupView.findViewById<TextView>(R.id.gpt4o)
-        val gpt4Item = popupView.findViewById<TextView>(R.id.gpt4)
-        val gpt35Item = popupView.findViewById<TextView>(R.id.gpt35)
-        val optionsItem = popupView.findViewById<TextView>(R.id.options)
-
-        val items = listOf(gpt4oItem, gpt4Item, gpt35Item)
+        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4, popupBinding.gpt35, popupBinding.llama370b)
 
         // Update items to reflect the selected model
         items.forEach { item ->
-            if (item.text == selectedModel) {
-                item.setTypeface(null, Typeface.BOLD)
-                item.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
-            } else {
-                item.setTypeface(null, Typeface.NORMAL)
-                item.setBackgroundColor(Color.TRANSPARENT)
-            }
+            val selected = item.text == selectedModel
+            item.setTypeface(null, if (selected) Typeface.BOLD else Typeface.NORMAL)
+            item.setCompoundDrawablesWithIntrinsicBounds(0, 0, if (selected) R.drawable.ic_electric_bolt else 0, 0)
         }
 
-        gpt4oItem.setOnClickListener {
-            handleModelSelection(gpt4oItem.text.toString())
+        popupBinding.gpt4o.setOnClickListener {
+            handleModelSelection(popupBinding.gpt4o.text.toString())
             popupWindow.dismiss()
         }
-        gpt4Item.setOnClickListener {
-            handleModelSelection(gpt4Item.text.toString())
+        popupBinding.gpt4.setOnClickListener {
+            handleModelSelection(popupBinding.gpt4.text.toString())
             popupWindow.dismiss()
         }
-        gpt35Item.setOnClickListener {
-            handleModelSelection(gpt35Item.text.toString())
+        popupBinding.gpt35.setOnClickListener {
+            handleModelSelection(popupBinding.gpt35.text.toString())
             popupWindow.dismiss()
         }
-        optionsItem.setOnClickListener {
+
+        popupBinding.llama370b.setOnClickListener {
+            handleModelSelection(popupBinding.llama370b.text.toString())
+            popupWindow.dismiss()
+        }
+
+        popupBinding.options.setOnClickListener {
             showOptionsDialog()
             popupWindow.dismiss()
         }
