@@ -3,7 +3,6 @@ package biz.atamai.myai
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Typeface
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -14,9 +13,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+
 class TopMenuHandler(private val context: Context, private val inflater: LayoutInflater) {
 
-    private var selectedButton: TextView? = null
+    private var selectedModel: String = "GPT-4o" // default selection
 
     fun setupTopMenus(binding: ActivityMainBinding) {
         binding.menuLeft.setOnClickListener {
@@ -24,7 +26,7 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
 
         binding.menuRight.setOnClickListener { view ->
-            showTopRightPopupMenu(view)
+            showTopRightPopupWindow(view)
         }
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
@@ -35,27 +37,52 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
-    private fun showTopRightPopupMenu(view: View) {
-        val popupMenu = PopupMenu(context, view)
-        popupMenu.menuInflater.inflate(R.menu.top_right_menu, popupMenu.menu)
-        popupMenu.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.model -> {
-                    Toast.makeText(context, "Model selected", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.mode -> {
-                    Toast.makeText(context, "Mode selected", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.options -> {
-                    showOptionsDialog()
-                    true
-                }
-                else -> false
+    private fun showTopRightPopupWindow(view: View) {
+        val popupView = inflater.inflate(R.layout.top_right_popup_menu_layout, null)
+        val popupWindow = PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        val gpt4oItem = popupView.findViewById<TextView>(R.id.gpt4o)
+        val gpt4Item = popupView.findViewById<TextView>(R.id.gpt4)
+        val gpt35Item = popupView.findViewById<TextView>(R.id.gpt35)
+        val optionsItem = popupView.findViewById<TextView>(R.id.options)
+
+        val items = listOf(gpt4oItem, gpt4Item, gpt35Item)
+
+        // Update items to reflect the selected model
+        items.forEach { item ->
+            if (item.text == selectedModel) {
+                item.setTypeface(null, Typeface.BOLD)
+                item.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+            } else {
+                item.setTypeface(null, Typeface.NORMAL)
+                item.setBackgroundColor(Color.TRANSPARENT)
             }
         }
-        popupMenu.show()
+
+        gpt4oItem.setOnClickListener {
+            handleModelSelection(gpt4oItem.text.toString())
+            popupWindow.dismiss()
+        }
+        gpt4Item.setOnClickListener {
+            handleModelSelection(gpt4Item.text.toString())
+            popupWindow.dismiss()
+        }
+        gpt35Item.setOnClickListener {
+            handleModelSelection(gpt35Item.text.toString())
+            popupWindow.dismiss()
+        }
+        optionsItem.setOnClickListener {
+            showOptionsDialog()
+            popupWindow.dismiss()
+        }
+
+        popupWindow.showAsDropDown(view)
+    }
+
+    private fun handleModelSelection(model: String) {
+        selectedModel = model
+        Toast.makeText(context, "$model selected", Toast.LENGTH_SHORT).show()
     }
 
     private fun showOptionsDialog() {
@@ -177,14 +204,11 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
-
-
     private fun createSwitchRow(label: String): RelativeLayout {
         return RelativeLayout(context).apply {
             val switch = SwitchCompat(context).apply {
                 id = View.generateViewId()
                 setPadding(0, 0, 16, 0)
-                // Manually apply the colorControlActivated property
                 thumbDrawable.setTint(ContextCompat.getColor(context, R.color.white))
                 trackDrawable.setTint(ContextCompat.getColor(context, R.color.colorPrimary))
             }
@@ -248,7 +272,6 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             val textView = TextView(context).apply {
                 text = label
                 textSize = 16f
-                // set text to white
                 setTextColor(ContextCompat.getColor(context, R.color.white))
             }
 
@@ -256,7 +279,6 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
                 text = "0.0"
                 setPadding(8, 0, 0, 0)
                 textSize = 16f
-                // set text to white
                 setTextColor(ContextCompat.getColor(context, R.color.white))
             }
 
@@ -282,7 +304,6 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
-
     private fun createCategoryButton(name: String, layoutId: Int, onClick: (TextView) -> Unit): TextView {
         return TextView(context).apply {
             text = name
@@ -296,9 +317,6 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
     }
 
     private fun updateButtonStyles(selected: TextView) {
-        selectedButton?.setBackgroundResource(android.R.color.transparent)
-        selectedButton?.setTypeface(null, Typeface.NORMAL)
         selected.setTypeface(null, Typeface.BOLD)
-        selectedButton = selected
     }
 }

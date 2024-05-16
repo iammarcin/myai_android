@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- thats F** stupid, but seems i cannot set it programatically. when i tried it wasn't possible to change things (colors, icons) dynamically. don't touch it. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="150dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:layout_marginEnd="8dp"
+    android:background="@color/colorSecondary">
+
+    <TextView
+        android:id="@+id/gpt4o"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="GPT-4o"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/gpt4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="GPT-4"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/gpt35"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="GPT-3.5"
+        android:textSize="16sp" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white" />
+
+    <TextView
+        android:id="@+id/options"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="Options"
+        android:textSize="16sp" />
+</LinearLayout>
