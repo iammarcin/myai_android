@@ -16,7 +16,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 
-class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
+class ChatAdapter(
+    private val chatItems: MutableList<ChatItem>,
+    private val onEditMessage: (position: Int, message: String) -> Unit
+) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
 
     fun releaseMediaPlayers() {
@@ -105,6 +108,7 @@ class ChatAdapter(private val chatItems: MutableList<ChatItem>) : RecyclerView.A
                 when (item.itemId) {
                     R.id.edit -> {
                         // Handle edit action
+                        onEditMessage(position, chatItem.message)
                         true
                     }
                     R.id.delete -> {

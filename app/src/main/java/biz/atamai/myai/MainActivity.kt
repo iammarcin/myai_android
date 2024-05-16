@@ -31,7 +31,12 @@ class MainActivity : AppCompatActivity() {
     // needed for streaming
     private var currentResponseItemPosition: Int? = null
 
+    // to set if bluetooth is used for recording
     var useBluetoothIfConnected = true
+
+    // for editing message - if we choose edit on any message
+    private var editingMessagePosition: Int? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +68,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupChatAdapter() {
-        chatAdapter = ChatAdapter(chatItems)
+        chatAdapter = ChatAdapter(chatItems) { position, message ->
+            startEditingMessage(position, message) // Add this line
+        }
         binding.chatContainer.adapter = chatAdapter
     }
 
@@ -80,12 +87,9 @@ class MainActivity : AppCompatActivity() {
         // for situation where we start typing in edit text - we want other stuff to disappear
         binding.editTextMessage.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                binding.layoutRecord.visibility = View.GONE
-                binding.btnSend.visibility = View.VISIBLE
-                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
-                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
+                manageBottomEditSection("show")
             } else {
-                resetSendAndRecordArea()
+                manageBottomEditSection("hide")
             }
         }
 
@@ -98,6 +102,38 @@ class MainActivity : AppCompatActivity() {
         binding.btnCamera.setOnClickListener {
             cameraHandler.takePhoto()
         }
+    }
+
+
+    // show or hide bottom edit section (manage properly edit text and buttons)
+    private fun manageBottomEditSection(action: String) {
+        when (action) {
+            "show" -> {
+                binding.layoutRecord.visibility = View.GONE
+                binding.btnSend.visibility = View.VISIBLE
+                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
+                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
+            }
+            "hide" -> {
+                binding.layoutRecord.visibility = View.VISIBLE
+                binding.btnSend.visibility = View.GONE
+                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+            }
+        }
+    }
+
+
+    // edit any user message
+    private fun startEditingMessage(position: Int, message: String) {
+        editingMessagePosition = position
+        binding.editTextMessage.setText(message)
+        binding.editTextMessage.requestFocus()
+        binding.editTextMessage.setSelection(message.length)
+        binding.editTextMessage.maxLines = 10
+
+        // Show the send button and hide the record button
+        manageBottomEditSection("show")
     }
 
     private fun handleSendButtonClick() {
@@ -118,9 +154,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        addMessageToChat(message, attachedImageUris, attachedFilePaths)
-        startStreaming(message)
+        editingMessagePosition?.let { position ->
+            editMessageInChat(position, message, attachedImageUris, attachedFilePaths)
+        } ?: run {
+            addMessageToChat(message, attachedImageUris, attachedFilePaths)
+            startStreaming(message)
+        }
         resetInputArea()
+    }
+
+    // once message is edited - update it in chat
+    private fun editMessageInChat(position: Int, message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
+        val chatItem = chatItems[position]
+        chatItem.message = message
+        chatItem.imageUris = attachedImageUris
+        chatItem.fileNames = attachedFiles
+        chatAdapter.notifyItemChanged(position)
     }
 
     private fun startStreaming(userInput: String) {
@@ -166,17 +215,12 @@ class MainActivity : AppCompatActivity() {
         binding.editTextMessage.setText("")
         binding.imagePreviewContainer.removeAllViews()
         binding.scrollViewPreview.visibility = View.GONE
-        resetSendAndRecordArea()
+
+        manageBottomEditSection("hide")
         // release focus of binding.editTextMessage
         binding.editTextMessage.clearFocus()
-    }
-
-    // those few functions will be used in other places - so additional dedicated function needed
-    private fun resetSendAndRecordArea() {
-        binding.layoutRecord.visibility = View.VISIBLE
-        binding.btnSend.visibility = View.GONE
-        (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
-        (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+        // edit position reset
+        editingMessagePosition = null
     }
 
     // AUDIO RECORDER
