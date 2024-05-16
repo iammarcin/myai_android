@@ -1,22 +1,15 @@
 package biz.atamai.myai
 
 import android.net.Uri
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import biz.atamai.myai.databinding.ActivityMainBinding
-import biz.atamai.myai.databinding.CharacterCardBinding
-import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,8 +17,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var fileAttachmentHandler: FileAttachmentHandler
     private lateinit var cameraHandler: CameraHandler
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var navigationView: NavigationView
 
     private val chatItems: MutableList<ChatItem> = mutableListOf()
     private lateinit var chatAdapter: ChatAdapter
@@ -60,7 +51,9 @@ class MainActivity : AppCompatActivity() {
         setupCamera()
         setupPermissions()
 
-        setupTopMenus()
+        // Initialize TopMenuHandler
+        val topMenuHandler = TopMenuHandler(this, layoutInflater)
+        topMenuHandler.setupTopMenus(binding)
 
         characterManager = CharacterManager(this)
         characterManager.setupCharacterCards(binding)
@@ -209,48 +202,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
             }
         )
-    }
-
-    // TOP MENUS
-    private fun setupTopMenus() {
-        // using binding
-        drawerLayout = binding.drawerLayout
-        navigationView = binding.navigationView
-        binding.menuLeft.setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        binding.menuRight.setOnClickListener { view ->
-            showTopRightPopupMenu(view)
-        }
-
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            // Handle menu item click events here
-            when (menuItem.itemId) {
-                // Define your menu item actions here
-            }
-            true
-        }
-    }
-
-    private fun showTopRightPopupMenu(view: View) {
-        val popupMenu = PopupMenu(this, view)
-        popupMenu.menuInflater.inflate(R.menu.top_right_menu, popupMenu.menu)
-        popupMenu.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                // Handle menu item click events here
-                R.id.model -> {
-                    Toast.makeText(this, "Model selected", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.mode -> {
-                    Toast.makeText(this, "Mode selected", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
-            }
-        }
-        popupMenu.show()
     }
 
     // permissions

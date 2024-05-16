@@ -39,8 +39,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
+                        android:layout_marginEnd="8dp"
                         android:background="?attr/selectableItemBackground"
-                        android:src="@drawable/ic_more_vert" />
+                        android:src="@drawable/ic_settings" />
                 </RelativeLayout>
             </androidx.appcompat.widget.Toolbar>
 
