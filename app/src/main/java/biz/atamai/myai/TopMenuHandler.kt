@@ -21,6 +21,7 @@ import android.text.TextWatcher
 class TopMenuHandler(private val context: Context, private val inflater: LayoutInflater) {
 
     private var textModelName: String = ConfigurationManager.getTextModelName()
+    private var currentSelectedButton: TextView? = null // Add a reference to the current selected button
 
     fun setupTopMenus(binding: ActivityMainBinding) {
         binding.menuLeft.setOnClickListener {
@@ -343,6 +344,7 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
+    // category button on top of the dialog
     private fun createCategoryButton(name: String, layoutId: Int, onClick: (TextView) -> Unit): TextView {
         return TextView(context).apply {
             text = name
@@ -355,7 +357,15 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
         }
     }
 
+    // make active button bold
     private fun updateButtonStyles(selected: TextView) {
+        // Reset the style of the previously selected button
+        currentSelectedButton?.setTypeface(null, Typeface.NORMAL)
+
+        // Set the style of the currently selected button
         selected.setTypeface(null, Typeface.BOLD)
+
+        // Update the reference to the currently selected button
+        currentSelectedButton = selected
     }
 }
