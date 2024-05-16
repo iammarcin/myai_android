@@ -7,10 +7,11 @@
     android:padding="8dp"
     android:layout_margin="8dp">
 
+    <!-- values/dimens.xml to change card size as well-->
     <ImageView
         android:id="@+id/characterImage"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ai_avatar_placeholder" />
 
@@ -23,6 +24,7 @@
         android:textColor="@android:color/white"
         android:gravity="center"
         android:paddingTop="8dp"
+        android:lines="2"
         android:maxLines="2"
         android:ellipsize="end"
         android:singleLine="false" />

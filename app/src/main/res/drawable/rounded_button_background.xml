@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#000"/> <!-- Adjust color to match your app theme -->
-    <padding
-        android:left="10dp"
-        android:top="10dp"
-        android:right="10dp"
-        android:bottom="10dp"/>
+    <solid android:color="#2C2C2C"/> <!-- Adjust color to match your FAB -->
     <size
-        android:width="24dp"
-        android:height="24dp"/>
+        android:width="56dp"
+        android:height="56dp"/>
 </shape>
