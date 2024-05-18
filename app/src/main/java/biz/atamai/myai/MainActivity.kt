@@ -236,10 +236,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startStreaming(userInput: String) {
+        // collect chat history
+        val chatHistory = chatItems.map {
+            if (it.isUserMessage) {
+                mapOf("role" to "user", "content" to it.message)
+            } else {
+                mapOf("role" to "assistant", "content" to it.message)
+            }
+        }
+
         val apiDataModel = APIDataModel(
             category = "text",
             action = "chat",
-            userInput = mapOf("prompt" to userInput),
+            userInput = mapOf(
+                "prompt" to userInput,
+                "chat_history" to chatHistory
+            ),
             userSettings = mapOf(
                 "text" to mapOf(
                     "temperature" to ConfigurationManager.getTextTemperature(),
@@ -260,7 +272,7 @@ class MainActivity : AppCompatActivity() {
                     "returnTestData" to ConfigurationManager.getUseTestData(),
                 ),
             ),
-            customerId = 1
+            customerId = 1,
         )
 
         val streamUrl = apiUrl
