@@ -11,7 +11,9 @@ import biz.atamai.myai.databinding.CharacterCardBinding
 class CharacterManager(private val context: Context) {
 
     // Data class to hold character information
-    data class Character(val name: String, val imageResId: Int)
+    // name = what will be displayed on the card in UI
+    // nameForAPI = what will be sent to the API
+    data class Character(val name: String, val imageResId: Int, val nameForAPI: String)
 
     // Function to programmatically set up character cards
     fun setupCharacterCards(binding: ActivityMainBinding) {
@@ -20,10 +22,10 @@ class CharacterManager(private val context: Context) {
         ConfigurationManager.setTextAICharacter("Assistant")
 
         val characters = listOf(
-            Character("Elon", R.drawable.brainstorm_elon),
-            Character("Conscious AI", R.drawable.brainstorm_conscious_ai),
-            Character("Doctor", R.drawable.brainstorm_doctor),
-            Character("Chef", R.drawable.brainstorm_chef),
+            Character("Elon", R.drawable.brainstorm_elon, "Elon"),
+            Character("Conscious AI", R.drawable.brainstorm_conscious_ai, "ConsciousAI"),
+            Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
+            Character("Chef", R.drawable.brainstorm_chef, "Chef"),
         )
 
         for (character in characters) {
@@ -34,7 +36,7 @@ class CharacterManager(private val context: Context) {
                 Toast.makeText(context, "${character.name} selected", Toast.LENGTH_SHORT).show()
                 binding.characterHorizontalMainScrollView.visibility = View.GONE
 
-                ConfigurationManager.setTextAICharacter(character.name)
+                ConfigurationManager.setTextAICharacter(character.nameForAPI)
             }
 
             // Set fixed width for the card
