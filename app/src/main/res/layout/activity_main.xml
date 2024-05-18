@@ -16,10 +16,10 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:layout_height="40dp"
+                android:background="@color/background_primary"
                 android:paddingLeft="16dp"
-                android:paddingTop="1dp"
+                android:paddingTop="5dp"
                 android:paddingRight="16dp"
                 android:paddingBottom="1dp">
 
@@ -51,7 +51,6 @@
                 android:id="@+id/characterHorizontalMainScrollView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/accent_color"
                 android:padding="8dp"
                 android:scrollbars="none">
 

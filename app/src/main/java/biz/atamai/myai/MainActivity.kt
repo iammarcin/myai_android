@@ -158,6 +158,8 @@ class MainActivity : AppCompatActivity() {
             startStreaming(message)
         }
         resetInputArea()
+        // hide character selection area
+        binding.characterHorizontalMainScrollView.visibility = View.GONE
     }
 
     // once message is edited - update it in chat
