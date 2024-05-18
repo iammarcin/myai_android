@@ -180,6 +180,8 @@ class MainActivity : AppCompatActivity() {
                     "temperature" to ConfigurationManager.getTextTemperature(),
                     "model" to ConfigurationManager.getTextModelName(),
                     "memory_limit" to ConfigurationManager.getTextMemorySize(),
+                    "ai_character" to ConfigurationManager.getTextAICharacter(),
+                    "streaming" to ConfigurationManager.getIsStreamingEnabled(),
                 ),
                 "audio" to mapOf(
                     "stability" to ConfigurationManager.getAudioStability(),
@@ -190,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                     "temperature" to ConfigurationManager.getSpeechTemperature()
                 ),
                 "general" to mapOf(
-                    "returnTestData" to ConfigurationManager.getUseTestData()
+                    "returnTestData" to ConfigurationManager.getUseTestData(),
                 ),
             ),
             customerId = 1

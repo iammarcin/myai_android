@@ -9,6 +9,7 @@ object ConfigurationManager {
     private const val TEXT_TEMPERATURE = "text_temperature"
     private const val TEXT_MEMORY_SIZE = "text_memory_size"
     private const val TEXT_STREAMING = "text_streaming"
+    private const val TEXT_AI_CHARACTER = "text_ai_character"
     private const val GENERAL_USE_BLUETOOTH = "general_use_bluetooth"
     private const val GENERAL_TEST_DATA = "general_test_data"
     private const val SPEECH_LANGUAGE = "speech_language"
@@ -25,6 +26,7 @@ object ConfigurationManager {
     // Default values
     private val defaultSettings = mapOf(
         TEXT_MODEL_NAME to "GPT-4o",
+        TEXT_AI_CHARACTER to "Assistant",
         TEXT_TEMPERATURE to 0.0f,
         TEXT_MEMORY_SIZE to 2000,
         TEXT_STREAMING to false,
@@ -72,6 +74,7 @@ object ConfigurationManager {
 
     // getter methods
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
+    fun getTextAICharacter() = getString(TEXT_AI_CHARACTER, defaultSettings[TEXT_AI_CHARACTER] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
     fun getTextMemorySize() = getInt(TEXT_MEMORY_SIZE, defaultSettings[TEXT_MEMORY_SIZE] as Int)
     fun getIsStreamingEnabled() = getBoolean(TEXT_STREAMING, defaultSettings[TEXT_STREAMING] as Boolean)
@@ -84,6 +87,7 @@ object ConfigurationManager {
 
     // setter methods
     fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
+    fun setTextAICharacter(value: String) = setString(TEXT_AI_CHARACTER, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)
     fun setTextMemorySize(value: Int) = setInt(TEXT_MEMORY_SIZE, value)
     fun setIsStreamingEnabled(value: Boolean) = setBoolean(TEXT_STREAMING, value)

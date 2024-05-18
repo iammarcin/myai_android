@@ -15,6 +15,10 @@ class CharacterManager(private val context: Context) {
 
     // Function to programmatically set up character cards
     fun setupCharacterCards(binding: ActivityMainBinding) {
+
+        // default setting before user selection
+        ConfigurationManager.setTextAICharacter("Assistant")
+
         val characters = listOf(
             Character("Elon", R.drawable.brainstorm_elon),
             Character("Conscious AI", R.drawable.brainstorm_conscious_ai),
@@ -30,7 +34,7 @@ class CharacterManager(private val context: Context) {
                 Toast.makeText(context, "${character.name} selected", Toast.LENGTH_SHORT).show()
                 binding.characterHorizontalMainScrollView.visibility = View.GONE
 
-                // Handle character selection logic here
+                ConfigurationManager.setTextAICharacter(character.name)
             }
 
             // Set fixed width for the card
