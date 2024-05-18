@@ -22,10 +22,31 @@ class CharacterManager(private val context: Context) {
         ConfigurationManager.setTextAICharacter("Assistant")
 
         val characters = listOf(
-            Character("Elon", R.drawable.brainstorm_elon, "Elon"),
+            Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
             Character("Conscious AI", R.drawable.brainstorm_conscious_ai, "ConsciousAI"),
+            Character("Rogue AI", R.drawable.brainstorm_rogue_ai, "RogueAI"),
+            Character("Fitness Guru", R.drawable.brainstorm_gym_instructor, "GymInstructor"),
+            Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
             Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
             Character("Chef", R.drawable.brainstorm_chef, "Chef"),
+            Character("Book Worm", R.drawable.brainstorm_book_worm, "BookWorm"),
+            Character("Psychology ", R.drawable.brainstorm_psychology, "Psychology"),
+            Character("Psychology Mars", R.drawable.brainstorm_psychology_mars, "PsychologyMars"),
+            Character("Happiness Expert", R.drawable.brainstorm_psychology_expert_happiness, "PsychologyExpertHappiness"),
+            Character("Meditation Guru", R.drawable.brainstorm_meditation, "Meditation"),
+            Character("Jokester", R.drawable.brainstorm_jokester, "Jokester"),
+            Character("Teacher", R.drawable.brainstorm_teacher, "Teacher"),
+            Character("Brainstorm", R.drawable.brainstorm_brainstormer, "Brainstormer"),
+            Character("CEO", R.drawable.brainstorm_ceo, "CEO"),
+            Character("CTO", R.drawable.brainstorm_cto, "CTO"),
+            Character("Business Expert", R.drawable.brainstorm_business_expert, "BusinessExpert"),
+            Character("Sales Guru", R.drawable.brainstorm_sales, "Sales"),
+            Character("Elon", R.drawable.brainstorm_elon, "Elon"),
+            Character("Yuval Noah Harari", R.drawable.brainstorm_yuval, "Yuval"),
+            Character("Naval", R.drawable.brainstorm_naval, "Naval"),
+            Character("Shaan Puri", R.drawable.brainstorm_shaan, "Shaan"),
+            Character("Sir David", R.drawable.brainstorm_david, "David"),
+            Character("Rick Sanchez", R.drawable.brainstorm_rick, "Rick"),
         )
 
         for (character in characters) {
