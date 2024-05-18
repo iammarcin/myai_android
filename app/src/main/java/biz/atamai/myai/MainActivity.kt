@@ -98,6 +98,11 @@ class MainActivity : AppCompatActivity() {
         binding.btnCamera.setOnClickListener {
             cameraHandler.takePhoto()
         }
+
+        // Set up new chat button
+        binding.newChatButton.setOnClickListener {
+            resetChat()
+        }
     }
 
 
@@ -168,6 +173,17 @@ class MainActivity : AppCompatActivity() {
         chatItem.imageUris = attachedImageUris
         chatItem.fileNames = attachedFiles
         chatAdapter.notifyItemChanged(position)
+    }
+
+    // when new chat is used - clear everything
+    private fun resetChat() {
+        val size = chatItems.size
+        chatItems.clear()
+        chatAdapter.notifyItemRangeRemoved(0, size)
+        resetInputArea()
+
+        // show characters again
+        binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
     }
 
     private fun startStreaming(userInput: String) {
