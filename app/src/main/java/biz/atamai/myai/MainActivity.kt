@@ -3,6 +3,8 @@ package biz.atamai.myai
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -57,7 +59,9 @@ class MainActivity : AppCompatActivity() {
         topMenuHandler.setupTopMenus(binding)
 
         characterManager = CharacterManager(this)
-        characterManager.setupCharacterCards(binding)
+        characterManager.setupCharacterCards(binding) { characterName ->
+            insertCharacterName(characterName)
+        }
 
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
@@ -89,6 +93,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // when user starts typing and uses @ - show character selection area
+        binding.editTextMessage.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                s?.let {
+                    if (it.contains("@")) {
+                        binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
+                        scrollToEnd()
+                    }
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+
         // main send button
         binding.btnSend.setOnClickListener {
             handleSendButtonClick()
@@ -105,6 +126,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // used when user types @ - which opens character selection area... and then this function is triggered upon selection
+    private fun insertCharacterName(characterName: String) {
+        val currentText = binding.editTextMessage.text.toString()
+        val cursorPosition = binding.editTextMessage.selectionStart
+        val atIndex = currentText.lastIndexOf("@", cursorPosition - 1)
+
+        if (atIndex != -1) {
+            val newText = StringBuilder(currentText)
+                .insert(atIndex + 1, "$characterName ")
+                .toString()
+            binding.editTextMessage.setText(newText)
+            binding.editTextMessage.setSelection(atIndex + characterName.length + 2) // Position cursor after the character name
+        }
+    }
 
     // show or hide bottom edit section (manage properly edit text and buttons)
     private fun manageBottomEditSection(action: String) {

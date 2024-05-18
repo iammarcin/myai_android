@@ -16,7 +16,7 @@ class CharacterManager(private val context: Context) {
     data class Character(val name: String, val imageResId: Int, val nameForAPI: String)
 
     // Function to programmatically set up character cards
-    fun setupCharacterCards(binding: ActivityMainBinding) {
+    fun setupCharacterCards(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
 
         // default setting before user selection
         ConfigurationManager.setTextAICharacter("Assistant")
@@ -37,6 +37,7 @@ class CharacterManager(private val context: Context) {
                 binding.characterHorizontalMainScrollView.visibility = View.GONE
 
                 ConfigurationManager.setTextAICharacter(character.nameForAPI)
+                onCharacterSelected(character.name) // Notify character selection
             }
 
             // Set fixed width for the card
