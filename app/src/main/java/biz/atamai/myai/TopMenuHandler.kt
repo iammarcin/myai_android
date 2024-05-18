@@ -87,7 +87,7 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
     }
 
     private fun handleModelSelection(model: String) {
-        ConfigurationManager.setString("text_model_name", model)
+        ConfigurationManager.setTextModelName(model)
         textModelName = model
         Toast.makeText(context, "$model selected", Toast.LENGTH_SHORT).show()
     }
@@ -176,10 +176,10 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             setPadding(16, 16, 16, 16)
 
             addView(createSwitchRow("Use Bluetooth", ConfigurationManager.getUseBluetooth()) { isChecked ->
-                ConfigurationManager.setBoolean("general_use_bluetooth", isChecked)
+                ConfigurationManager.setUseBluetooth(isChecked)
             })
             addView(createSwitchRow("Test Data", ConfigurationManager.getUseTestData()) { isChecked ->
-                ConfigurationManager.setBoolean("general_test_data", isChecked)
+                ConfigurationManager.setUseTestData(isChecked)
             })
         }
     }
@@ -190,13 +190,13 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             setPadding(16, 16, 16, 16)
 
             addView(createSeekBarRow("Temperature", 1, 0.05f, ConfigurationManager.getTextTemperature()) { value ->
-                ConfigurationManager.setFloat("text_temperature", value)
+                ConfigurationManager.setTextTemperature(value)
             })
             addView(createSeekBarRow("Memory Size", 2000, 1f, ConfigurationManager.getTextMemorySize().toFloat()) { value ->
-                ConfigurationManager.setInt("text_memory_size", value.toInt())
+                ConfigurationManager.setTextMemorySize(value.toInt())
             })
             addView(createSwitchRow("Streaming", ConfigurationManager.getIsStreamingEnabled()) { isChecked ->
-                ConfigurationManager.setBoolean("text_streaming", isChecked)
+                ConfigurationManager.setIsStreamingEnabled(isChecked)
             })
         }
     }
@@ -207,10 +207,10 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             setPadding(16, 16, 16, 16)
 
             addView(createSeekBarRow("Stability", 1, 0.05f, ConfigurationManager.getAudioStability()) { value ->
-                ConfigurationManager.setFloat("audio_stability", value)
+                ConfigurationManager.setAudioStability(value)
             })
             addView(createSeekBarRow("Similarity", 1, 0.05f, ConfigurationManager.getAudioSimilarity()) { value ->
-                ConfigurationManager.setFloat("audio_similarity", value)
+                ConfigurationManager.setAudioSimilarity(value)
             })
         }
     }
@@ -220,11 +220,11 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createTextEditRow("Language", ConfigurationManager.getSpeechLanguage()) { newValue ->
-                ConfigurationManager.setString("speech_language", newValue)
+            addView(createTextEditRow("Language", ConfigurationManager.getSpeechLanguage()) { value ->
+                ConfigurationManager.setSpeechLanguage(value)
             })
             addView(createSeekBarRow("Temperature", 1, 0.05f, ConfigurationManager.getSpeechTemperature()) { value ->
-                ConfigurationManager.setFloat("speech_temperature", value)
+                ConfigurationManager.setSpeechTemperature(value)
             })
         }
     }

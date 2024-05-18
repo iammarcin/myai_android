@@ -26,14 +26,13 @@ class MainActivity : AppCompatActivity() {
     // this is for AI characters in app
     private lateinit var characterManager: CharacterManager
 
-    private val apiUrl = "http://192.168.23.66:8000/chatstream"
+    private val apiUrl = "http://192.168.23.66:8000/chat"
 
     // needed for streaming
     private var currentResponseItemPosition: Int? = null
 
     // for editing message - if we choose edit on any message
     private var editingMessagePosition: Int? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -173,11 +172,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun startStreaming(userInput: String) {
         val apiDataModel = APIDataModel(
-            action = "generate",
+            category = "text",
+            action = "chat",
             userInput = mapOf("prompt" to userInput),
             userSettings = mapOf(
                 "text" to mapOf(
-                    "generator" to "openai",
                     "temperature" to ConfigurationManager.getTextTemperature(),
                     "model" to ConfigurationManager.getTextModelName(),
                     "memory_limit" to ConfigurationManager.getTextMemorySize(),

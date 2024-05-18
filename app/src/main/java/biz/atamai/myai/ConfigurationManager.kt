@@ -70,16 +70,27 @@ object ConfigurationManager {
         sharedPreferences.edit().putBoolean(key, value).apply()
     }
 
+    // getter methods
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
     fun getTextMemorySize() = getInt(TEXT_MEMORY_SIZE, defaultSettings[TEXT_MEMORY_SIZE] as Int)
-    fun getIsStreamingEnabled() = sharedPreferences.getBoolean(TEXT_STREAMING, defaultSettings[TEXT_STREAMING] as Boolean)
-    fun getUseBluetooth() = sharedPreferences.getBoolean(GENERAL_USE_BLUETOOTH, defaultSettings[GENERAL_USE_BLUETOOTH] as Boolean)
-    fun getUseTestData() = sharedPreferences.getBoolean(GENERAL_TEST_DATA, defaultSettings[GENERAL_TEST_DATA] as Boolean)
+    fun getIsStreamingEnabled() = getBoolean(TEXT_STREAMING, defaultSettings[TEXT_STREAMING] as Boolean)
+    fun getUseBluetooth() = getBoolean(GENERAL_USE_BLUETOOTH, defaultSettings[GENERAL_USE_BLUETOOTH] as Boolean)
+    fun getUseTestData() = getBoolean(GENERAL_TEST_DATA, defaultSettings[GENERAL_TEST_DATA] as Boolean)
     fun getSpeechLanguage() = getString(SPEECH_LANGUAGE, defaultSettings[SPEECH_LANGUAGE] as String)
     fun getSpeechTemperature() = getFloat(SPEECH_TEMPERATURE, defaultSettings[SPEECH_TEMPERATURE] as Float)
     fun getAudioStability() = getFloat(AUDIO_STABILITY, defaultSettings[AUDIO_STABILITY] as Float)
     fun getAudioSimilarity() = getFloat(AUDIO_SIMILARITY, defaultSettings[AUDIO_SIMILARITY] as Float)
 
-    // Add other getter and setter methods
+    // setter methods
+    fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
+    fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)
+    fun setTextMemorySize(value: Int) = setInt(TEXT_MEMORY_SIZE, value)
+    fun setIsStreamingEnabled(value: Boolean) = setBoolean(TEXT_STREAMING, value)
+    fun setUseBluetooth(value: Boolean) = setBoolean(GENERAL_USE_BLUETOOTH, value)
+    fun setUseTestData(value: Boolean) = setBoolean(GENERAL_TEST_DATA, value)
+    fun setSpeechLanguage(value: String) = setString(SPEECH_LANGUAGE, value)
+    fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
+    fun setAudioStability(value: Float) = setFloat(AUDIO_STABILITY, value)
+    fun setAudioSimilarity(value: Float) = setFloat(AUDIO_SIMILARITY, value)
 }

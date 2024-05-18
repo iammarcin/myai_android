@@ -16,10 +16,10 @@ class StreamingResponseHandler(
     private val client = OkHttpClient()
     private val gson = GsonBuilder().create()
 
-    fun startStreaming(url: String, APIDataModel: APIDataModel) {
+    fun startStreaming(url: String, apiDataModel: APIDataModel) {
         coroutineScope.launch {
             try {
-                val requestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(APIDataModel).toByteArray())
+                val requestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(apiDataModel).toByteArray())
                 val request = Request.Builder().url(url).post(requestBody).build()
                 client.newCall(request).enqueue(object : Callback {
 
