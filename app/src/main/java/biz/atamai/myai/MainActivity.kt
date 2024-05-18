@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     // for editing message - if we choose edit on any message
     private var editingMessagePosition: Int? = null
 
+    // this will be used when mentioning (via @) AI characters for single message
+    private var originalAICharacter: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -59,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         topMenuHandler.setupTopMenus(binding)
 
         characterManager = CharacterManager(this)
+        // on character selection - update character name in chat and set temporary character for single message
         characterManager.setupCharacterCards(binding) { characterName ->
             insertCharacterName(characterName)
         }
@@ -98,10 +102,20 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                //if user starts typing - show bottom edit section (there is a case after submit - when i start typing - letters appear and i don't need to click on edit text)
+                if (count > 0 && before == 0) { // Detect the first character typed
+                    manageBottomEditSection("show")
+                }
                 s?.let {
                     if (it.contains("@")) {
                         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
                         scrollToEnd()
+                        // save original AI character - because new one will be set
+                        // very important - that we have to change it only once - because if we chose different character this function is executed every time we type any character
+                        // so originalAICharacter would be set many times (to new character) if we didn't have this check
+                        if (originalAICharacter == null) {
+                            originalAICharacter = ConfigurationManager.getTextAICharacter()
+                        }
                     }
                 }
             }
@@ -270,6 +284,12 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
             }
         }, {}).startStreaming(streamUrl, apiDataModel)
+
+        // we reset original AI character after message is sent - this is only executed when originalAICharacter is not null
+        if (originalAICharacter != null) {
+            ConfigurationManager.setTextAICharacter(originalAICharacter!!)
+            originalAICharacter = null
+        }
     }
 
     // sending data to chat adapter
