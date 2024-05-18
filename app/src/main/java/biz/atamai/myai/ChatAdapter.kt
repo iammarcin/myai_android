@@ -40,7 +40,6 @@ class ChatAdapter(
 
         fun bind(chatItem: ChatItem) {
             binding.messageTextView.text = chatItem.message
-            binding.nameTextView.text = if (chatItem.isUserMessage) "USER" else "AI"
 
             binding.avatarImageView.setImageResource(
                 if (chatItem.isUserMessage) R.drawable.user_avatar_placeholder

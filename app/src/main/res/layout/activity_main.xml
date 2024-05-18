@@ -12,11 +12,12 @@
             android:background="@color/background_primary"
             android:orientation="vertical">
 
+            <!-- android:background="@color/background_primary" -->
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/background_primary"
+                android:background="@color/white"
                 android:paddingLeft="16dp"
                 android:paddingTop="1dp"
                 android:paddingRight="16dp"
@@ -47,8 +48,10 @@
 
             <!-- Horizontal ScrollView with character cards -->
             <HorizontalScrollView
+                android:id="@+id/characterHorizontalMainScrollView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/accent_color"
                 android:padding="8dp"
                 android:scrollbars="none">
 

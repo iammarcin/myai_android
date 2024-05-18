@@ -28,7 +28,7 @@ class CharacterManager(private val context: Context) {
             cardBinding.characterImage.setImageResource(character.imageResId)
             cardBinding.root.setOnClickListener {
                 Toast.makeText(context, "${character.name} selected", Toast.LENGTH_SHORT).show()
-                binding.characterScrollView.visibility = View.GONE
+                binding.characterHorizontalMainScrollView.visibility = View.GONE
 
                 // Handle character selection logic here
             }
