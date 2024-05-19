@@ -105,4 +105,28 @@ object ConfigurationManager {
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
     fun setAudioStability(value: Float) = setFloat(AUDIO_STABILITY, value)
     fun setAudioSimilarity(value: Float) = setFloat(AUDIO_SIMILARITY, value)
+
+    // used for API calls - to prepare dict with all settings
+    fun getSettingsDict(): Map<String, Map<String, Any>> {
+        return mapOf(
+            "text" to mapOf(
+                "temperature" to getTextTemperature(),
+                "model" to getTextModelName(),
+                "memory_limit" to getTextMemorySize(),
+                "ai_character" to getTextAICharacter(),
+                "streaming" to getIsStreamingEnabled(),
+            ),
+            "audio" to mapOf(
+                "stability" to getAudioStability(),
+                "similarity_boost" to getAudioSimilarity()
+            ),
+            "speech" to mapOf(
+                "language" to getSpeechLanguage(),
+                "temperature" to getSpeechTemperature()
+            ),
+            "general" to mapOf(
+                "returnTestData" to getUseTestData(),
+            ),
+        )
+    }
 }

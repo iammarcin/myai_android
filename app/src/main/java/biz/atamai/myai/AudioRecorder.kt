@@ -148,12 +148,61 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
             activity.setRecordButtonImageResource(R.drawable.ic_mic_none)
             Toast.makeText(activity, "Recording stopped", Toast.LENGTH_SHORT).show()
             addRecordingToFileList(audioFilePath)
+            //sendAudioFileToBackend(audioFilePath?:"")
         }
 
         if (isBluetoothScoOn) {
             stopBluetoothSco()
         }
     }
+
+    /*
+    private fun sendAudioFileToBackend(audioFilePath: String) {
+        val apiDataModel = APIDataModel(
+            category = "speech",
+            action = "transcribe",
+            userInput = mapOf(),
+            userSettings = mapOf(
+                "text" to mapOf(
+                    "temperature" to ConfigurationManager.getTextTemperature(),
+                    "model" to ConfigurationManager.getTextModelName(),
+                    "memory_limit" to ConfigurationManager.getTextMemorySize(),
+                    "ai_character" to ConfigurationManager.getTextAICharacter(),
+                    "streaming" to ConfigurationManager.getIsStreamingEnabled(),
+                ),
+                "audio" to mapOf(
+                    "stability" to ConfigurationManager.getAudioStability(),
+                    "similarity_boost" to ConfigurationManager.getAudioSimilarity()
+                ),
+                "speech" to mapOf(
+                    "language" to ConfigurationManager.getSpeechLanguage(),
+                    "temperature" to ConfigurationManager.getSpeechTemperature()
+                ),
+                "general" to mapOf(
+                    "returnTestData" to ConfigurationManager.getUseTestData(),
+                ),
+            ),
+            customerId = 1
+        )
+
+        val responseHandler = ResponseHandler(
+            onResponseReceived = { response ->
+                activity.runOnUiThread {
+                    Toast.makeText(activity, "Transcription: $response", Toast.LENGTH_LONG).show()
+                }
+            },
+            onError = { error ->
+                activity.runOnUiThread {
+                    Toast.makeText(activity, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        )
+
+        val transcriptionUrl = activity.apiUrl + "generate"
+        responseHandler.sendAudioRequest(transcriptionUrl, apiDataModel, audioFilePath)
+    }
+    */
+
 
     private fun addRecordingToFileList(filePath: String?) {
         filePath?.let {

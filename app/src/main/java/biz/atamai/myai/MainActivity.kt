@@ -69,9 +69,9 @@ class MainActivity : AppCompatActivity() {
         // on purpose (for testing) - we set URL only on start - so switching in running app will not change it
         // mainly later once i have prod - it will be way to handle testing
         apiUrl = if (ConfigurationManager.getAppMode()) {
-            "http://fancydomain.com:8000/generate"
+            "https://fancydomain.com:8000/"
         } else {
-            "http://192.168.23.66:8000/generate"
+            "http://192.168.23.66:8000/"
         }
 
         // set status bar color (above app -where clock is)
@@ -205,6 +205,10 @@ class MainActivity : AppCompatActivity() {
         manageBottomEditSection("show")
     }
 
+    private fun handleSendButtonClickTOTEST() {
+        //startTranscription(binding.editTextMessage.text.toString())
+    }
+
     private fun handleSendButtonClick() {
         val message = binding.editTextMessage.text.toString()
         val attachedImageUris = mutableListOf<Uri>()
@@ -256,6 +260,13 @@ class MainActivity : AppCompatActivity() {
         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
     }
 
+    private fun handleTranscriptionResponse(response: String) {
+        runOnUiThread {
+            // Handle the response (e.g., update UI with transcribed text)
+            Toast.makeText(this, "Transcription: $response", Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
         // collect chat history (needed to send it API to get whole context of chat)
         val chatHistory = chatItems.map {
@@ -273,30 +284,11 @@ class MainActivity : AppCompatActivity() {
                 "prompt" to userInput,
                 "chat_history" to chatHistory
             ),
-            userSettings = mapOf(
-                "text" to mapOf(
-                    "temperature" to ConfigurationManager.getTextTemperature(),
-                    "model" to ConfigurationManager.getTextModelName(),
-                    "memory_limit" to ConfigurationManager.getTextMemorySize(),
-                    "ai_character" to ConfigurationManager.getTextAICharacter(),
-                    "streaming" to ConfigurationManager.getIsStreamingEnabled(),
-                ),
-                "audio" to mapOf(
-                    "stability" to ConfigurationManager.getAudioStability(),
-                    "similarity_boost" to ConfigurationManager.getAudioSimilarity()
-                ),
-                "speech" to mapOf(
-                    "language" to ConfigurationManager.getSpeechLanguage(),
-                    "temperature" to ConfigurationManager.getSpeechTemperature()
-                ),
-                "general" to mapOf(
-                    "returnTestData" to ConfigurationManager.getUseTestData(),
-                ),
-            ),
+            userSettings = ConfigurationManager.getSettingsDict(),
             customerId = 1,
         )
 
-        val streamUrl = apiUrl
+        val streamUrl = apiUrl + "chat"
 
         // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
@@ -319,19 +311,31 @@ class MainActivity : AppCompatActivity() {
 
         scrollToEnd()
 
-        StreamingResponseHandler({ chunk ->
-            runOnUiThread {
-                currentResponseItemPosition?.let { position ->
-                    chatItems[position].message += chunk
-                    chatAdapter.notifyItemChanged(position)
-                    scrollToEnd()
+        val handler = ResponseHandler(
+            handlerType = HandlerType.Streaming(
+                onChunkReceived = { chunk ->
+                    runOnUiThread {
+                        currentResponseItemPosition?.let { position ->
+                            chatItems[position].message += chunk
+                            chatAdapter.notifyItemChanged(position)
+                            scrollToEnd()
+                        }
+                    }
+                },
+                onStreamEnd = {
+                    runOnUiThread {
+                        // Add any logic you want to run when the stream ends
+                    }
+                }
+            ),
+            onError = { error ->
+                runOnUiThread {
+                    Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
                 }
             }
-        }, { error ->
-            runOnUiThread {
-                Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
-            }
-        }, {}).startStreaming(streamUrl, apiDataModel)
+        )
+
+        handler.sendRequest(streamUrl, apiDataModel)
 
         // we reset original AI character after message is sent - this is only executed when originalAICharacter is not null
         if (originalAICharacter != null) {
