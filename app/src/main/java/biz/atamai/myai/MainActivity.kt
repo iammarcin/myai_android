@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     // this is for AI characters in app
     private lateinit var characterManager: CharacterManager
 
-    private val apiUrl = "http://192.168.23.66:8000/chat"
+    lateinit var apiUrl: String
 
     // needed for streaming
     private var currentResponseItemPosition: Int? = null
@@ -65,6 +65,13 @@ class MainActivity : AppCompatActivity() {
         // on character selection - update character name in chat and set temporary character for single message
         characterManager.setupCharacterCards(binding) { characterName ->
             insertCharacterName(characterName)
+        }
+        // on purpose (for testing) - we set URL only on start - so switching in running app will not change it
+        // mainly later once i have prod - it will be way to handle testing
+        apiUrl = if (ConfigurationManager.getAppMode()) {
+            "http://fancydomain.com:8000/generate"
+        } else {
+            "http://192.168.23.66:8000/chat"
         }
 
         // set status bar color (above app -where clock is)

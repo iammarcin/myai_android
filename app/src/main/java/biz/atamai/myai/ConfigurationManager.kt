@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 
 object ConfigurationManager {
     private const val PREFS_NAME = "AIAppSettings"
+    private const val APP_MODE_PRODUCTION = "app_mode" // production or test - different URL will be in use
     private const val TEXT_MODEL_NAME = "text_model_name"
     private const val TEXT_TEMPERATURE = "text_temperature"
     private const val TEXT_MEMORY_SIZE = "text_memory_size"
@@ -25,6 +26,7 @@ object ConfigurationManager {
 
     // Default values
     private val defaultSettings = mapOf(
+        APP_MODE_PRODUCTION to false, // "production" - true or "test" - false
         TEXT_MODEL_NAME to "GPT-4o",
         TEXT_AI_CHARACTER to "Assistant",
         TEXT_TEMPERATURE to 0.0f,
@@ -77,6 +79,7 @@ object ConfigurationManager {
     }
 
     // getter methods
+    fun getAppMode() = getBoolean(APP_MODE_PRODUCTION, defaultSettings[APP_MODE_PRODUCTION] as Boolean)
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
     fun getTextAICharacter() = getString(TEXT_AI_CHARACTER, defaultSettings[TEXT_AI_CHARACTER] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
@@ -90,6 +93,7 @@ object ConfigurationManager {
     fun getAudioSimilarity() = getFloat(AUDIO_SIMILARITY, defaultSettings[AUDIO_SIMILARITY] as Float)
 
     // setter methods
+    fun setAppMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
     fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
     fun setTextAICharacter(value: String) = setString(TEXT_AI_CHARACTER, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)

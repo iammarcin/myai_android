@@ -181,6 +181,10 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             addView(createSwitchRow("Test Data", ConfigurationManager.getUseTestData()) { isChecked ->
                 ConfigurationManager.setUseTestData(isChecked)
             })
+            // add production mode setting
+            addView(createSwitchRow("Production Mode", ConfigurationManager.getAppMode()) { isChecked ->
+                ConfigurationManager.setAppMode(isChecked)
+            })
         }
     }
 
