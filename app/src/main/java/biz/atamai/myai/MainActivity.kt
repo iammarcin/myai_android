@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         apiUrl = if (ConfigurationManager.getAppMode()) {
             "http://fancydomain.com:8000/generate"
         } else {
-            "http://192.168.23.66:8000/chat"
+            "http://192.168.23.66:8000/generate"
         }
 
         // set status bar color (above app -where clock is)
