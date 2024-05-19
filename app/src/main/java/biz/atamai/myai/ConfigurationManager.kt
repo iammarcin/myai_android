@@ -56,6 +56,10 @@ object ConfigurationManager {
         return sharedPreferences.getBoolean(key, defaultValue)
     }
 
+    private fun getJson(key: String, defaultValue: String): String {
+        return sharedPreferences.getString(key, defaultValue) ?: defaultValue
+    }
+
     fun setString(key: String, value: String) {
         sharedPreferences.edit().putString(key, value).apply()
     }

@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity() {
                         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
                         scrollToEnd()
 
-                        // save original AI character - because new one will be set
+                        // while triggering search for new AI character - save original AI character - because new one will be set
                         // very important - that we have to change it only once - because if we chose different character this function is executed every time we type any character
                         // so originalAICharacter would be set many times (to new character) if we didn't have this check
                         if (originalAICharacter == null) {
@@ -287,7 +287,10 @@ class MainActivity : AppCompatActivity() {
 
         val streamUrl = apiUrl
 
-        val responseItem = ChatItem("", false)
+        // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
+        val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
+
+        val responseItem = ChatItem("", false, aiCharacterImageResId = character?.imageResId)
         chatItems.add(responseItem)
         currentResponseItemPosition = chatItems.size - 1
         chatAdapter.notifyItemInserted(currentResponseItemPosition!!)

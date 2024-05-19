@@ -6,6 +6,7 @@ data class ChatItem(
     var message: String,
     val isUserMessage: Boolean,
     var imageUris: List<Uri> = listOf(),
-    var fileNames: List<Uri> = listOf()
+    var fileNames: List<Uri> = listOf(),
+    var aiCharacterImageResId: Int? = null
 )
 

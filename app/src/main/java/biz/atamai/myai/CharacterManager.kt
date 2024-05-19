@@ -15,7 +15,7 @@ class CharacterManager(private val context: Context) {
     // nameForAPI = what will be sent to the API
     data class Character(val name: String, val imageResId: Int, val nameForAPI: String)
 
-    private val characters = listOf(
+    val characters = listOf(
         Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
         Character("Personal coach", R.drawable.brainstorm_gym_instructor, "GymInstructor"),
         Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
