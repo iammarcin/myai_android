@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -205,11 +206,78 @@ class MainActivity : AppCompatActivity() {
         manageBottomEditSection("show")
     }
 
-    private fun handleSendButtonClickTOTEST() {
+    private fun handleSendButtonClick() {
         //startTranscription(binding.editTextMessage.text.toString())
+        testText(binding.editTextMessage.text.toString())
     }
 
-    private fun handleSendButtonClick() {
+    private fun testText(userInput: String) {
+        val apiDataModel = APIDataModel(
+            category = "text",
+            action = "generate",
+            userInput = mapOf(
+                "prompt" to userInput
+            ),
+            userSettings = ConfigurationManager.getSettingsDict(),
+            customerId = 1,
+        )
+
+        val apiEndpoint = apiUrl + "generate"
+
+        val handler = ResponseHandler(
+            handlerType = HandlerType.NonStreaming(
+                onResponseReceived = { response ->
+                    runOnUiThread {
+                        println("Response: $response")
+                        try {
+                            // Parse the JSON response
+                            val jsonResponse = JSONObject(response)
+                            val message = jsonResponse.getJSONObject("message")
+                            val result = message.getString("result")
+
+                            // Log the extracted result
+                            println("Response content: $result")
+
+                            // Update the chat item with the extracted result
+                            // Check if currentResponseItemPosition is null
+                            if (currentResponseItemPosition == null) {
+                                // Add a new ChatItem to the list
+                                val newChatItem = ChatItem(message = "", isUserMessage = false)
+                                chatItems.add(newChatItem)
+                                currentResponseItemPosition = chatItems.size - 1
+                                chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
+                            }
+
+                            // Update the chat item with the extracted result
+                            currentResponseItemPosition?.let { position ->
+                                println("Updating chat item at position: $position")
+                                if (position >= 0 && position < chatItems.size) {
+                                    val chatItem = chatItems[position]
+                                    chatItem.message = result
+                                    chatAdapter.notifyItemChanged(position)
+                                    scrollToEnd()
+                                } else {
+                                    println("Invalid position: $position")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            println("Failed to parse response: ${e.message}")
+                        }
+                    }
+                }
+            ),
+            onError = { error ->
+                runOnUiThread {
+                    Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
+                }
+            }
+        )
+
+        handler.sendRequest(apiEndpoint, apiDataModel)
+    }
+
+    private fun handleSendButtonClickOK() {
         val message = binding.editTextMessage.text.toString()
         val attachedImageUris = mutableListOf<Uri>()
         val attachedFilePaths = mutableListOf<Uri>()
