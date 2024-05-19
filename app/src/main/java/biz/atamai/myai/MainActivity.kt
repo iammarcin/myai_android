@@ -72,8 +72,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupChatAdapter() {
+        // chat adapter - but when clicked on message - we can edit it
+        // this is done via onEditMessage in chat adapter - we point it to startEditingMessage
         chatAdapter = ChatAdapter(chatItems) { position, message ->
-            startEditingMessage(position, message) // Add this line
+            startEditingMessage(position, message)
         }
         binding.chatContainer.adapter = chatAdapter
     }
@@ -214,8 +216,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // if editing message position is set - we edit message - otherwise we add new message
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageUris, attachedFilePaths)
+            startStreaming(message, position)
         } ?: run {
             addMessageToChat(message, attachedImageUris, attachedFilePaths)
             startStreaming(message)
@@ -245,8 +249,8 @@ class MainActivity : AppCompatActivity() {
         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
     }
 
-    private fun startStreaming(userInput: String) {
-        // collect chat history
+    private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
+        // collect chat history (needed to send it API to get whole context of chat)
         val chatHistory = chatItems.map {
             if (it.isUserMessage) {
                 mapOf("role" to "user", "content" to it.message)
@@ -290,10 +294,22 @@ class MainActivity : AppCompatActivity() {
         // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
 
-        val responseItem = ChatItem("", false, aiCharacterImageResId = character?.imageResId)
-        chatItems.add(responseItem)
-        currentResponseItemPosition = chatItems.size - 1
-        chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
+        // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
+        if (responseItemPosition == null) {
+            // This is a new message, add a new response item
+            val responseItem = ChatItem("", false, aiCharacterImageResId = character?.imageResId)
+            chatItems.add(responseItem)
+            currentResponseItemPosition = chatItems.size - 1
+            chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
+        } else {
+            // This is an edited message, replace the existing response item
+            // we add +1 everywhere because position is in fact position of user message
+            // and here we will edit next item (response) - so we have to add +1
+            currentResponseItemPosition = responseItemPosition + 1
+            chatItems[responseItemPosition + 1].message = ""  // Clear previous response
+            chatAdapter.notifyItemChanged(responseItemPosition + 1)
+        }
+
         scrollToEnd()
 
         StreamingResponseHandler({ chunk ->
