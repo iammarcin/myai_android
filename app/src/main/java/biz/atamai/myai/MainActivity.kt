@@ -103,26 +103,34 @@ class MainActivity : AppCompatActivity() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 //if user starts typing - show bottom edit section (there is a case after submit - when i start typing - letters appear and i don't need to click on edit text)
-                if (count > 0 && before == 0) { // Detect the first character typed
+                if (count > 0 && before == 0) {
                     manageBottomEditSection("show")
                 }
                 s?.let {
-                    if (it.contains("@")) {
+                    val cursorPosition = binding.editTextMessage.selectionStart
+                    val atIndex = s.lastIndexOf("@", cursorPosition - 1)
+                    if (atIndex != -1) {
+                        val query = s.substring(atIndex + 1, cursorPosition).trim()
                         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
                         scrollToEnd()
+
                         // save original AI character - because new one will be set
                         // very important - that we have to change it only once - because if we chose different character this function is executed every time we type any character
                         // so originalAICharacter would be set many times (to new character) if we didn't have this check
                         if (originalAICharacter == null) {
                             originalAICharacter = ConfigurationManager.getTextAICharacter()
                         }
+                        characterManager.filterCharacters(binding, query) { characterName ->
+                            insertCharacterName(characterName)
+                        }
+                    } else {
+                        binding.characterHorizontalMainScrollView.visibility = View.GONE
                     }
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
-
 
         // main send button
         binding.btnSend.setOnClickListener {
@@ -147,7 +155,9 @@ class MainActivity : AppCompatActivity() {
         val atIndex = currentText.lastIndexOf("@", cursorPosition - 1)
 
         if (atIndex != -1) {
+            // Remove everything after the '@' character up to the current cursor position
             val newText = StringBuilder(currentText)
+                .delete(atIndex + 1, cursorPosition)
                 .insert(atIndex + 1, "$characterName ")
                 .toString()
             binding.editTextMessage.setText(newText)
