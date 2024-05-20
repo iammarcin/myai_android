@@ -118,7 +118,7 @@ class FileAttachmentHandler(
         scrollViewPreview.visibility = View.VISIBLE
     }
 
-    // there was problem with getting file path from URI - so we need to save it to cache and get path from there
+    // there was problem with getting file path from URI (when i wanted to transcribe audio file) - so we need to save it to cache and get path from there
     private fun getFilePathFromUri(uri: Uri): String? {
         var filePath: String? = null
         val cursor: Cursor? = activity.contentResolver.query(uri, null, null, null, null)
