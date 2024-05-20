@@ -227,8 +227,8 @@ class MainActivity : AppCompatActivity() {
         handleTextMessage(message, attachedImageUris, attachedFilePaths)
     }
 
-    // utility method to handle sending messages and transcriptions
-    // (from ChatAdapter - when transcribe button is clicked, from AudioRecorder when recoding is done)
+    // utility method to handle sending text requests for normal UI messages and transcriptions
+    // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
     // and here in Main - same functionality when Send button is clicked
     fun handleTextMessage(message: String, attachedImageUris: List<Uri> = listOf(), attachedFiles: List<Uri> = listOf()) {
         // Add message to chat
