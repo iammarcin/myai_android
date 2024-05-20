@@ -81,13 +81,27 @@ class ChatAdapter(
                 audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button
                 binding.transcribeButton.visibility = View.VISIBLE
+
                 binding.transcribeButton.setOnClickListener {
-                    // take first item from fileNames
-                    // as above it should be only single file
-                    val fileName = chatItem.fileNames[0]
-                    println("AIOHDASIUHDISAUHDIUSAHIUASDHIUDASHIUSD")
-                    println(chatItem.fileNames)
+                    val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
+
+                    val utilityTools = UtilityTools(
+                        context = binding.root.context,
+                        apiUrl = (binding.root.context as MainActivity).apiUrl,
+                        onResponseReceived = { response ->
+                            (binding.root.context as MainActivity).runOnUiThread {
+                                Toast.makeText(binding.root.context, "Transcription: $response", Toast.LENGTH_LONG).show()
+                            }
+                        },
+                        onError = { error ->
+                            (binding.root.context as MainActivity).runOnUiThread {
+                                Toast.makeText(binding.root.context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                    utilityTools.sendAudioFile(audioFilePath)
                 }
+
             }
         }
 

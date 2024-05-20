@@ -21,6 +21,10 @@ sealed class HandlerType {
     data class NonStreaming(
         val onResponseReceived: (String) -> Unit
     ) : HandlerType()
+
+    data class AudioUpload(
+        val onResponseReceived: (String) -> Unit
+    ) : HandlerType()
 }
 
 class ResponseHandler(
@@ -50,6 +54,7 @@ class ResponseHandler(
                             when (handlerType) {
                                 is HandlerType.Streaming -> handleStreamingResponse(body)
                                 is HandlerType.NonStreaming -> handleNonStreamingResponse(body)
+                                is HandlerType.AudioUpload -> handleAudioUploadResponse(body)
                             }
                         } ?: run {
                             coroutineScope.launch(Dispatchers.Main) {
@@ -94,19 +99,28 @@ class ResponseHandler(
         }
     }
 
+    private fun handleAudioUploadResponse(body: ResponseBody) {
+        coroutineScope.launch(Dispatchers.Main) {
+            val responseText = body.string()
+            (handlerType as HandlerType.AudioUpload).onResponseReceived(responseText)
+        }
+    }
+
     fun sendAudioRequest(url: String, apiDataModel: APIDataModel, audioFilePath: String) {
         coroutineScope.launch {
             try {
                 val audioFile = File(audioFilePath)
                 val audioRequestBody = audioFile.asRequestBody("audio/mpeg".toMediaType())
-                val audioPart = MultipartBody.Part.createFormData("file", audioFile.name, audioRequestBody)
-
-                val jsonRequestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(apiDataModel))
+                val audioPart = MultipartBody.Part.createFormData("audio", audioFile.name, audioRequestBody)
 
                 val requestBody = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addPart(audioPart)
-                    .addFormDataPart("apiDataModel", gson.toJson(apiDataModel))
+                    .addFormDataPart("action", apiDataModel.action)
+                    .addFormDataPart("category", apiDataModel.category)
+                    .addFormDataPart("userInput", gson.toJson(apiDataModel.userInput))
+                    .addFormDataPart("userSettings", gson.toJson(apiDataModel.userSettings))
+                    .addFormDataPart("customerId", apiDataModel.customerId.toString())
                     .build()
 
                 val request = Request.Builder().url(url).post(requestBody).build()
@@ -121,9 +135,8 @@ class ResponseHandler(
 
                     override fun onResponse(call: Call, response: Response) {
                         response.body?.let { body ->
-                            val responseText = body.string()
                             coroutineScope.launch(Dispatchers.Main) {
-                                (handlerType as HandlerType.NonStreaming).onResponseReceived(responseText)
+                                (handlerType as HandlerType.AudioUpload).onResponseReceived(body.string())
                             }
                         } ?: run {
                             coroutineScope.launch(Dispatchers.Main) {
