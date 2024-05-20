@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var apiUrl: String
 
-    // needed for streaming
+    // needed for chat items placement - if its null - chat hasn't been started, if it has value - this is latest msg
     private var currentResponseItemPosition: Int? = null
 
     // for editing message - if we choose edit on any message
@@ -207,7 +207,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleSendButtonClick() {
-        //startTranscription(binding.editTextMessage.text.toString())
         testText(binding.editTextMessage.text.toString())
     }
 
@@ -326,13 +325,6 @@ class MainActivity : AppCompatActivity() {
 
         // show characters again
         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
-    }
-
-    private fun handleTranscriptionResponse(response: String) {
-        runOnUiThread {
-            // Handle the response (e.g., update UI with transcribed text)
-            Toast.makeText(this, "Transcription: $response", Toast.LENGTH_LONG).show()
-        }
     }
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
