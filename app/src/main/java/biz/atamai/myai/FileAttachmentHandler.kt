@@ -10,11 +10,13 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import android.database.Cursor
+import android.provider.OpenableColumns
+import java.io.File
 
 class FileAttachmentHandler(
     private val activity: MainActivity,
@@ -62,7 +64,17 @@ class FileAttachmentHandler(
             }
         }
 
-        if (mimeType?.startsWith("image/") == true) {
+        if (mimeType?.startsWith("audio/") == true) {
+            val filePath = getFilePathFromUri(uri)
+            if (filePath != null) {
+                val fileUri = Uri.fromFile(File(filePath))
+                activity.addMessageToChat("", listOf(), listOf(fileUri))
+                return
+            }
+            // maybe one day we can handle potential error here
+            println("ERROR: Could not get file path from URI")
+            return
+        } else if (mimeType?.startsWith("image/") == true) {
             val imageView = ImageView(activity).apply {
                 layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT)
                 scaleType = ImageView.ScaleType.CENTER_CROP
@@ -72,26 +84,19 @@ class FileAttachmentHandler(
             }
             frameLayout.addView(imageView)
         } else {
-            // Handle non-image files
-            // if its audio - add it directly to chat - so we can listen to it or transcribe it
-            if (mimeType?.startsWith("audio/") == true) {
-                activity.addMessageToChat("", listOf(), listOf(uri))
-                return
-            } else {
-                val placeholder = View(activity).apply {
-                    layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
-                        gravity = Gravity.CENTER
-                    }
-                    setBackgroundColor(
-                        ContextCompat.getColor(
-                            activity,
-                            R.color.attached_file_placeholder
-                        )
-                    )
-                    tag = uri
+            val placeholder = View(activity).apply {
+                layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
+                    gravity = Gravity.CENTER
                 }
-                frameLayout.addView(placeholder)
+                setBackgroundColor(
+                    ContextCompat.getColor(
+                        activity,
+                        R.color.attached_file_placeholder
+                    )
+                )
+                tag = uri
             }
+            frameLayout.addView(placeholder)
         }
 
         val removeButton = ImageButton(activity).apply {
@@ -111,6 +116,24 @@ class FileAttachmentHandler(
         frameLayout.addView(removeButton)
         imagePreviewContainer.addView(frameLayout)
         scrollViewPreview.visibility = View.VISIBLE
+    }
+
+    // there was problem with getting file path from URI - so we need to save it to cache and get path from there
+    private fun getFilePathFromUri(uri: Uri): String? {
+        var filePath: String? = null
+        val cursor: Cursor? = activity.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val displayName: String = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                val inputStream = activity.contentResolver.openInputStream(uri)
+                val file = File(activity.cacheDir, displayName)
+                file.outputStream().use { output ->
+                    inputStream?.copyTo(output)
+                }
+                filePath = file.absolutePath
+            }
+        }
+        return filePath
     }
 
     private fun Int.toPx(): Int = (this * activity.resources.displayMetrics.density).toInt()
