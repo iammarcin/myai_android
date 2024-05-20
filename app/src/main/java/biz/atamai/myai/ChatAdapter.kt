@@ -15,6 +15,8 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
+import org.json.JSONException
+import org.json.JSONObject
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -90,7 +92,13 @@ class ChatAdapter(
                         apiUrl = (binding.root.context as MainActivity).apiUrl,
                         onResponseReceived = { response ->
                             (binding.root.context as MainActivity).runOnUiThread {
-                                Toast.makeText(binding.root.context, "Transcription: $response", Toast.LENGTH_LONG).show()
+                                try {
+                                    val jsonResponse = JSONObject(response)
+                                    val message = jsonResponse.getJSONObject("message").getString("result")
+                                    (binding.root.context as MainActivity).handleTextMessage(message)
+                                } catch (e: JSONException) {
+                                    Toast.makeText(binding.root.context, "Error parsing response", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         onError = { error ->

@@ -18,6 +18,8 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.IOException
 
 class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnected: Boolean) {
@@ -162,7 +164,13 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
             apiUrl = activity.apiUrl,
             onResponseReceived = { response ->
                 activity.runOnUiThread {
-                    Toast.makeText(activity, "Transcription: $response", Toast.LENGTH_LONG).show()
+                    try {
+                        val jsonResponse = JSONObject(response)
+                        val message = jsonResponse.getJSONObject("message").getString("result")
+                        activity.handleTextMessage(message)
+                    } catch (e: JSONException) {
+                        Toast.makeText(activity, "Error parsing response", Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
             onError = { error ->

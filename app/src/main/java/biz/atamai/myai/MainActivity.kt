@@ -224,16 +224,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // if editing message position is set - we edit message - otherwise we add new message
+        handleTextMessage(message, attachedImageUris, attachedFilePaths)
+    }
+
+    // utility method to handle sending messages and transcriptions
+    // (from ChatAdapter - when transcribe button is clicked, from AudioRecorder when recoding is done)
+    // and here in Main - same functionality when Send button is clicked
+    fun handleTextMessage(message: String, attachedImageUris: List<Uri> = listOf(), attachedFiles: List<Uri> = listOf()) {
+        // Add message to chat
         editingMessagePosition?.let { position ->
-            editMessageInChat(position, message, attachedImageUris, attachedFilePaths)
+            editMessageInChat(position, message, attachedImageUris, attachedFiles)
             startStreaming(message, position)
         } ?: run {
-            addMessageToChat(message, attachedImageUris, attachedFilePaths)
+            addMessageToChat(message, attachedImageUris, attachedFiles)
             startStreaming(message)
         }
         resetInputArea()
-        // hide character selection area
         binding.characterHorizontalMainScrollView.visibility = View.GONE
     }
 
