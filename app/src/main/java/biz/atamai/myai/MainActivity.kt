@@ -272,6 +272,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
         showProgressBar()
+        println("fdsfdsfsdsfd")
+        println(chatItems)
+        println(chatItems.map { it.message })
         // collect chat history (needed to send it API to get whole context of chat)
         val chatHistory = chatItems.map {
             if (it.isUserMessage) {
@@ -347,7 +350,6 @@ class MainActivity : AppCompatActivity() {
             ConfigurationManager.setTextAICharacter(originalAICharacter!!)
             originalAICharacter = null
         }
-        hideProgressBar()
     }
 
     // sending data to chat adapter
