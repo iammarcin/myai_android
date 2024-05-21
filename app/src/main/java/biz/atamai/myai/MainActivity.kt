@@ -254,7 +254,7 @@ class MainActivity : AppCompatActivity() {
     private fun editMessageInChat(position: Int, message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
         val chatItem = chatItems[position]
         chatItem.message = message
-        chatItem.imageUris = attachedImageUris
+        chatItem.imageLocations = attachedImageUris
         chatItem.fileNames = attachedFiles
         chatAdapter.notifyItemChanged(position)
     }
@@ -352,7 +352,7 @@ class MainActivity : AppCompatActivity() {
 
     // sending data to chat adapter
     fun addMessageToChat(message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
-        val chatItem = ChatItem(message = message, isUserMessage = true, imageUris = attachedImageUris, fileNames = attachedFiles)
+        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageUris, fileNames = attachedFiles)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()

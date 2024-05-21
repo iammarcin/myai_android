@@ -47,10 +47,10 @@ class ChatAdapter(
             )
 
             // if URIs for images are set - those are images
-            if (chatItem.imageUris.isNotEmpty()) {
+            if (chatItem.imageLocations.isNotEmpty()) {
                 binding.scrollViewImages.visibility = View.VISIBLE
                 binding.imageContainer.removeAllViews() // Clear old images
-                for (uri in chatItem.imageUris) {
+                for (uri in chatItem.imageLocations) {
                     val imageView = ImageView(binding.root.context).apply {
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT,
