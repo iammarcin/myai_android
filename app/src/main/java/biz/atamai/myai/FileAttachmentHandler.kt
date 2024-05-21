@@ -92,12 +92,8 @@ class FileAttachmentHandler(
                 apiUrl = activity.apiUrl,
                 onResponseReceived = { response ->
                     activity.runOnUiThread {
-                        println("1111111")
-                        println(response)
                         imageView.setImageURI(null) // Clear local URI
                         Picasso.get().load(response).into(imageView)
-                        // Update chat with S3 URL
-                        activity.addMessageToChat("", listOf(Uri.parse(response)), listOf())
                     }
                 },
                 onError = { error ->
