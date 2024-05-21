@@ -393,6 +393,15 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    // PROGRESS BAR
+    fun showProgressBar() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    fun hideProgressBar() {
+        binding.progressBar.visibility = View.GONE
+    }
+
     // permissions
     private fun setupPermissions() {
         permissionsUtil = PermissionsUtil(this)

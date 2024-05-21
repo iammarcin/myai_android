@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import android.database.Cursor
 import android.provider.OpenableColumns
+import android.widget.ProgressBar
 import android.widget.Toast
 import com.squareup.picasso.Picasso
 import java.io.File
@@ -23,7 +24,7 @@ import java.io.File
 class FileAttachmentHandler(
     private val activity: MainActivity,
     private val imagePreviewContainer: LinearLayout,
-    private val scrollViewPreview: HorizontalScrollView
+    private val scrollViewPreview: HorizontalScrollView,
 ) {
     private val fileChooserLauncher: ActivityResultLauncher<Intent> = activity.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -86,6 +87,8 @@ class FileAttachmentHandler(
             }
             frameLayout.addView(imageView)
 
+            activity.showProgressBar()
+
             val filePath = getFilePathFromUri(uri)
             val utilityTools = UtilityTools(
                 context = activity,
@@ -94,6 +97,7 @@ class FileAttachmentHandler(
                     activity.runOnUiThread {
                         imageView.setImageURI(null) // Clear local URI
                         Picasso.get().load(response).into(imageView)
+                        activity.hideProgressBar()
                     }
                 },
                 onError = { error ->
