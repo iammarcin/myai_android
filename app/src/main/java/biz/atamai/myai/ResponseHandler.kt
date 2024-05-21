@@ -156,7 +156,7 @@ class ResponseHandler(
         }
     }
 
-    // making our function dynamic - depending on file type
+    // used in sendFileRequest, making our function dynamic - depending on file type
     private fun getMimeType(filePath: String): String {
         val extension = MimeTypeMap.getFileExtensionFromUrl(filePath)
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"

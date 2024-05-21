@@ -271,6 +271,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
+        showProgressBar()
         // collect chat history (needed to send it API to get whole context of chat)
         val chatHistory = chatItems.map {
             if (it.isUserMessage) {
@@ -327,12 +328,13 @@ class MainActivity : AppCompatActivity() {
                 },
                 onStreamEnd = {
                     runOnUiThread {
-                        // Add any logic you want to run when the stream ends
+                        hideProgressBar()
                     }
                 }
             ),
             onError = { error ->
                 runOnUiThread {
+                    hideProgressBar()
                     Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
                 }
             }
@@ -345,6 +347,7 @@ class MainActivity : AppCompatActivity() {
             ConfigurationManager.setTextAICharacter(originalAICharacter!!)
             originalAICharacter = null
         }
+        hideProgressBar()
     }
 
     // sending data to chat adapter

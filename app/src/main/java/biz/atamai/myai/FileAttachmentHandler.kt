@@ -59,6 +59,7 @@ class FileAttachmentHandler(
 
     // those functions are here as file preview (at the bottom when attaching files, but before sending them)
     fun addFilePreview(uri: Uri) {
+        activity.showProgressBar()
         val mimeType = activity.contentResolver.getType(uri)
         val frameLayout = FrameLayout(activity).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80.toPx()).apply {
@@ -72,10 +73,12 @@ class FileAttachmentHandler(
             if (filePath != null) {
                 val fileUri = Uri.fromFile(File(filePath))
                 activity.addMessageToChat("", listOf(), listOf(fileUri))
+                activity.hideProgressBar()
                 return
             }
             // maybe one day we can handle potential error here
             println("ERROR: Could not get file path from URI")
+            activity.hideProgressBar()
             return
         } else if (mimeType?.startsWith("image/") == true) {
             val imageView = ImageView(activity).apply {
@@ -86,8 +89,6 @@ class FileAttachmentHandler(
                 tag = uri
             }
             frameLayout.addView(imageView)
-
-            activity.showProgressBar()
 
             val filePath = getFilePathFromUri(uri)
             val utilityTools = UtilityTools(
@@ -102,6 +103,7 @@ class FileAttachmentHandler(
                 },
                 onError = { error ->
                     activity.runOnUiThread {
+                        activity.hideProgressBar()
                         Toast.makeText(activity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -141,6 +143,7 @@ class FileAttachmentHandler(
         frameLayout.addView(removeButton)
         imagePreviewContainer.addView(frameLayout)
         scrollViewPreview.visibility = View.VISIBLE
+        activity.hideProgressBar()
     }
 
     // there was problem with getting file path from URI (when i wanted to transcribe audio file) - so we need to save it to cache and get path from there
