@@ -36,6 +36,6 @@ class UtilityTools(
             }
         )
 
-        handler.sendAudioRequest(fullApiUrl, apiDataModel, audioFilePath)
+        handler.sendFileRequest(fullApiUrl, apiDataModel, audioFilePath)
     }
 }

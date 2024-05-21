@@ -1,5 +1,6 @@
 package biz.atamai.myai
 
+import android.webkit.MimeTypeMap
 import okhttp3.*
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
@@ -106,12 +107,14 @@ class ResponseHandler(
         }
     }
 
-    fun sendAudioRequest(url: String, apiDataModel: APIDataModel, audioFilePath: String) {
+    // request to upload the file to my API
+    fun sendFileRequest(url: String, apiDataModel: APIDataModel, filePath: String) {
         coroutineScope.launch {
             try {
-                val audioFile = File(audioFilePath)
-                val audioRequestBody = audioFile.asRequestBody("audio/mpeg".toMediaType())
-                val audioPart = MultipartBody.Part.createFormData("audio", audioFile.name, audioRequestBody)
+                val file = File(filePath)
+                val mimeType = getMimeType(filePath)
+                val fileRequestBody = file.asRequestBody(mimeType.toMediaType())
+                val audioPart = MultipartBody.Part.createFormData("file", file.name, fileRequestBody)
 
                 val requestBody = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
@@ -151,6 +154,12 @@ class ResponseHandler(
                 }
             }
         }
+    }
+
+    // making our function dynamic - depending on file type
+    private fun getMimeType(filePath: String): String {
+        val extension = MimeTypeMap.getFileExtensionFromUrl(filePath)
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
     }
 
     fun cancelRequest() {

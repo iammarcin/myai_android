@@ -76,7 +76,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             "http://192.168.23.66:8000/"
         }
-
         apiNodeUrl = if (ConfigurationManager.getAppMode()) {
             "https://fancydomain.com:3000/"
         } else {
