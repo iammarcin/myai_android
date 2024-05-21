@@ -3,7 +3,6 @@ package biz.atamai.myai
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.net.Uri
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -15,8 +14,6 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
-import org.json.JSONException
-import org.json.JSONObject
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -92,13 +89,7 @@ class ChatAdapter(
                         apiUrl = (binding.root.context as MainActivity).apiUrl,
                         onResponseReceived = { response ->
                             (binding.root.context as MainActivity).runOnUiThread {
-                                try {
-                                    val jsonResponse = JSONObject(response)
-                                    val message = jsonResponse.getJSONObject("message").getString("result")
-                                    (binding.root.context as MainActivity).handleTextMessage(message)
-                                } catch (e: JSONException) {
-                                    Toast.makeText(binding.root.context, "Error parsing response", Toast.LENGTH_SHORT).show()
-                                }
+                                (binding.root.context as MainActivity).handleTextMessage(response)
                             }
                         },
                         onError = { error ->
@@ -107,7 +98,7 @@ class ChatAdapter(
                             }
                         }
                     )
-                    utilityTools.sendAudioFile(audioFilePath)
+                    utilityTools.uploadFileToServer(audioFilePath, "chat_audio2text", "speech", "chat")
                 }
 
             }

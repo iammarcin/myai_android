@@ -2,8 +2,10 @@ package biz.atamai.myai
 
 import android.content.Context
 import android.widget.Toast
+import org.json.JSONException
+import org.json.JSONObject
 
-// COmmon place for common tools?!
+// Common place for common tools?!
 class UtilityTools(
     private val context: Context,
     private val apiUrl: String,
@@ -11,31 +13,45 @@ class UtilityTools(
     private val onError: (Exception) -> Unit
 ) {
 
-    // used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
-    fun sendAudioFile(audioFilePath: String?) {
-        if (audioFilePath == null) {
-            Toast.makeText(context, "Audio file path is null", Toast.LENGTH_SHORT).show()
+    // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
+    fun uploadFileToServer(
+        filePath: String?,
+        apiEndpoint: String?,
+        apiCategory: String?,
+        apiAction: String?,
+        userInput: Map<String, Any>? = emptyMap(),
+    ) {
+        if (filePath == null) {
+            Toast.makeText(context, "File path is null", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val fullApiUrl = apiUrl + "chat_audio2text"
+        val fullApiUrl = apiUrl + apiEndpoint
         val apiDataModel = APIDataModel(
-            category = "speech",
-            action = "chat",
-            userInput = emptyMap(),
+            category = apiCategory ?: "",
+            action = apiAction ?: "",
+            userInput = userInput ?: emptyMap(),
             userSettings = ConfigurationManager.getSettingsDict(),
             customerId = 1
         )
 
         val handler = ResponseHandler(
             handlerType = HandlerType.FileUpload(onResponseReceived = { response ->
-                onResponseReceived(response)
+                try {
+                    val jsonResponse = JSONObject(response)
+                    val finalResponse = jsonResponse.getJSONObject("message").getString("result")
+                    onResponseReceived(finalResponse)
+                } catch (e: JSONException) {
+                    Toast.makeText(context, "Error parsing response", Toast.LENGTH_SHORT).show()
+                }
             }),
             onError = { error ->
                 onError(error)
             }
         )
 
-        handler.sendFileRequest(fullApiUrl, apiDataModel, audioFilePath)
+        handler.sendFileRequest(fullApiUrl, apiDataModel, filePath)
     }
+
+
 }
