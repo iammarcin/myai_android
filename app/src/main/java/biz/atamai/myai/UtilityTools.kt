@@ -16,6 +16,7 @@ class UtilityTools(
     // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
     fun uploadFileToServer(
         filePath: String?,
+        apiUrl: String?,
         apiEndpoint: String?,
         apiCategory: String?,
         apiAction: String?,

@@ -171,7 +171,7 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
                 }
             }
         )
-        utilityTools.uploadFileToServer(audioFilePath, "chat_audio2text", "speech", "chat")
+        utilityTools.uploadFileToServer(audioFilePath, activity.apiUrl, "chat_audio2text", "speech", "chat")
     }
 
     private fun addRecordingToFileList(filePath: String?) {

@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
+import com.squareup.picasso.Picasso
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -59,7 +60,7 @@ class ChatAdapter(
                         }
                         scaleType = ImageView.ScaleType.CENTER_CROP
                         adjustViewBounds = true
-                        setImageURI(uri)
+                        Picasso.get().load(uri.toString()).into(this)
                     }
                     binding.imageContainer.addView(imageView)
                 }
@@ -84,9 +85,10 @@ class ChatAdapter(
                 binding.transcribeButton.setOnClickListener {
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
+                    val apiUrl = (binding.root.context as MainActivity).apiUrl
                     val utilityTools = UtilityTools(
                         context = binding.root.context,
-                        apiUrl = (binding.root.context as MainActivity).apiUrl,
+                        apiUrl = apiUrl,
                         onResponseReceived = { response ->
                             (binding.root.context as MainActivity).runOnUiThread {
                                 (binding.root.context as MainActivity).handleTextMessage(response)
@@ -98,7 +100,7 @@ class ChatAdapter(
                             }
                         }
                     )
-                    utilityTools.uploadFileToServer(audioFilePath, "chat_audio2text", "speech", "chat")
+                    utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
                 }
 
             }

@@ -16,6 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import android.database.Cursor
 import android.provider.OpenableColumns
+import android.widget.Toast
+import com.squareup.picasso.Picasso
 import java.io.File
 
 class FileAttachmentHandler(
@@ -83,6 +85,29 @@ class FileAttachmentHandler(
                 tag = uri
             }
             frameLayout.addView(imageView)
+
+            val filePath = getFilePathFromUri(uri)
+            val utilityTools = UtilityTools(
+                context = activity,
+                apiUrl = activity.apiUrl,
+                onResponseReceived = { response ->
+                    activity.runOnUiThread {
+                        println("1111111")
+                        println(response)
+                        imageView.setImageURI(null) // Clear local URI
+                        Picasso.get().load(response).into(imageView)
+                        // Update chat with S3 URL
+                        activity.addMessageToChat("", listOf(Uri.parse(response)), listOf())
+                    }
+                },
+                onError = { error ->
+                    activity.runOnUiThread {
+                        Toast.makeText(activity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+            // upload to S3 - so sending request to nodejs API
+            utilityTools.uploadFileToServer(filePath, activity.apiNodeUrl, "api/sendToS3", "doesNotMatter", "doesNotMatter")
         } else {
             val placeholder = View(activity).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
