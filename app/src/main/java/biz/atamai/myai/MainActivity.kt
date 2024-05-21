@@ -215,7 +215,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleSendButtonClick() {
         val message = binding.editTextMessage.text.toString()
-        val attachedImageUris = mutableListOf<Uri>()
+        val attachedImageLocations = mutableListOf<String>()
         val attachedFilePaths = mutableListOf<Uri>()
 
         for (i in 0 until binding.imagePreviewContainer.childCount) {
@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity() {
             // if it's an image
             if (frameLayout.getChildAt(0) is ImageView) {
                 val imageView = frameLayout.getChildAt(0) as ImageView
-                attachedImageUris.add(imageView.tag as Uri)
+                attachedImageLocations.add(imageView.tag as String)
             } else {
                 // if it's a file
                 val placeholder = frameLayout.getChildAt(0) as View
@@ -231,19 +231,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        handleTextMessage(message, attachedImageUris, attachedFilePaths)
+        handleTextMessage(message, attachedImageLocations, attachedFilePaths)
     }
 
     // utility method to handle sending text requests for normal UI messages and transcriptions
     // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
     // and here in Main - same functionality when Send button is clicked
-    fun handleTextMessage(message: String, attachedImageUris: List<Uri> = listOf(), attachedFiles: List<Uri> = listOf()) {
+    fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()) {
         // Add message to chat
         editingMessagePosition?.let { position ->
-            editMessageInChat(position, message, attachedImageUris, attachedFiles)
+            editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(message, position)
         } ?: run {
-            addMessageToChat(message, attachedImageUris, attachedFiles)
+            addMessageToChat(message, attachedImageLocations, attachedFiles)
             startStreaming(message)
         }
         resetInputArea()
@@ -251,10 +251,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     // once message is edited - update it in chat
-    private fun editMessageInChat(position: Int, message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
+    private fun editMessageInChat(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
         val chatItem = chatItems[position]
         chatItem.message = message
-        chatItem.imageLocations = attachedImageUris
+        chatItem.imageLocations = attachedImageLocations
         chatItem.fileNames = attachedFiles
         chatAdapter.notifyItemChanged(position)
     }
@@ -351,8 +351,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // sending data to chat adapter
-    fun addMessageToChat(message: String, attachedImageUris: List<Uri>, attachedFiles: List<Uri> = listOf()) {
-        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageUris, fileNames = attachedFiles)
+    fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
+        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, fileNames = attachedFiles)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()

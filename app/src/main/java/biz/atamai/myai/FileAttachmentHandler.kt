@@ -86,7 +86,7 @@ class FileAttachmentHandler(
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 adjustViewBounds = true
                 setImageURI(uri)
-                tag = uri
+                //tag = uri // disabling here because we don't wanna work with URIs, but public URLs (because anyway we needed later for openai)
             }
             frameLayout.addView(imageView)
 
@@ -97,6 +97,8 @@ class FileAttachmentHandler(
                 onResponseReceived = { response ->
                     activity.runOnUiThread {
                         imageView.setImageURI(null) // Clear local URI
+                        // set imageview tag as response - so we can use it to remove image from preview
+                        imageView.tag = response
                         Picasso.get().load(response).into(imageView)
                         activity.hideProgressBar()
                     }
