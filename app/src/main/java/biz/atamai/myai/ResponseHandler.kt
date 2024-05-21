@@ -23,7 +23,7 @@ sealed class HandlerType {
         val onResponseReceived: (String) -> Unit
     ) : HandlerType()
 
-    data class AudioUpload(
+    data class FileUpload(
         val onResponseReceived: (String) -> Unit
     ) : HandlerType()
 }
@@ -55,7 +55,7 @@ class ResponseHandler(
                             when (handlerType) {
                                 is HandlerType.Streaming -> handleStreamingResponse(body)
                                 is HandlerType.NonStreaming -> handleNonStreamingResponse(body)
-                                is HandlerType.AudioUpload -> handleAudioUploadResponse(body)
+                                is HandlerType.FileUpload -> handleAudioUploadResponse(body)
                             }
                         } ?: run {
                             coroutineScope.launch(Dispatchers.Main) {
@@ -103,7 +103,7 @@ class ResponseHandler(
     private fun handleAudioUploadResponse(body: ResponseBody) {
         coroutineScope.launch(Dispatchers.Main) {
             val responseText = body.string()
-            (handlerType as HandlerType.AudioUpload).onResponseReceived(responseText)
+            (handlerType as HandlerType.FileUpload).onResponseReceived(responseText)
         }
     }
 
@@ -139,7 +139,7 @@ class ResponseHandler(
                     override fun onResponse(call: Call, response: Response) {
                         response.body?.let { body ->
                             coroutineScope.launch(Dispatchers.Main) {
-                                (handlerType as HandlerType.AudioUpload).onResponseReceived(body.string())
+                                (handlerType as HandlerType.FileUpload).onResponseReceived(body.string())
                             }
                         } ?: run {
                             coroutineScope.launch(Dispatchers.Main) {

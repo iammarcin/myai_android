@@ -28,7 +28,7 @@ class UtilityTools(
         )
 
         val handler = ResponseHandler(
-            handlerType = HandlerType.AudioUpload(onResponseReceived = { response ->
+            handlerType = HandlerType.FileUpload(onResponseReceived = { response ->
                 onResponseReceived(response)
             }),
             onError = { error ->
