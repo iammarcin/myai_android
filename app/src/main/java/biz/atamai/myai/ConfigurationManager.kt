@@ -101,7 +101,7 @@ object ConfigurationManager {
     fun setIsStreamingEnabled(value: Boolean) = setBoolean(TEXT_STREAMING, value)
     fun setUseBluetooth(value: Boolean) = setBoolean(GENERAL_USE_BLUETOOTH, value)
     fun setUseTestData(value: Boolean) = setBoolean(GENERAL_TEST_DATA, value)
-    fun setSpeechLanguage(value: String) = setString(SPEECH_LANGUAGE, value)
+    fun setSpeechLanguage(value: String) = setString(SPEECH_LANGUAGE, value.lowercase())
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
     fun setAudioStability(value: Float) = setFloat(AUDIO_STABILITY, value)
     fun setAudioSimilarity(value: Float) = setFloat(AUDIO_SIMILARITY, value)
