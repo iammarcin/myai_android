@@ -56,7 +56,7 @@ class ChatAdapter(
             if (chatItem.imageLocations.isNotEmpty()) {
                 binding.scrollViewImages.visibility = View.VISIBLE
                 binding.imageContainer.removeAllViews() // Clear old images
-                for (uri in chatItem.imageLocations) {
+                for (url in chatItem.imageLocations) {
                     val imageView = ImageView(binding.root.context).apply {
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -66,7 +66,7 @@ class ChatAdapter(
                         }
                         scaleType = ImageView.ScaleType.CENTER_CROP
                         adjustViewBounds = true
-                        Picasso.get().load(uri.toString()).into(this)
+                        Picasso.get().load(url.toString()).into(this)
                     }
                     binding.imageContainer.addView(imageView)
                 }
