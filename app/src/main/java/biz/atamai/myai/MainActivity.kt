@@ -1,11 +1,13 @@
 package biz.atamai.myai
 
+import android.content.Context
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -104,8 +106,9 @@ class MainActivity : AppCompatActivity() {
         binding.chatContainer.setOnTouchListener { _, _ ->
             // idea is that when edit text has focus - recording button etc disappears
             // so this is to clear the focus if we click somewhere on main screen
-            println("RecyclerView touched")
             binding.editTextMessage.clearFocus()
+            // hide mobile keyboard
+            hideKeyboard(binding.editTextMessage)
             // Call performClick
             // this is necessary! explained in CustomRecyclerView
             binding.chatContainer.performClick()
@@ -118,11 +121,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         // for situation where we start typing in edit text - we want other stuff to disappear
-        binding.editTextMessage.setOnFocusChangeListener { _, hasFocus ->
+        binding.editTextMessage.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 manageBottomEditSection("show")
             } else {
                 manageBottomEditSection("hide")
+                hideKeyboard(view)
             }
         }
 
@@ -210,6 +214,12 @@ class MainActivity : AppCompatActivity() {
                 (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
             }
         }
+    }
+
+    // when dealing with hasFocus etc for edit text - if we lose hasFocus - keyboard remained on the screen
+    private fun hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
 
