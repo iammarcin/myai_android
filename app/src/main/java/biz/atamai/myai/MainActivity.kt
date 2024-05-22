@@ -223,6 +223,10 @@ class MainActivity : AppCompatActivity() {
             // if it's an image
             if (frameLayout.getChildAt(0) is ImageView) {
                 val imageView = frameLayout.getChildAt(0) as ImageView
+                if (imageView.tag == null) {
+                    Toast.makeText(this, "Problems with uploading files. Try again", Toast.LENGTH_SHORT).show()
+                    continue
+                }
                 attachedImageLocations.add(imageView.tag as String)
             } else {
                 // if it's a file
@@ -272,23 +276,35 @@ class MainActivity : AppCompatActivity() {
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
         showProgressBar()
-        println("fdsfdsfsdsfd")
-        println(chatItems)
-        println(chatItems.map { it.message })
+        
         // collect chat history (needed to send it API to get whole context of chat)
-        val chatHistory = chatItems.map {
+        // (excluding the latest message - as this will be sent via userPrompt), including images if any
+        val chatHistory = chatItems.dropLast(1).map {
             if (it.isUserMessage) {
-                mapOf("role" to "user", "content" to it.message)
+                val content = mutableListOf<Map<String, Any>>()
+                content.add(mapOf("type" to "text", "text" to it.message))
+                it.imageLocations.forEach { imageUrl ->
+                    content.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
+                }
+                mapOf("role" to "user", "content" to content)
             } else {
                 mapOf("role" to "assistant", "content" to it.message)
             }
+        }
+
+        // get the last user message and its images (if exists)
+        val lastChatItem = chatItems.last()
+        val userPrompt = mutableListOf<Map<String, Any>>()
+        userPrompt.add(mapOf("type" to "text", "text" to lastChatItem.message))
+        lastChatItem.imageLocations.forEach { imageUrl ->
+            userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
         }
 
         val apiDataModel = APIDataModel(
             category = "text",
             action = "chat",
             userInput = mapOf(
-                "prompt" to userInput,
+                "prompt" to userPrompt,
                 "chat_history" to chatHistory
             ),
             userSettings = ConfigurationManager.getSettingsDict(),
