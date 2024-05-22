@@ -307,10 +307,12 @@ class MainActivity : AppCompatActivity() {
     fun disableActiveButtons() {
         binding.btnSend.isEnabled = false
         binding.btnRecord.isEnabled = false
+        binding.newChatButton.isEnabled = false
     }
     fun enableActiveButtons() {
         binding.btnSend.isEnabled = true
         binding.btnRecord.isEnabled = true
+        binding.newChatButton.isEnabled = true
     }
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
