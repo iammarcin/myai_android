@@ -10,6 +10,8 @@ import okio.Buffer
 import java.io.File
 import java.io.IOException
 import okhttp3.MultipartBody
+import java.net.SocketTimeoutException
+import java.util.concurrent.TimeUnit
 
 // sealed class because same class ResponseHandler is used for both streaming and non-streaming responses
 // so we need to differentiate between the two types
@@ -32,8 +34,13 @@ class ResponseHandler(
     private val handlerType: HandlerType,
     private val onError: (Exception) -> Unit
 ) {
+    private val timeoutInSecs = 60L
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(timeoutInSecs, TimeUnit.SECONDS)
+        .readTimeout(timeoutInSecs, TimeUnit.SECONDS)
+        .writeTimeout(timeoutInSecs, TimeUnit.SECONDS)
+        .build()
     private val gson = GsonBuilder().create()
 
     fun sendRequest(url: String, apiDataModel: APIDataModel) {
@@ -46,7 +53,11 @@ class ResponseHandler(
                     override fun onFailure(call: Call, e: IOException) {
                         e.printStackTrace()
                         coroutineScope.launch(Dispatchers.Main) {
-                            onError(Exception("Network error: ${e.message}"))
+                            if (e is SocketTimeoutException) {
+                                onError(Exception("Request timed out: ${e.message}"))
+                            } else {
+                                onError(Exception("Network error: ${e.message}"))
+                            }
                         }
                     }
 
@@ -132,7 +143,11 @@ class ResponseHandler(
                     override fun onFailure(call: Call, e: IOException) {
                         e.printStackTrace()
                         coroutineScope.launch(Dispatchers.Main) {
-                            onError(Exception("Network error: ${e.message}"))
+                            if (e is SocketTimeoutException) {
+                                onError(Exception("Request timed out: ${e.message}"))
+                            } else {
+                                onError(Exception("Network error: ${e.message}"))
+                            }
                         }
                     }
 
