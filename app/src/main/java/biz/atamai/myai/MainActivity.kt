@@ -276,7 +276,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
         showProgressBar()
-        
+
         // collect chat history (needed to send it API to get whole context of chat)
         // (excluding the latest message - as this will be sent via userPrompt), including images if any
         val chatHistory = chatItems.dropLast(1).map {
