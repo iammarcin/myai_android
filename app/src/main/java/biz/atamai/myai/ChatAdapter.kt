@@ -32,6 +32,7 @@ class ChatAdapter(
     inner class ChatViewHolder(private val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
+            // long press listener - on messages to show popup menu
             binding.root.setOnLongClickListener { view ->
                 showPopupMenu(view, adapterPosition)
                 true // Return true to indicate the callback consumed the long click
