@@ -7,6 +7,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/mainLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/background_primary"
@@ -73,7 +74,7 @@
             </HorizontalScrollView>
 
 
-            <androidx.recyclerview.widget.RecyclerView
+            <biz.atamai.myai.CustomRecyclerView
                 android:id="@+id/chatContainer"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

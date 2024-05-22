@@ -100,6 +100,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        // this is listener for main chat container (taking most part of the screen)
+        binding.chatContainer.setOnTouchListener { _, _ ->
+            // idea is that when edit text has focus - recording button etc disappears
+            // so this is to clear the focus if we click somewhere on main screen
+            println("RecyclerView touched")
+            binding.editTextMessage.clearFocus()
+            // Call performClick
+            // this is necessary! explained in CustomRecyclerView
+            binding.chatContainer.performClick()
+            false
+        }
+
         // attach button
         binding.btnAttach.setOnClickListener {
             fileAttachmentHandler.openFileChooser()
