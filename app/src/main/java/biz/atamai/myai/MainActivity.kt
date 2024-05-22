@@ -340,7 +340,7 @@ class MainActivity : AppCompatActivity() {
         lastChatItem.imageLocations.forEach { imageUrl ->
             userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
         }
-        
+
         val apiDataModel = APIDataModel(
             category = "text",
             action = "chat",
