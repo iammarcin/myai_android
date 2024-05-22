@@ -15,12 +15,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import com.squareup.picasso.Picasso
+import io.noties.markwon.Markwon
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val onEditMessage: (position: Int, message: String) -> Unit
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
+    private lateinit var markwon: Markwon
 
     fun releaseMediaPlayers() {
         for (audioPlayerManager in audioPlayerManagers) {
@@ -32,6 +34,8 @@ class ChatAdapter(
     inner class ChatViewHolder(private val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
+            // Initialize Markwon
+            markwon = Markwon.create(binding.root.context)
             // long press listener - on messages to show popup menu
             binding.root.setOnLongClickListener { view ->
                 showPopupMenu(view, adapterPosition)
@@ -40,7 +44,8 @@ class ChatAdapter(
         }
 
         fun bind(chatItem: ChatItem) {
-            binding.messageTextView.text = chatItem.message
+            // Render message using Markwon
+            markwon.setMarkdown(binding.messageTextView, chatItem.message)
 
             binding.avatarImageView.setImageResource(
                 if (chatItem.isUserMessage) R.drawable.user_avatar_placeholder

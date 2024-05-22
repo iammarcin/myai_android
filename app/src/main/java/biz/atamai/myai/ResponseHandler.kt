@@ -90,8 +90,7 @@ class ResponseHandler(
                 while (true) {
                     val read = source.read(buffer, 1024)
                     if (read == -1L) break
-                    var chunk = buffer.clone().readString(Charsets.UTF_8)
-                    chunk = cleanChunk(chunk)
+                    val chunk = buffer.clone().readString(Charsets.UTF_8)
                     coroutineScope.launch(Dispatchers.Main) {
                         (handlerType as HandlerType.Streaming).onChunkReceived(chunk)
                     }
@@ -179,13 +178,5 @@ class ResponseHandler(
 
     fun cancelRequest() {
         coroutineScope.cancel()
-    }
-
-    private fun cleanChunk(chunk: String): String {
-        // Remove the "data: " prefix and trim newlines
-        //return chunk.replace("data: ", " ").replace("\n", "").trim()
-        // it looks like /n/n is standard format, and with additonal 3rd \n - we want to keep it - because AI wants new line
-        // also there are 2 spaces always - so we will trim 1 (but we cannot use trim() - as it will trim all spaces)
-        return chunk.replace("data: ", " ").replace("\n\n", "").replaceFirst("^\\s".toRegex(), "")
     }
 }
