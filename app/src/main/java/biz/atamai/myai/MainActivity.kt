@@ -341,6 +341,11 @@ class MainActivity : AppCompatActivity() {
             userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
         }
 
+        println("11111")
+        println(chatItems)
+        println("22222")
+        println(chatHistory)
+
         val apiDataModel = APIDataModel(
             category = "text",
             action = "chat",
