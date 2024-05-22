@@ -16,7 +16,7 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     private lateinit var fileAttachmentHandler: FileAttachmentHandler
     private lateinit var cameraHandler: CameraHandler
@@ -299,6 +299,10 @@ class MainActivity : AppCompatActivity() {
         lastChatItem.imageLocations.forEach { imageUrl ->
             userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
         }
+
+        println("1111")
+        println(chatHistory)
+        print(userPrompt)
 
         val apiDataModel = APIDataModel(
             category = "text",

@@ -15,6 +15,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -157,12 +160,33 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
     }
 
     private fun sendAudioFileToBackend(audioFilePath: String?) {
+        // collect attachments (images , etc) - so when recording is done and file is attached
+        // it is taken into account when sending the message
+        val attachedImageLocations = mutableListOf<String>()
+        val attachedFilePaths = mutableListOf<Uri>()
+
+        for (i in 0 until activity.binding.imagePreviewContainer.childCount) {
+            val frameLayout = activity.binding.imagePreviewContainer.getChildAt(i) as FrameLayout
+            // if it's an image
+            if (frameLayout.getChildAt(0) is ImageView) {
+                val imageView = frameLayout.getChildAt(0) as ImageView
+                if (imageView.tag == null) {
+                    Toast.makeText(activity, "Problems with uploading files. Try again", Toast.LENGTH_SHORT).show()
+                    continue
+                }
+                attachedImageLocations.add(imageView.tag as String)
+            } else {
+                // if it's a file
+                val placeholder = frameLayout.getChildAt(0) as View
+                attachedFilePaths.add(placeholder.tag as Uri)
+            }
+        }
+
         val utilityTools = UtilityTools(
             context = activity,
-            apiUrl = activity.apiUrl,
             onResponseReceived = { response ->
                 activity.runOnUiThread {
-                    activity.handleTextMessage(response)
+                    activity.handleTextMessage(response, attachedImageLocations, attachedFilePaths)
                 }
             },
             onError = { error ->

@@ -93,7 +93,6 @@ class FileAttachmentHandler(
             val filePath = getFilePathFromUri(uri)
             val utilityTools = UtilityTools(
                 context = activity,
-                apiUrl = activity.apiUrl,
                 onResponseReceived = { response ->
                     activity.runOnUiThread {
                         imageView.setImageURI(null) // Clear local URI

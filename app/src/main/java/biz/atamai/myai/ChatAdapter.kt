@@ -88,7 +88,6 @@ class ChatAdapter(
                     val apiUrl = (binding.root.context as MainActivity).apiUrl
                     val utilityTools = UtilityTools(
                         context = binding.root.context,
-                        apiUrl = apiUrl,
                         onResponseReceived = { response ->
                             (binding.root.context as MainActivity).runOnUiThread {
                                 (binding.root.context as MainActivity).handleTextMessage(response)

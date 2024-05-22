@@ -8,7 +8,6 @@ import org.json.JSONObject
 // Common place for common tools?!
 class UtilityTools(
     private val context: Context,
-    private val apiUrl: String,
     private val onResponseReceived: (String) -> Unit,
     private val onError: (Exception) -> Unit
 ) {
