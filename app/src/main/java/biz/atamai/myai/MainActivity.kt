@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
 
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
+
     }
 
     private fun setupChatAdapter() {
@@ -236,6 +237,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleSendButtonClick() {
+        println("TRIGGERED!!!!")
         val message = binding.editTextMessage.text.toString()
         val attachedImageLocations = mutableListOf<String>()
         val attachedFilePaths = mutableListOf<Uri>()
@@ -264,6 +266,9 @@ class MainActivity : AppCompatActivity() {
     // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
     // and here in Main - same functionality when Send button is clicked
     fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()) {
+        if (message.isEmpty()) {
+            return
+        }
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)
@@ -294,6 +299,18 @@ class MainActivity : AppCompatActivity() {
 
         // show characters again
         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
+    }
+
+    // helper functions - to disable important (send and record buttons) while some activity takes place
+    // for sure used when file is uploaded in FileAttachmentHandler
+    // - because we want to be sure that file is uploaded to S3 before user can send request
+    fun disableActiveButtons() {
+        binding.btnSend.isEnabled = false
+        binding.btnRecord.isEnabled = false
+    }
+    fun enableActiveButtons() {
+        binding.btnSend.isEnabled = true
+        binding.btnRecord.isEnabled = true
     }
 
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
@@ -431,7 +448,7 @@ class MainActivity : AppCompatActivity() {
         cameraHandler.setupTakePictureLauncher(
             onSuccess = { uri ->
                 uri?.let {
-                    fileAttachmentHandler.addFilePreview(uri)
+                    fileAttachmentHandler.addFilePreview(uri, true)
                 }
             },
             onFailure = {

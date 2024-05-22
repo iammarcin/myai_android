@@ -26,6 +26,11 @@ class FileAttachmentHandler(
     private val imagePreviewContainer: LinearLayout,
     private val scrollViewPreview: HorizontalScrollView,
 ) {
+    // this will be used in case where multiple files are being attached / uploaded
+    // it caused some troubles - like disabling progress bar or enabling send button too soon
+    // (after first successful upload)
+    // so we introduce this counter
+    private var uploadCounter = 0
     private val fileChooserLauncher: ActivityResultLauncher<Intent> = activity.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
@@ -47,19 +52,21 @@ class FileAttachmentHandler(
             if (clipData != null) {
                 for (i in 0 until clipData.itemCount) {
                     val uri = clipData.getItemAt(i).uri
-                    addFilePreview(uri)
+                    addFilePreview(uri, true)
                 }
             } else {
                 result.data?.data?.let { uri ->
-                    addFilePreview(uri)
+                    addFilePreview(uri, true)
                 }
             }
         }
     }
 
     // those functions are here as file preview (at the bottom when attaching files, but before sending them)
-    fun addFilePreview(uri: Uri) {
-        activity.showProgressBar()
+    fun addFilePreview(uri: Uri, incrementCounter: Boolean = false) {
+        if (incrementCounter) {
+            incrementUploadCounter()
+        }
         val mimeType = activity.contentResolver.getType(uri)
         val frameLayout = FrameLayout(activity).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80.toPx()).apply {
@@ -73,12 +80,11 @@ class FileAttachmentHandler(
             if (filePath != null) {
                 val fileUri = Uri.fromFile(File(filePath))
                 activity.addMessageToChat("", listOf(), listOf(fileUri))
-                activity.hideProgressBar()
                 return
             }
             // maybe one day we can handle potential error here
             println("ERROR: Could not get file path from URI")
-            activity.hideProgressBar()
+            decrementUploadCounter()
             return
         } else if (mimeType?.startsWith("image/") == true) {
             val imageView = ImageView(activity).apply {
@@ -99,12 +105,12 @@ class FileAttachmentHandler(
                         // set imageview tag as response - so we can use it to remove image from preview
                         imageView.tag = response
                         Picasso.get().load(response).into(imageView)
-                        activity.hideProgressBar()
+                        decrementUploadCounter()
                     }
                 },
                 onError = { error ->
                     activity.runOnUiThread {
-                        activity.hideProgressBar()
+                        decrementUploadCounter()
                         Toast.makeText(activity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -125,6 +131,7 @@ class FileAttachmentHandler(
                 tag = uri
             }
             frameLayout.addView(placeholder)
+            decrementUploadCounter()
         }
 
         val removeButton = ImageButton(activity).apply {
@@ -144,7 +151,6 @@ class FileAttachmentHandler(
         frameLayout.addView(removeButton)
         imagePreviewContainer.addView(frameLayout)
         scrollViewPreview.visibility = View.VISIBLE
-        activity.hideProgressBar()
     }
 
     // there was problem with getting file path from URI (when i wanted to transcribe audio file) - so we need to save it to cache and get path from there
@@ -163,6 +169,21 @@ class FileAttachmentHandler(
             }
         }
         return filePath
+    }
+
+    // helper function to handle uploadCounter -- explained above
+    private fun incrementUploadCounter() {
+        uploadCounter++
+        activity.disableActiveButtons()
+        activity.showProgressBar()
+
+    }
+    private fun decrementUploadCounter() {
+        uploadCounter--
+        if (uploadCounter <= 0) {
+            activity.enableActiveButtons()
+            activity.hideProgressBar()
+        }
     }
 
     private fun Int.toPx(): Int = (this * activity.resources.displayMetrics.density).toInt()
