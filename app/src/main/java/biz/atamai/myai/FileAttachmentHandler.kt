@@ -117,7 +117,7 @@ class FileAttachmentHandler(
                 }
             )
             // upload to S3 - so sending request to nodejs API
-            utilityTools.uploadFileToServer(filePath, activity.apiUrl, "api/sendToS3", "provider.s3", "s3_upload")
+            utilityTools.uploadFileToServer(filePath, activity.apiUrl, "api/aws", "provider.s3", "s3_upload")
         } else {
             val placeholder = View(activity).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
