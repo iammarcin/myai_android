@@ -39,8 +39,7 @@ class UtilityTools(
             handlerType = HandlerType.FileUpload(onResponseReceived = { response ->
                 try {
                     val jsonResponse = JSONObject(response)
-                    println("TOOTTOTOOTOTOTOTOT")
-                    println(jsonResponse)
+                    // TODO - i think if something's wrong with backend - this error here is not shown properly
                     val finalResponse = jsonResponse.getJSONObject("message").getString("result")
                     onResponseReceived(finalResponse)
                 } catch (e: JSONException) {
