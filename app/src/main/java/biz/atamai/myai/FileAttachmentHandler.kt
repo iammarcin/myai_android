@@ -16,7 +16,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import android.database.Cursor
 import android.provider.OpenableColumns
-import android.widget.ProgressBar
 import android.widget.Toast
 import com.squareup.picasso.Picasso
 import java.io.File
@@ -91,9 +90,11 @@ class FileAttachmentHandler(
                 layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT)
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 adjustViewBounds = true
-                setImageURI(uri)
+                //setImageURI(uri) - disabling here (temp?) because when s3 upload fails later it will be seen as image upload is OK (but its only local uri)
                 //tag = uri // disabling here because we don't wanna work with URIs, but public URLs (because anyway we needed later for openai)
             }
+
+            imageView.setImageResource(R.drawable.image_temp_before_s3_upload)
             frameLayout.addView(imageView)
 
             val filePath = getFilePathFromUri(uri)
@@ -116,7 +117,7 @@ class FileAttachmentHandler(
                 }
             )
             // upload to S3 - so sending request to nodejs API
-            utilityTools.uploadFileToServer(filePath, activity.apiNodeUrl, "api/sendToS3", "doesNotMatter", "doesNotMatter")
+            utilityTools.uploadFileToServer(filePath, activity.apiUrl, "api/sendToS3", "provider.s3", "s3_upload")
         } else {
             val placeholder = View(activity).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {

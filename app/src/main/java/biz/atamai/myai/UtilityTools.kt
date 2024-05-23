@@ -39,10 +39,14 @@ class UtilityTools(
             handlerType = HandlerType.FileUpload(onResponseReceived = { response ->
                 try {
                     val jsonResponse = JSONObject(response)
+                    println("TOOTTOTOOTOTOTOTOT")
+                    println(jsonResponse)
                     val finalResponse = jsonResponse.getJSONObject("message").getString("result")
                     onResponseReceived(finalResponse)
                 } catch (e: JSONException) {
                     Toast.makeText(context, "Error parsing response", Toast.LENGTH_SHORT).show()
+                    // raise error
+                    onError(e)
                 }
             }),
             onError = { error ->

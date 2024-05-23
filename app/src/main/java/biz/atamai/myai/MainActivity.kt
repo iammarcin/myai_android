@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
 
     // api URLs
     lateinit var apiUrl: String
-    lateinit var apiNodeUrl: String
 
     // needed for chat items placement - if its null - chat hasn't been started, if it has value - this is latest msg
     private var currentResponseItemPosition: Int? = null
@@ -77,11 +76,6 @@ class MainActivity : AppCompatActivity() {
             "https://fancydomain.com:8000/"
         } else {
             "http://192.168.23.66:8000/"
-        }
-        apiNodeUrl = if (ConfigurationManager.getAppMode()) {
-            "https://fancydomain.com:3000/"
-        } else {
-            "http://192.168.23.66:3000/"
         }
 
         // set status bar color (above app -where clock is)
