@@ -75,7 +75,8 @@ class MainActivity : AppCompatActivity() {
         apiUrl = if (ConfigurationManager.getAppMode()) {
             "https://fancydomain.com:8000/"
         } else {
-            "http://192.168.23.66:8000/"
+            //"http://192.168.23.66:8000/"
+            "http://192.168.1.19:8000/"
         }
 
         // set status bar color (above app -where clock is)
@@ -173,6 +174,7 @@ class MainActivity : AppCompatActivity() {
         // Set up new chat button
         binding.newChatButton.setOnClickListener {
             resetChat()
+            sendDBRequest("db_new_session")
         }
     }
 
@@ -309,6 +311,40 @@ class MainActivity : AppCompatActivity() {
         binding.newChatButton.isEnabled = true
     }
 
+
+    // DB REQUESTS
+    private fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf()) {
+        val apiDataModel = APIDataModel(
+            category = "provider.db",
+            action = action,
+            userInput = userInput,
+            userSettings = ConfigurationManager.getSettingsDict(),
+            customerId = 1,
+        )
+
+        val dbUrl = apiUrl + "api/db"
+
+        val handler = ResponseHandler(
+            handlerType = HandlerType.NonStreaming(
+                onResponseReceived = { response ->
+                    runOnUiThread {
+                        Toast.makeText(this, "Success: $response", Toast.LENGTH_LONG).show()
+                        println("DB RESPONSE: $response")
+                    }
+                }
+            ),
+            onError = { error ->
+                runOnUiThread {
+                    Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        )
+
+        handler.sendRequest(dbUrl, apiDataModel)
+    }
+
+
+    // streaming request to API - text
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
         showProgressBar()
 
