@@ -417,6 +417,7 @@ class MainActivity : AppCompatActivity() {
             val session = APIChatSession(
                 sessionId = sessionObject.getString("session_id"),
                 sessionName = sessionObject.getString("session_name") ?: "New chat",
+                aiCharacterName = sessionObject.getString("ai_character_name") ?: "Assistant",
                 createdAt = sessionObject.getString("created_at") ?: "",
                 lastUpdate = sessionObject.getString("last_update") ?: ""
             )
@@ -432,8 +433,13 @@ class MainActivity : AppCompatActivity() {
         drawerLayout.removeAllViews()
 
         sessions.forEach { session ->
+            println("SESSION: $session")
             val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(layoutInflater, drawerLayout, false)
             sessionViewBinding.sessionName.text = session.sessionName
+            val aiCharacter = session.aiCharacterName
+            // having name of character, lets search its image through CharacterManager
+            val character = characterManager.characters.find { it.nameForAPI == aiCharacter }
+            sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
             sessionViewBinding.root.setOnClickListener {
                 // Handle session click here
                 // e.g., load session messages

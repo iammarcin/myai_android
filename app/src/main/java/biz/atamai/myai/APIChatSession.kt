@@ -4,6 +4,7 @@ package biz.atamai.myai
 data class APIChatSession(
     val sessionId: String,
     val sessionName: String = "",
+    val aiCharacterName: String = "Assistant",
     val createdAt: String = "",
     val lastUpdate: String = "",
 )
