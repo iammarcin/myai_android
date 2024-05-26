@@ -13,9 +13,11 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.TopLeftMenuChatSessionItemBinding
 import kotlinx.coroutines.*
+import org.json.JSONArray
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
@@ -394,6 +396,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // handling response from DB (through API)
     private fun handleDBResponse(action: String, response: String) {
         println("DB RESPONSE: $response")
         when (action) {
@@ -406,12 +409,13 @@ class MainActivity : AppCompatActivity() {
             }
             "db_get_user_session" -> {
                 val sessionData = JSONObject(response).getJSONObject("message").getJSONObject("result")
-                println("Session data: $sessionData")
-                //displaySessionData(sessionData)
+                restoreSessionData(sessionData)
             }
         }
     }
 
+    // upon receving data from DB - we parse session data to later display them
+    // for the moment used in top left menu
     private fun parseSessions(response: String): List<APIChatSession> {
         val jsonObject = JSONObject(response)
         val resultArray = jsonObject.getJSONObject("message").getJSONArray("result")
@@ -431,6 +435,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    // after parsing data from DB - we display it in left top menu
     private fun displayChatSessions(sessions: List<APIChatSession>) {
         val drawerLayout = binding.topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
 
@@ -449,16 +454,49 @@ class MainActivity : AppCompatActivity() {
             sessionViewBinding.root.setOnClickListener {
                 println("Session ID: ${session.sessionId}")
                 // get data for this specific session
-                fetchSessionData(session.sessionId)
+                CoroutineScope(Dispatchers.Main).launch {
+                    sendDBRequest("db_get_user_session", mapOf("session_id" to session.sessionId))
+                }
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
             drawerLayout.addView(sessionViewBinding.root)
         }
     }
 
-    private fun fetchSessionData(sessionId: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            sendDBRequest("db_get_user_session", mapOf("session_id" to sessionId))
+    // once we have all the data regarding session - we restore it in chat
+    private fun restoreSessionData(sessionData: JSONObject) {
+
+        println("RESTORE SESSION DATA: $sessionData")
+        val chatHistoryString = sessionData.getString("chat_history")
+        val chatHistory = JSONArray(chatHistoryString)
+
+        println("CHAT HISTORY: $chatHistory")
+
+        resetChat()
+
+        for (i in 0 until chatHistory.length()) {
+            val chatItemJson = chatHistory.getJSONObject(i)
+            val chatItem = ChatItem(
+                message = chatItemJson.getString("message"),
+                isUserMessage = chatItemJson.getBoolean("isUserMessage"),
+                imageLocations = chatItemJson.getJSONArray("imageLocations").let { jsonArray ->
+                    List(jsonArray.length()) { index -> jsonArray.getString(index) }
+                },
+                fileNames = chatItemJson.getJSONArray("fileNames").let { jsonArray ->
+                    List(jsonArray.length()) { index -> Uri.parse(jsonArray.getString(index)) }
+                },
+                aiCharacterName = chatItemJson.optString("aiCharacterName", ""),
+                aiCharacterImageResId = chatItemJson.optInt("aiCharacterImageResId", R.drawable.brainstorm_assistant)
+            )
+            chatItems.add(chatItem)
         }
+
+        ConfigurationManager.setDBCurrentSessionId(sessionData.getString("session_id"))
+        binding.characterHorizontalMainScrollView.visibility = View.GONE
+
+        chatAdapter.notifyItemRangeInserted(0, chatItems.size)
+
+        scrollToEnd()
     }
 
     // streaming request to API - text
