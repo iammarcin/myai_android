@@ -289,7 +289,6 @@ class MainActivity : AppCompatActivity() {
         if (chatItems.isEmpty())
             sendDBRequest("db_new_session")
 
-        println("TEST 1")
         sendDBRequest("db_new_message",
             mapOf("customer_id" to 1,
                 "session_id" to ConfigurationManager.getDBCurrentSessionId(),
@@ -299,7 +298,7 @@ class MainActivity : AppCompatActivity() {
                 "file_locations" to attachedFiles,
                 "chat_history" to chatItems
             ))
-        println("TEST 2")
+
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)
