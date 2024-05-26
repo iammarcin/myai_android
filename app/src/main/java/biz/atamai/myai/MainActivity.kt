@@ -189,6 +189,10 @@ class MainActivity : AppCompatActivity() {
                 //                    "chat_history" to chatItems
                 //
                 //                ))
+            // "db_search_messages",
+            //                mapOf("customer_id" to 1,
+            //                    "search_text" to "morning",
+            //                ))
         }
     }
 
