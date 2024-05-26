@@ -175,6 +175,19 @@ class MainActivity : AppCompatActivity() {
         binding.newChatButton.setOnClickListener {
             resetChat()
             sendDBRequest("db_new_session")
+            // TESTED
+            //"db_new_session")
+            //"db_all_sessions_for_user")
+            // "db_user_session", mapOf("user_id" to 1, "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f"))
+            // "db_new_message",
+                //                mapOf("user_id" to 1,
+                //                    "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f",
+                //                    "sender" to "AI",
+                //                    "message" to "New chat started",
+                //                    "image_locations" to listOf("https://via.placeholder.com/150"),
+                //                    "chat_history" to chatItems
+                //
+                //                ))
         }
     }
 
@@ -265,6 +278,16 @@ class MainActivity : AppCompatActivity() {
         if (message.isEmpty()) {
             return
         }
+
+        sendDBRequest("db_new_message",
+            mapOf("customer_id" to 1,
+                "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                "sender" to "User",
+                "message" to message,
+                "image_locations" to attachedImageLocations,
+                "file_locations" to attachedFiles,
+                "chat_history" to chatItems
+            ))
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)
@@ -328,8 +351,10 @@ class MainActivity : AppCompatActivity() {
             handlerType = HandlerType.NonStreaming(
                 onResponseReceived = { response ->
                     runOnUiThread {
-                        Toast.makeText(this, "Success: $response", Toast.LENGTH_LONG).show()
                         println("DB RESPONSE: $response")
+                        if (action == "db_new_session") {
+                            ConfigurationManager.setDBCurrentSessionId(JSONObject(response).getJSONObject("message").getString("result"))
+                        }
                     }
                 }
             ),
@@ -424,6 +449,19 @@ class MainActivity : AppCompatActivity() {
                 onStreamEnd = {
                     runOnUiThread {
                         hideProgressBar()
+                        // save to DB
+                        //(chatItems[currentResponseItemPosition!!])
+                        val currentMessage = chatItems[currentResponseItemPosition!!]
+
+                        sendDBRequest("db_new_message",
+                            mapOf("customer_id" to 1,
+                                "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                                "sender" to "AI",
+                                "message" to currentMessage.message,
+                                "image_locations" to currentMessage.imageLocations,
+                                "file_locations" to currentMessage.fileNames,
+                                "chat_history" to chatItems
+                            ))
                     }
                 }
             ),

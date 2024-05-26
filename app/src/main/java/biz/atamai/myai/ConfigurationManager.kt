@@ -17,6 +17,7 @@ object ConfigurationManager {
     private const val SPEECH_TEMPERATURE = "speech_temperature"
     private const val AUDIO_STABILITY = "audio_stability"
     private const val AUDIO_SIMILARITY = "audio_similarity"
+    private const val DB_CURRENT_SESSION_ID = "db_current_session_id"
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -37,7 +38,8 @@ object ConfigurationManager {
         SPEECH_LANGUAGE to "en",
         SPEECH_TEMPERATURE to 0.0f,
         AUDIO_STABILITY to 0.0f,
-        AUDIO_SIMILARITY to 0.0f
+        AUDIO_SIMILARITY to 0.0f,
+        DB_CURRENT_SESSION_ID to "",
 
         // Add other default values
     )
@@ -91,6 +93,7 @@ object ConfigurationManager {
     fun getSpeechTemperature() = getFloat(SPEECH_TEMPERATURE, defaultSettings[SPEECH_TEMPERATURE] as Float)
     fun getAudioStability() = getFloat(AUDIO_STABILITY, defaultSettings[AUDIO_STABILITY] as Float)
     fun getAudioSimilarity() = getFloat(AUDIO_SIMILARITY, defaultSettings[AUDIO_SIMILARITY] as Float)
+    fun getDBCurrentSessionId() = getString(DB_CURRENT_SESSION_ID, defaultSettings[DB_CURRENT_SESSION_ID] as String)
 
     // setter methods
     fun setAppMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
@@ -105,6 +108,7 @@ object ConfigurationManager {
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
     fun setAudioStability(value: Float) = setFloat(AUDIO_STABILITY, value)
     fun setAudioSimilarity(value: Float) = setFloat(AUDIO_SIMILARITY, value)
+    fun setDBCurrentSessionId(value: String) = setString(DB_CURRENT_SESSION_ID, value)
 
     // used for API calls - to prepare dict with all settings
     fun getSettingsDict(): Map<String, Map<String, Any>> {
