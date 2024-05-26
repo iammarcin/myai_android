@@ -17,14 +17,23 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 
-class TopMenuHandler(private val context: Context, private val inflater: LayoutInflater) {
+class TopMenuHandler(
+    private val context: Context,
+    private val inflater: LayoutInflater,
+    private val onFetchChatSessions: () -> Unit, // function to fetch chat sessions (when menu appears)
+    private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
+) {
 
     private var textModelName: String = ConfigurationManager.getTextModelName()
-    private var currentSelectedButton: TextView? = null // Add a reference to the current selected button
+    // in menu options dialog there are buttons like AUDIO, GENERAL, etc - so this is about this button (later it will be bold)
+    private var currentSelectedButton: TextView? = null
 
     fun setupTopMenus(binding: ActivityMainBinding) {
         binding.menuLeft.setOnClickListener {
+            onFetchChatSessions()
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
 
@@ -32,13 +41,23 @@ class TopMenuHandler(private val context: Context, private val inflater: LayoutI
             showTopRightPopupWindow(view)
         }
 
-        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+        binding.topLeftMenuNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 // Define your menu item actions here
             }
             true
         }
 
+        val topLeftMenuSearchEditText = binding.topLeftMenuNavigationView.findViewById<EditText>(R.id.topLeftMenuSearchEditText)
+        topLeftMenuSearchEditText.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_NULL && event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
+                val query = topLeftMenuSearchEditText.text.toString()
+                onSearchMessages(query)
+                true
+            } else {
+                false
+            }
+        }
 
     }
 

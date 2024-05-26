@@ -14,6 +14,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
+import biz.atamai.myai.databinding.TopLeftMenuChatSessionItemBinding
+import kotlinx.coroutines.*
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
@@ -62,7 +64,21 @@ class MainActivity : AppCompatActivity() {
         setupPermissions()
 
         // Initialize TopMenuHandler
-        val topMenuHandler = TopMenuHandler(this, layoutInflater)
+        val topMenuHandler = TopMenuHandler(
+            this,
+            layoutInflater,
+            // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
+            onFetchChatSessions = {
+                CoroutineScope(Dispatchers.Main).launch {
+                    sendDBRequest("db_all_sessions_for_user")
+                }
+            },
+            onSearchMessages = { query ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    sendDBRequest("db_search_messages", mapOf("search_text" to query))
+                }
+            }
+        )
         topMenuHandler.setupTopMenus(binding)
 
         characterManager = CharacterManager(this)
@@ -174,7 +190,7 @@ class MainActivity : AppCompatActivity() {
         // Set up new chat button
         binding.newChatButton.setOnClickListener {
             resetChat()
-            sendDBRequest("db_new_session")
+            //sendDBRequest("db_new_session")
 
             // TESTED
             //"db_new_session")
@@ -251,7 +267,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleSendButtonClick() {
-        println("TRIGGERED!!!!")
         val message = binding.editTextMessage.text.toString()
         val attachedImageLocations = mutableListOf<String>()
         val attachedFilePaths = mutableListOf<Uri>()
@@ -286,11 +301,12 @@ class MainActivity : AppCompatActivity() {
 
         // if chatItems is empty
         // create new session on DB - because this is new chat (without any messages)
+        /*
         if (chatItems.isEmpty())
             sendDBRequest("db_new_session")
 
         sendDBRequest("db_new_message",
-            mapOf("customer_id" to 1,
+            mapOf(
                 "session_id" to ConfigurationManager.getDBCurrentSessionId(),
                 "sender" to "User",
                 "message" to message,
@@ -298,7 +314,7 @@ class MainActivity : AppCompatActivity() {
                 "file_locations" to attachedFiles,
                 "chat_history" to chatItems
             ))
-
+        */
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)
@@ -347,38 +363,83 @@ class MainActivity : AppCompatActivity() {
 
 
     // DB REQUESTS
-    private fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf()) {
-        val apiDataModel = APIDataModel(
-            category = "provider.db",
-            action = action,
-            userInput = userInput,
-            userSettings = ConfigurationManager.getSettingsDict(),
-            customerId = 1,
-        )
+    private suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf()) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val apiDataModel = APIDataModel(
+                category = "provider.db",
+                action = action,
+                userInput = userInput,
+                userSettings = ConfigurationManager.getSettingsDict(),
+                customerId = 1,
+            )
 
-        val dbUrl = apiUrl + "api/db"
+            val dbUrl = apiUrl + "api/db"
 
-        val handler = ResponseHandler(
-            handlerType = HandlerType.NonStreaming(
-                onResponseReceived = { response ->
-                    runOnUiThread {
-                        println("DB RESPONSE: $response")
-                        if (action == "db_new_session") {
-                            ConfigurationManager.setDBCurrentSessionId(JSONObject(response).getJSONObject("message").getString("result"))
+            val handler = ResponseHandler(
+                handlerType = HandlerType.NonStreaming(
+                    onResponseReceived = { response ->
+                        CoroutineScope(Dispatchers.Main).launch {
+                            handleDBResponse(action, response)
                         }
                     }
+                ),
+                onError = { error ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Toast.makeText(this@MainActivity, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+                    }
                 }
-            ),
-            onError = { error ->
-                runOnUiThread {
-                    Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        )
+            )
 
-        handler.sendRequest(dbUrl, apiDataModel)
+            handler.sendRequest(dbUrl, apiDataModel)
+        }
     }
 
+    private fun handleDBResponse(action: String, response: String) {
+        println("DB RESPONSE: $response")
+        when (action) {
+            "db_new_session" -> {
+                ConfigurationManager.setDBCurrentSessionId(JSONObject(response).getJSONObject("message").getString("result"))
+            }
+            "db_all_sessions_for_user", "db_search_messages" -> {
+                val sessions = parseSessions(response)
+                displayChatSessions(sessions)
+            }
+        }
+    }
+
+    private fun parseSessions(response: String): List<APIChatSession> {
+        val jsonObject = JSONObject(response)
+        val resultArray = jsonObject.getJSONObject("message").getJSONArray("result")
+        val sessions = mutableListOf<APIChatSession>()
+        for (i in 0 until resultArray.length()) {
+            val sessionObject = resultArray.getJSONObject(i)
+            val session = APIChatSession(
+                sessionId = sessionObject.getString("session_id"),
+                sessionName = sessionObject.getString("session_name"),
+                createdAt = sessionObject.getString("created_at"),
+                lastUpdate = sessionObject.getString("last_update")
+            )
+            sessions.add(session)
+        }
+        return sessions
+    }
+
+
+    private fun displayChatSessions(sessions: List<APIChatSession>) {
+        val drawerLayout = binding.topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
+
+        drawerLayout.removeAllViews()
+
+        sessions.forEach { session ->
+            val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(layoutInflater, drawerLayout, false)
+            sessionViewBinding.sessionName.text = session.sessionName
+            sessionViewBinding.root.setOnClickListener {
+                // Handle session click here
+                // e.g., load session messages
+            }
+            drawerLayout.addView(sessionViewBinding.root)
+        }
+    }
 
     // streaming request to API - text
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
@@ -463,7 +524,7 @@ class MainActivity : AppCompatActivity() {
                         // save to DB
                         //(chatItems[currentResponseItemPosition!!])
                         val currentMessage = chatItems[currentResponseItemPosition!!]
-
+                        /*
                         sendDBRequest("db_new_message",
                             mapOf("customer_id" to 1,
                                 "session_id" to ConfigurationManager.getDBCurrentSessionId(),
@@ -473,6 +534,8 @@ class MainActivity : AppCompatActivity() {
                                 "file_locations" to currentMessage.fileNames,
                                 "chat_history" to chatItems
                             ))
+
+                         */
                     }
                 }
             ),

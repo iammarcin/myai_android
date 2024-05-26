@@ -104,9 +104,11 @@ class ResponseHandler(
     }
 
     private fun handleNonStreamingResponse(body: ResponseBody) {
-        coroutineScope.launch(Dispatchers.Main) {
-            val responseText = body.string()
-            (handlerType as HandlerType.NonStreaming).onResponseReceived(responseText)
+        coroutineScope.launch {
+            val responseText = body.string() // Perform this operation in the IO thread
+            withContext(Dispatchers.Main) {
+                (handlerType as HandlerType.NonStreaming).onResponseReceived(responseText)
+            }
         }
     }
 
