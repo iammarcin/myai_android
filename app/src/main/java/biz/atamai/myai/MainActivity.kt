@@ -79,9 +79,6 @@ class MainActivity : AppCompatActivity() {
             "http://192.168.1.19:8000/"
         }
 
-        // create new session on DB - because this is new chat and we want to record in new session in DB (not overwrite previous)
-        sendDBRequest("db_new_session")
-
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
 
@@ -178,10 +175,11 @@ class MainActivity : AppCompatActivity() {
         binding.newChatButton.setOnClickListener {
             resetChat()
             sendDBRequest("db_new_session")
+
             // TESTED
             //"db_new_session")
             //"db_all_sessions_for_user")
-            // "db_user_session", mapOf("user_id" to 1, "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f"))
+            // "db_get_user_session", mapOf("user_id" to 1, "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f"))
             // "db_new_message",
                 //                mapOf("user_id" to 1,
                 //                    "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f",
@@ -282,6 +280,12 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        // if chatItems is empty
+        // create new session on DB - because this is new chat (without any messages)
+        if (chatItems.isEmpty())
+            sendDBRequest("db_new_session")
+
+        println("TEST 1")
         sendDBRequest("db_new_message",
             mapOf("customer_id" to 1,
                 "session_id" to ConfigurationManager.getDBCurrentSessionId(),
@@ -291,6 +295,7 @@ class MainActivity : AppCompatActivity() {
                 "file_locations" to attachedFiles,
                 "chat_history" to chatItems
             ))
+        println("TEST 2")
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)

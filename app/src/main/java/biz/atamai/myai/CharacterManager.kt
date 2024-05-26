@@ -17,7 +17,7 @@ class CharacterManager(private val context: Context) {
 
     val characters = listOf(
         Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
-        Character("Personal coach", R.drawable.brainstorm_gym_instructor, "GymInstructor"),
+        Character("Personal coach", R.drawable.brainstorm_gym_instructor, "PersonalCoach"),
         Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
         Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
         Character("Chef", R.drawable.brainstorm_chef, "Chef"),
