@@ -440,6 +440,8 @@ class MainActivity : AppCompatActivity() {
             // having name of character, lets search its image through CharacterManager
             val character = characterManager.characters.find { it.nameForAPI == aiCharacter }
             sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
+            // last update date in format YYYY/MM/DD
+            sessionViewBinding.sessionLastUpdate.text = session.lastUpdate.split("T")[0]
             sessionViewBinding.root.setOnClickListener {
                 // Handle session click here
                 // e.g., load session messages

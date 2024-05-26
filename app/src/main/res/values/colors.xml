@@ -14,5 +14,6 @@
     <color name="attached_file_placeholder">#505350</color>
     <color name="popupmenu_background">#252725</color>
     <color name="chat_item_pressed_color">#252725</color>
+    <color name="top_left_menu_date_text_color">#727672</color>
 
 </resources>
