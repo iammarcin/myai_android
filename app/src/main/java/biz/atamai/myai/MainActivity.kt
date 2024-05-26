@@ -192,25 +192,9 @@ class MainActivity : AppCompatActivity() {
         // Set up new chat button
         binding.newChatButton.setOnClickListener {
             resetChat()
-            //sendDBRequest("db_new_session")
-
-            // TESTED
-            //"db_new_session")
-            //"db_all_sessions_for_user")
-            // "db_get_user_session", mapOf("user_id" to 1, "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f"))
-            // "db_new_message",
-                //                mapOf("user_id" to 1,
-                //                    "session_id" to "e4f5e83f-e677-492f-9ead-c18a6e12d10f",
-                //                    "sender" to "AI",
-                //                    "message" to "New chat started",
-                //                    "image_locations" to listOf("https://via.placeholder.com/150"),
-                //                    "chat_history" to chatItems
-                //
-                //                ))
-            // "db_search_messages",
-            //                mapOf("customer_id" to 1,
-            //                    "search_text" to "morning",
-            //                ))
+            CoroutineScope(Dispatchers.Main).launch {
+                sendDBRequest("db_new_session")
+            }
         }
     }
 
@@ -303,10 +287,12 @@ class MainActivity : AppCompatActivity() {
 
         // if chatItems is empty
         // create new session on DB - because this is new chat (without any messages)
+        if (chatItems.isEmpty()) {
+            CoroutineScope(Dispatchers.Main).launch {
+                sendDBRequest("db_new_session")
+            }
+        }
         /*
-        if (chatItems.isEmpty())
-            sendDBRequest("db_new_session")
-
         sendDBRequest("db_new_message",
             mapOf(
                 "session_id" to ConfigurationManager.getDBCurrentSessionId(),
@@ -580,20 +566,23 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         hideProgressBar()
                         // save to DB
-                        //(chatItems[currentResponseItemPosition!!])
                         val currentMessage = chatItems[currentResponseItemPosition!!]
-                        /*
-                        sendDBRequest("db_new_message",
-                            mapOf("customer_id" to 1,
-                                "session_id" to ConfigurationManager.getDBCurrentSessionId(),
-                                "sender" to (currentMessage.aiCharacterName ?: "AI"),
-                                "message" to currentMessage.message,
-                                "image_locations" to currentMessage.imageLocations,
-                                "file_locations" to currentMessage.fileNames,
-                                "chat_history" to chatItems
-                            ))
+                        CoroutineScope(Dispatchers.Main).launch {
+                            sendDBRequest(
+                                "db_new_message",
+                                mapOf(
+                                    "customer_id" to 1,
+                                    "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                                    "sender" to (currentMessage.aiCharacterName ?: "AI"),
+                                    "message" to currentMessage.message,
+                                    "image_locations" to currentMessage.imageLocations,
+                                    "file_locations" to currentMessage.fileNames,
+                                    "chat_history" to chatItems
+                                )
+                            )
+                        }
 
-                         */
+
                     }
                 }
             ),
