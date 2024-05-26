@@ -74,7 +74,6 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             onSearchMessages = { query ->
-                println("EXECUTED 2")
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest("db_search_messages", mapOf("search_text" to query))
                 }
@@ -405,6 +404,11 @@ class MainActivity : AppCompatActivity() {
                 val sessions = parseSessions(response)
                 displayChatSessions(sessions)
             }
+            "db_get_user_session" -> {
+                val sessionData = JSONObject(response).getJSONObject("message").getJSONObject("result")
+                println("Session data: $sessionData")
+                //displaySessionData(sessionData)
+            }
         }
     }
 
@@ -433,7 +437,6 @@ class MainActivity : AppCompatActivity() {
         drawerLayout.removeAllViews()
 
         sessions.forEach { session ->
-            println("SESSION: $session")
             val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(layoutInflater, drawerLayout, false)
             sessionViewBinding.sessionName.text = session.sessionName
             val aiCharacter = session.aiCharacterName
@@ -442,11 +445,19 @@ class MainActivity : AppCompatActivity() {
             sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
             // last update date in format YYYY/MM/DD
             sessionViewBinding.sessionLastUpdate.text = session.lastUpdate.split("T")[0]
+            //handle click on session
             sessionViewBinding.root.setOnClickListener {
-                // Handle session click here
-                // e.g., load session messages
+                println("Session ID: ${session.sessionId}")
+                // get data for this specific session
+                fetchSessionData(session.sessionId)
             }
             drawerLayout.addView(sessionViewBinding.root)
+        }
+    }
+
+    private fun fetchSessionData(sessionId: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            sendDBRequest("db_get_user_session", mapOf("session_id" to sessionId))
         }
     }
 
