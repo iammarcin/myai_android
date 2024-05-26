@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             onSearchMessages = { query ->
+                println("EXECUTED 2")
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest("db_search_messages", mapOf("search_text" to query))
                 }
@@ -415,9 +416,9 @@ class MainActivity : AppCompatActivity() {
             val sessionObject = resultArray.getJSONObject(i)
             val session = APIChatSession(
                 sessionId = sessionObject.getString("session_id"),
-                sessionName = sessionObject.getString("session_name"),
-                createdAt = sessionObject.getString("created_at"),
-                lastUpdate = sessionObject.getString("last_update")
+                sessionName = sessionObject.getString("session_name") ?: "New chat",
+                createdAt = sessionObject.getString("created_at") ?: "",
+                lastUpdate = sessionObject.getString("last_update") ?: ""
             )
             sessions.add(session)
         }

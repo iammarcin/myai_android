@@ -32,8 +32,11 @@ class TopMenuHandler(
     private var currentSelectedButton: TextView? = null
 
     fun setupTopMenus(binding: ActivityMainBinding) {
+        // search text edit on top of menu
+        val topLeftMenuSearchEditText = binding.topLeftMenuNavigationView.findViewById<EditText>(R.id.topLeftMenuSearchEditText)
         binding.menuLeft.setOnClickListener {
             onFetchChatSessions()
+            topLeftMenuSearchEditText.setText("")
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
 
@@ -48,9 +51,11 @@ class TopMenuHandler(
             true
         }
 
-        val topLeftMenuSearchEditText = binding.topLeftMenuNavigationView.findViewById<EditText>(R.id.topLeftMenuSearchEditText)
+
         topLeftMenuSearchEditText.setOnEditorActionListener { v, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_NULL && event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
+
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                (actionId == EditorInfo.IME_NULL && event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                 val query = topLeftMenuSearchEditText.text.toString()
                 onSearchMessages(query)
                 true
