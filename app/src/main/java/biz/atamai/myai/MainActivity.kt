@@ -79,6 +79,9 @@ class MainActivity : AppCompatActivity() {
             "http://192.168.1.19:8000/"
         }
 
+        // create new session on DB - because this is new chat and we want to record in new session in DB (not overwrite previous)
+        sendDBRequest("db_new_session")
+
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
 
@@ -420,7 +423,7 @@ class MainActivity : AppCompatActivity() {
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         if (responseItemPosition == null) {
             // This is a new message, add a new response item
-            val responseItem = ChatItem("", false, aiCharacterImageResId = character?.imageResId)
+            val responseItem = ChatItem("", false, aiCharacterName = character?.nameForAPI, aiCharacterImageResId = character?.imageResId)
             chatItems.add(responseItem)
             currentResponseItemPosition = chatItems.size - 1
             chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
@@ -456,7 +459,7 @@ class MainActivity : AppCompatActivity() {
                         sendDBRequest("db_new_message",
                             mapOf("customer_id" to 1,
                                 "session_id" to ConfigurationManager.getDBCurrentSessionId(),
-                                "sender" to "AI",
+                                "sender" to (currentMessage.aiCharacterName ?: "AI"),
                                 "message" to currentMessage.message,
                                 "image_locations" to currentMessage.imageLocations,
                                 "file_locations" to currentMessage.fileNames,
@@ -484,7 +487,7 @@ class MainActivity : AppCompatActivity() {
 
     // sending data to chat adapter
     fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
-        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, fileNames = attachedFiles)
+        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()
