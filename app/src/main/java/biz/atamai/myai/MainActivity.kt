@@ -459,13 +459,13 @@ class MainActivity : AppCompatActivity() {
 
     // upon receving data from DB - we parse session data to later display them
     // for the moment used in top left menu
-    private fun parseSessions(response: String): List<APIChatSession> {
+    private fun parseSessions(response: String): List<ChatSessionForTopLeftMenu> {
         val jsonObject = JSONObject(response)
         val resultArray = jsonObject.getJSONObject("message").getJSONArray("result")
-        val sessions = mutableListOf<APIChatSession>()
+        val sessions = mutableListOf<ChatSessionForTopLeftMenu>()
         for (i in 0 until resultArray.length()) {
             val sessionObject = resultArray.getJSONObject(i)
-            val session = APIChatSession(
+            val session = ChatSessionForTopLeftMenu(
                 sessionId = sessionObject.getString("session_id"),
                 sessionName = sessionObject.getString("session_name") ?: "New chat",
                 aiCharacterName = sessionObject.getString("ai_character_name") ?: "Assistant",
@@ -479,7 +479,7 @@ class MainActivity : AppCompatActivity() {
 
 
     // after parsing data from DB - we display it in left top menu
-    private fun displayChatSessions(sessions: List<APIChatSession>) {
+    private fun displayChatSessions(sessions: List<ChatSessionForTopLeftMenu>) {
         val drawerLayout = binding.topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
 
         drawerLayout.removeAllViews()
