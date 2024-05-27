@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.TopLeftMenuChatSessionItemBinding
+import biz.atamai.myai.DatabaseHelper
 import kotlinx.coroutines.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -27,13 +28,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fileAttachmentHandler: FileAttachmentHandler
     private lateinit var cameraHandler: CameraHandler
 
-    private val chatItems: MutableList<ChatItem> = mutableListOf()
+    val chatItems: MutableList<ChatItem> = mutableListOf()
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var audioRecorder: AudioRecorder
     private lateinit var permissionsUtil: PermissionsUtil
 
     // this is for AI characters in app
-    private lateinit var characterManager: CharacterManager
+    lateinit var characterManager: CharacterManager
+
+    // some chat methods
+    lateinit var chatHelper: ChatHelper
 
     // api URLs
     lateinit var apiUrl: String
@@ -48,7 +52,7 @@ class MainActivity : AppCompatActivity() {
     private var originalAICharacter: String? = null
 
     // this is to store DB session ID - so when submitting/updating DB messages - they will be assigned to proper session
-    private var currentDBSessionID: String? = ""
+    var currentDBSessionID: String? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +72,8 @@ class MainActivity : AppCompatActivity() {
         setupCamera()
         setupPermissions()
 
+        DatabaseHelper.initialize(this)
+
         // Initialize TopMenuHandler
         val topMenuHandler = TopMenuHandler(
             this,
@@ -75,21 +81,29 @@ class MainActivity : AppCompatActivity() {
             // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
             onFetchChatSessions = {
                 CoroutineScope(Dispatchers.Main).launch {
-                    sendDBRequest("db_all_sessions_for_user")
+                    DatabaseHelper.sendDBRequest("db_all_sessions_for_user")
                 }
             },
             onSearchMessages = { query ->
                 CoroutineScope(Dispatchers.Main).launch {
-                    sendDBRequest("db_search_messages", mapOf("search_text" to query))
+                    DatabaseHelper.sendDBRequest("db_search_messages", mapOf("search_text" to query))
                 }
             }
         )
         topMenuHandler.setupTopMenus(binding)
 
+        chatHelper = ChatHelper(
+            this,
+            binding,
+            chatAdapter,
+            chatItems,
+            currentDBSessionID ?: "",
+        )
+
         characterManager = CharacterManager(this)
         // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
         characterManager.setupCharacterCards(binding) { characterName ->
-            insertCharacterName(characterName)
+            chatHelper.insertCharacterName(characterName)
         }
         // set default character (Assistant) - in case there is some remaining from previous app run
         ConfigurationManager.setTextAICharacter("Assistant")
@@ -109,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         // and multiple sessions were created anyway
         // so decided to do this way - probably will end up with many empty sessions - but i guess i ignore it (or clean up later)
         CoroutineScope(Dispatchers.Main).launch {
-            sendDBRequest("db_new_session",
+            DatabaseHelper.sendDBRequest("db_new_session",
                 mapOf(
                     "session_name" to "New chat",
                     "ai_character_name" to ConfigurationManager.getTextAICharacter(),
@@ -128,10 +142,6 @@ class MainActivity : AppCompatActivity() {
             startEditingMessage(position, message)
         }
         binding.chatContainer.adapter = chatAdapter
-    }
-
-    private fun scrollToEnd() {
-        binding.chatContainer.scrollToPosition(chatItems.size - 1)
     }
 
     private fun setupListeners() {
@@ -156,9 +166,9 @@ class MainActivity : AppCompatActivity() {
         // for situation where we start typing in edit text - we want other stuff to disappear
         binding.editTextMessage.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                manageBottomEditSection("show")
+                chatHelper.manageBottomEditSection("show")
             } else {
-                manageBottomEditSection("hide")
+                chatHelper.manageBottomEditSection("hide")
                 hideKeyboard(view)
             }
         }
@@ -170,7 +180,7 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 //if user starts typing - show bottom edit section (there is a case after submit - when i start typing - letters appear and i don't need to click on edit text)
                 if (count > 0 && before == 0) {
-                    manageBottomEditSection("show")
+                    chatHelper.manageBottomEditSection("show")
                 }
                 s?.let {
                     val cursorPosition = binding.editTextMessage.selectionStart
@@ -178,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                     if (atIndex != -1) {
                         val query = s.substring(atIndex + 1, cursorPosition).trim()
                         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
-                        scrollToEnd()
+                        chatHelper.scrollToEnd()
 
                         // while triggering search for new AI character - save original AI character - because new one will be set
                         // very important - that we have to change it only once - because if we chose different character this function is executed every time we type any character
@@ -187,7 +197,7 @@ class MainActivity : AppCompatActivity() {
                             originalAICharacter = ConfigurationManager.getTextAICharacter()
                         }
                         characterManager.filterCharacters(binding, query) { characterName ->
-                            insertCharacterName(characterName)
+                            chatHelper.insertCharacterName(characterName)
                         }
                     } else {
                         binding.characterHorizontalMainScrollView.visibility = View.GONE
@@ -210,48 +220,13 @@ class MainActivity : AppCompatActivity() {
 
         // Set up new chat button
         binding.newChatButton.setOnClickListener {
-            resetChat()
+            chatHelper.resetChat()
             CoroutineScope(Dispatchers.Main).launch {
-                sendDBRequest("db_new_session",
+                DatabaseHelper.sendDBRequest("db_new_session",
                     mapOf(
                         "session_name" to "New chat",
                         "ai_character_name" to ConfigurationManager.getTextAICharacter(),
                     ))
-            }
-        }
-    }
-
-    // used when user types @ - which opens character selection area... and then this function is triggered upon selection
-    private fun insertCharacterName(characterName: String) {
-        val currentText = binding.editTextMessage.text.toString()
-        val cursorPosition = binding.editTextMessage.selectionStart
-        val atIndex = currentText.lastIndexOf("@", cursorPosition - 1)
-
-        if (atIndex != -1) {
-            // Remove everything after the '@' character up to the current cursor position
-            val newText = StringBuilder(currentText)
-                .delete(atIndex + 1, cursorPosition)
-                .insert(atIndex + 1, "$characterName ")
-                .toString()
-            binding.editTextMessage.setText(newText)
-            binding.editTextMessage.setSelection(atIndex + characterName.length + 2) // Position cursor after the character name
-        }
-    }
-
-    // show or hide bottom edit section (manage properly edit text and buttons)
-    private fun manageBottomEditSection(action: String) {
-        when (action) {
-            "show" -> {
-                binding.layoutRecord.visibility = View.GONE
-                binding.btnSend.visibility = View.VISIBLE
-                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
-                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
-            }
-            "hide" -> {
-                binding.layoutRecord.visibility = View.VISIBLE
-                binding.btnSend.visibility = View.GONE
-                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
-                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
             }
         }
     }
@@ -262,7 +237,6 @@ class MainActivity : AppCompatActivity() {
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-
     // edit any user message
     private fun startEditingMessage(position: Int, message: String) {
         editingMessagePosition = position
@@ -272,7 +246,18 @@ class MainActivity : AppCompatActivity() {
         binding.editTextMessage.maxLines = 10
 
         // Show the send button and hide the record button
-        manageBottomEditSection("show")
+        chatHelper.manageBottomEditSection("show")
+    }
+
+    // sending data to chat adapter
+    // used from multiple places
+    fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()): ChatItem {
+        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles)
+        chatItems.add(chatItem)
+        chatAdapter.notifyItemInserted(chatItems.size - 1)
+        chatHelper.scrollToEnd()
+        // return chatItem value - will be used for example when we want to update uuid of the message from DB (in handleTextMessage)
+        return chatItem
     }
 
     private fun handleSendButtonClick() {
@@ -310,17 +295,17 @@ class MainActivity : AppCompatActivity() {
 
         // Add message to chat
         editingMessagePosition?.let { position ->
-            editMessageInChat(position, message, attachedImageLocations, attachedFiles)
+            chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(message, position)
             // edit message in DB
             CoroutineScope(Dispatchers.Main).launch {
-                updateDBMessage(position, message, attachedImageLocations, attachedFiles)
+                DatabaseHelper.updateDBMessage(position, message, attachedImageLocations, attachedFiles)
             }
         } ?: run {
             val newChatItem = addMessageToChat(message, attachedImageLocations, attachedFiles)
             startStreaming(message)
             CoroutineScope(Dispatchers.Main).launch {
-                sendDBRequest(
+                DatabaseHelper.sendDBRequest(
                     "db_new_message",
                     mapOf(
                         "customer_id" to 1,
@@ -337,209 +322,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        resetInputArea()
+        chatHelper.resetInputArea()
+        // edit position reset
+        editingMessagePosition = null
         binding.characterHorizontalMainScrollView.visibility = View.GONE
-    }
-
-    // once message is edited - update it in chat
-    private fun editMessageInChat(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
-        val chatItem = chatItems[position]
-        chatItem.message = message
-        chatItem.imageLocations = attachedImageLocations
-        chatItem.fileNames = attachedFiles
-        chatAdapter.notifyItemChanged(position)
-    }
-
-    // when new chat is used - clear everything
-    private fun resetChat() {
-        val size = chatItems.size
-        chatItems.clear()
-        chatAdapter.notifyItemRangeRemoved(0, size)
-        resetInputArea()
-
-        // show characters again
-        binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
-    }
-
-    // helper functions - to disable important (send and record buttons) while some activity takes place
-    // for sure used when file is uploaded in FileAttachmentHandler
-    // - because we want to be sure that file is uploaded to S3 before user can send request
-    fun disableActiveButtons() {
-        binding.btnSend.isEnabled = false
-        binding.btnRecord.isEnabled = false
-        binding.newChatButton.isEnabled = false
-    }
-    fun enableActiveButtons() {
-        binding.btnSend.isEnabled = true
-        binding.btnRecord.isEnabled = true
-        binding.newChatButton.isEnabled = true
-    }
-
-
-    // DB REQUESTS
-    private suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Int) -> Unit)? = null) {
-
-        CoroutineScope(Dispatchers.IO).launch {
-            val apiDataModel = APIDataModel(
-                category = "provider.db",
-                action = action,
-                userInput = userInput,
-                userSettings = ConfigurationManager.getSettingsDict(),
-                customerId = 1,
-            )
-
-            val dbUrl = apiUrl + "api/db"
-
-            val handler = ResponseHandler(
-                handlerType = HandlerType.NonStreaming(
-                    onResponseReceived = { response ->
-                        CoroutineScope(Dispatchers.Main).launch {
-                            handleDBResponse(action, response, callback)
-                        }
-                    }
-                ),
-                onError = { error ->
-                    CoroutineScope(Dispatchers.Main).launch {
-                        Toast.makeText(this@MainActivity, "Error: ${error.message}", Toast.LENGTH_LONG).show()
-                    }
-                }
-            )
-
-            handler.sendRequest(dbUrl, apiDataModel)
-        }
-    }
-
-    private suspend fun updateDBMessage(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
-        val chatItem = chatItems[position]
-        val messageId = chatItem.messageId ?: return // Ensure messageId is not null
-
-        sendDBRequest(
-            "db_edit_message",
-            mapOf(
-                "session_id" to ( currentDBSessionID ?: ""),
-                "message_id" to messageId,
-                "update_text" to message,
-                "image_locations" to attachedImageLocations,
-                "file_locations" to attachedFiles,
-                "chat_history" to chatItems,
-            )
-        )
-    }
-
-    // handling response from DB (through API)
-    private fun handleDBResponse(action: String, response: String, dbNewMessageCallback: ((Int) -> Unit)? = null) {
-        println("DB RESPONSE: $response")
-        when (action) {
-            "db_new_session" -> {
-                currentDBSessionID = JSONObject(response).getJSONObject("message").getString("result")
-            }
-            "db_all_sessions_for_user", "db_search_messages" -> {
-                val sessions = parseSessions(response)
-                displayChatSessions(sessions)
-            }
-            "db_get_user_session" -> {
-                val sessionData = JSONObject(response).getJSONObject("message").getJSONObject("result")
-                restoreSessionData(sessionData)
-            }
-            "db_new_message" -> {
-                val messageContent = JSONObject(response).getJSONObject("message")
-                val messageId = messageContent.getString("result")
-
-                // if current DB session is empty it means that its new chat, so we have to set it - so messages are assigned to proper session in DB
-                // and in fact db_new_message in such case should return additional value - session_id
-                if (currentDBSessionID.isNullOrEmpty())
-                    currentDBSessionID = messageContent.getString("sessionId")
-                // if messageId is not null and its number - lets change it to integer
-                if (messageId.toIntOrNull() != null) {
-                    dbNewMessageCallback?.invoke(messageId.toInt())
-                }
-            }
-        }
-    }
-
-    // upon receving data from DB - we parse session data to later display them
-    // for the moment used in top left menu
-    private fun parseSessions(response: String): List<ChatSessionForTopLeftMenu> {
-        val jsonObject = JSONObject(response)
-        val resultArray = jsonObject.getJSONObject("message").getJSONArray("result")
-        val sessions = mutableListOf<ChatSessionForTopLeftMenu>()
-        for (i in 0 until resultArray.length()) {
-            val sessionObject = resultArray.getJSONObject(i)
-            val session = ChatSessionForTopLeftMenu(
-                sessionId = sessionObject.getString("session_id"),
-                sessionName = sessionObject.getString("session_name") ?: "New chat",
-                aiCharacterName = sessionObject.getString("ai_character_name") ?: "Assistant",
-                createdAt = sessionObject.getString("created_at") ?: "",
-                lastUpdate = sessionObject.getString("last_update") ?: ""
-            )
-            sessions.add(session)
-        }
-        return sessions
-    }
-
-
-    // after parsing data from DB - we display it in left top menu
-    private fun displayChatSessions(sessions: List<ChatSessionForTopLeftMenu>) {
-        val drawerLayout = binding.topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
-
-        drawerLayout.removeAllViews()
-
-        sessions.forEach { session ->
-            val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(layoutInflater, drawerLayout, false)
-            sessionViewBinding.sessionName.text = session.sessionName
-            val aiCharacter = session.aiCharacterName
-            // having name of character, lets search its image through CharacterManager
-            val character = characterManager.characters.find { it.nameForAPI == aiCharacter }
-            sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
-            // last update date in format YYYY/MM/DD
-            sessionViewBinding.sessionLastUpdate.text = session.lastUpdate.split("T")[0]
-            //handle click on session
-            sessionViewBinding.root.setOnClickListener {
-                println("Session ID: ${session.sessionId}")
-                // get data for this specific session
-                CoroutineScope(Dispatchers.Main).launch {
-                    sendDBRequest("db_get_user_session", mapOf("session_id" to session.sessionId))
-                }
-                binding.drawerLayout.closeDrawer(GravityCompat.START)
-            }
-            drawerLayout.addView(sessionViewBinding.root)
-        }
-    }
-
-    // once we have all the data regarding session - we restore it in chat
-    private fun restoreSessionData(sessionData: JSONObject) {
-
-        println("RESTORE SESSION DATA: $sessionData")
-        val chatHistoryString = sessionData.getString("chat_history")
-        val chatHistory = JSONArray(chatHistoryString)
-
-        println("CHAT HISTORY: $chatHistory")
-
-        resetChat()
-
-        for (i in 0 until chatHistory.length()) {
-            val chatItemJson = chatHistory.getJSONObject(i)
-            val chatItem = ChatItem(
-                message = chatItemJson.getString("message"),
-                isUserMessage = chatItemJson.getBoolean("isUserMessage"),
-                imageLocations = chatItemJson.getJSONArray("imageLocations").let { jsonArray ->
-                    List(jsonArray.length()) { index -> jsonArray.getString(index) }
-                },
-                fileNames = chatItemJson.getJSONArray("fileNames").let { jsonArray ->
-                    List(jsonArray.length()) { index -> Uri.parse(jsonArray.getString(index)) }
-                },
-                aiCharacterName = chatItemJson.optString("aiCharacterName", ""),
-                aiCharacterImageResId = chatItemJson.optInt("aiCharacterImageResId", R.drawable.brainstorm_assistant)
-            )
-            chatItems.add(chatItem)
-        }
-
-        currentDBSessionID = sessionData.getString("session_id") ?: ""
-        binding.characterHorizontalMainScrollView.visibility = View.GONE
-
-        chatAdapter.notifyItemRangeInserted(0, chatItems.size)
-
-        scrollToEnd()
     }
 
     // streaming request to API - text
@@ -606,7 +392,7 @@ class MainActivity : AppCompatActivity() {
             chatAdapter.notifyItemChanged(responseItemPosition + 1)
         }
 
-        scrollToEnd()
+        chatHelper.scrollToEnd()
 
         val handler = ResponseHandler(
             handlerType = HandlerType.Streaming(
@@ -615,7 +401,7 @@ class MainActivity : AppCompatActivity() {
                         currentResponseItemPosition?.let { position ->
                             chatItems[position].message += chunk
                             chatAdapter.notifyItemChanged(position)
-                            scrollToEnd()
+                            chatHelper.scrollToEnd()
                         }
                     }
                 },
@@ -628,7 +414,7 @@ class MainActivity : AppCompatActivity() {
                         CoroutineScope(Dispatchers.Main).launch {
                             // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
                             if (responseItemPosition == null) {
-                                sendDBRequest(
+                                DatabaseHelper.sendDBRequest(
                                     "db_new_message",
                                     mapOf(
                                         "customer_id" to 1,
@@ -647,7 +433,7 @@ class MainActivity : AppCompatActivity() {
                                 // if it is after user updated their message - AI response also needs to be overwritten in DB
                                 val messageId = currentMessage.messageId ?: return@launch // Ensure messageId is not null
 
-                                sendDBRequest(
+                                DatabaseHelper.sendDBRequest(
                                     "db_edit_message",
                                     mapOf(
                                         "session_id" to ( currentDBSessionID ?: ""),
@@ -680,29 +466,6 @@ class MainActivity : AppCompatActivity() {
             ConfigurationManager.setTextAICharacter(originalAICharacter!!)
             originalAICharacter = null
         }
-    }
-
-    // sending data to chat adapter
-    fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()): ChatItem {
-        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles)
-        chatItems.add(chatItem)
-        chatAdapter.notifyItemInserted(chatItems.size - 1)
-        scrollToEnd()
-        // return chatItem value - will be used for example when we want to update uuid of the message from DB (in handleTextMessage)
-        return chatItem
-    }
-
-    // reset after submission - clean input text, images preview and scroll view in general
-    private fun resetInputArea() {
-        binding.editTextMessage.setText("")
-        binding.imagePreviewContainer.removeAllViews()
-        binding.scrollViewPreview.visibility = View.GONE
-
-        manageBottomEditSection("hide")
-        // release focus of binding.editTextMessage
-        binding.editTextMessage.clearFocus()
-        // edit position reset
-        editingMessagePosition = null
     }
 
     // AUDIO RECORDER

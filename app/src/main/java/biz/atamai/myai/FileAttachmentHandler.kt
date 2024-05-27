@@ -175,16 +175,30 @@ class FileAttachmentHandler(
     // helper function to handle uploadCounter -- explained above
     private fun incrementUploadCounter() {
         uploadCounter++
-        activity.disableActiveButtons()
+        disableActiveButtons()
         activity.showProgressBar()
 
     }
     private fun decrementUploadCounter() {
         uploadCounter--
         if (uploadCounter <= 0) {
-            activity.enableActiveButtons()
+            enableActiveButtons()
             activity.hideProgressBar()
         }
+    }
+
+    // helper functions - to disable important (send and record buttons) while some activity takes place
+    // for sure used when file is uploaded in FileAttachmentHandler
+    // - because we want to be sure that file is uploaded to S3 before user can send request
+    private fun disableActiveButtons() {
+        activity.binding.btnSend.isEnabled = false
+        activity.binding.btnRecord.isEnabled = false
+        activity.binding.newChatButton.isEnabled = false
+    }
+    private fun enableActiveButtons() {
+        activity.binding.btnSend.isEnabled = true
+        activity.binding.btnRecord.isEnabled = true
+        activity.binding.newChatButton.isEnabled = true
     }
 
     private fun Int.toPx(): Int = (this * activity.resources.displayMetrics.density).toInt()
