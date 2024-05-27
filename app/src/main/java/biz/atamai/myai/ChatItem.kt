@@ -8,6 +8,7 @@ data class ChatItem(
     var imageLocations: List<String> = listOf(),
     var fileNames: List<Uri> = listOf(),
     var aiCharacterName: String?, // character name - used for API (f.e. to store data in DB)
-    var aiCharacterImageResId: Int? = null // character image resource id - used for UI (f.e. to display character image)
+    var aiCharacterImageResId: Int? = null, // character image resource id - used for UI (f.e. to display character image)
+    var messageId: Int? = null, // id of the chat item - from DB - its null when its new item, it is set to some value if its existing item (and we want ot f.e. edit it)
 )
 

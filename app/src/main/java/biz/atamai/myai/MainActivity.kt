@@ -285,6 +285,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        println("!")
+        println("chatItems : $chatItems")
         // if chatItems is empty
         // create new session on DB - because this is new chat (without any messages)
         if (chatItems.isEmpty()) {
@@ -292,24 +294,35 @@ class MainActivity : AppCompatActivity() {
                 sendDBRequest("db_new_session")
             }
         }
-        /*
-        sendDBRequest("db_new_message",
-            mapOf(
-                "session_id" to ConfigurationManager.getDBCurrentSessionId(),
-                "sender" to "User",
-                "message" to message,
-                "image_locations" to attachedImageLocations,
-                "file_locations" to attachedFiles,
-                "chat_history" to chatItems
-            ))
-        */
+
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(message, position)
+            // edit message in DB
+            CoroutineScope(Dispatchers.Main).launch {
+                updateDBMessage(position, message, attachedImageLocations, attachedFiles)
+            }
         } ?: run {
-            addMessageToChat(message, attachedImageLocations, attachedFiles)
+            val newChatItem = addMessageToChat(message, attachedImageLocations, attachedFiles)
             startStreaming(message)
+            CoroutineScope(Dispatchers.Main).launch {
+                sendDBRequest(
+                    "db_new_message",
+                    mapOf(
+                        "customer_id" to 1,
+                        "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                        "sender" to (newChatItem.aiCharacterName ?: "AI"),
+                        "message" to newChatItem.message,
+                        "image_locations" to newChatItem.imageLocations,
+                        "file_locations" to newChatItem.fileNames,
+                        "chat_history" to chatItems
+                    )
+                ) { messageId ->
+                    newChatItem.messageId = messageId
+                    chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
+                }
+            }
         }
         resetInputArea()
         binding.characterHorizontalMainScrollView.visibility = View.GONE
@@ -351,7 +364,8 @@ class MainActivity : AppCompatActivity() {
 
 
     // DB REQUESTS
-    private suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf()) {
+    private suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Int) -> Unit)? = null) {
+
         CoroutineScope(Dispatchers.IO).launch {
             val apiDataModel = APIDataModel(
                 category = "provider.db",
@@ -367,7 +381,7 @@ class MainActivity : AppCompatActivity() {
                 handlerType = HandlerType.NonStreaming(
                     onResponseReceived = { response ->
                         CoroutineScope(Dispatchers.Main).launch {
-                            handleDBResponse(action, response)
+                            handleDBResponse(action, response, callback)
                         }
                     }
                 ),
@@ -382,8 +396,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private suspend fun updateDBMessage(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
+        val chatItem = chatItems[position]
+        val messageId = chatItem.messageId ?: return // Ensure messageId is not null
+
+        sendDBRequest(
+            "db_edit_message",
+            mapOf(
+                "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                "message_id" to messageId,
+                "update_text" to message,
+                "image_locations" to attachedImageLocations,
+                "file_locations" to attachedFiles,
+                "chat_history" to chatItems,
+            )
+        )
+    }
+
     // handling response from DB (through API)
-    private fun handleDBResponse(action: String, response: String) {
+    private fun handleDBResponse(action: String, response: String, callback: ((Int) -> Unit)? = null) {
         println("DB RESPONSE: $response")
         when (action) {
             "db_new_session" -> {
@@ -396,6 +427,13 @@ class MainActivity : AppCompatActivity() {
             "db_get_user_session" -> {
                 val sessionData = JSONObject(response).getJSONObject("message").getJSONObject("result")
                 restoreSessionData(sessionData)
+            }
+            "db_new_message" -> {
+                val messageId = JSONObject(response).getJSONObject("message").getString("result")
+                // if messageId is not null and its number - lets change it to integer
+                if (messageId.toIntOrNull() != null) {
+                    callback?.invoke(messageId.toInt())
+                }
             }
         }
     }
@@ -536,7 +574,7 @@ class MainActivity : AppCompatActivity() {
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         if (responseItemPosition == null) {
             // This is a new message, add a new response item
-            val responseItem = ChatItem("", false, aiCharacterName = character?.nameForAPI, aiCharacterImageResId = character?.imageResId)
+            val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI, aiCharacterImageResId = character?.imageResId)
             chatItems.add(responseItem)
             currentResponseItemPosition = chatItems.size - 1
             chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
@@ -567,19 +605,41 @@ class MainActivity : AppCompatActivity() {
                         hideProgressBar()
                         // save to DB
                         val currentMessage = chatItems[currentResponseItemPosition!!]
+
                         CoroutineScope(Dispatchers.Main).launch {
-                            sendDBRequest(
-                                "db_new_message",
-                                mapOf(
-                                    "customer_id" to 1,
-                                    "session_id" to ConfigurationManager.getDBCurrentSessionId(),
-                                    "sender" to (currentMessage.aiCharacterName ?: "AI"),
-                                    "message" to currentMessage.message,
-                                    "image_locations" to currentMessage.imageLocations,
-                                    "file_locations" to currentMessage.fileNames,
-                                    "chat_history" to chatItems
+                            // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
+                            if (responseItemPosition == null) {
+                                sendDBRequest(
+                                    "db_new_message",
+                                    mapOf(
+                                        "customer_id" to 1,
+                                        "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                                        "sender" to (currentMessage.aiCharacterName ?: "AI"),
+                                        "message" to currentMessage.message,
+                                        "image_locations" to currentMessage.imageLocations,
+                                        "file_locations" to currentMessage.fileNames,
+                                        "chat_history" to chatItems
+                                    )
+                                ) { messageId ->
+                                    chatItems[currentResponseItemPosition!!].messageId = messageId
+                                    chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
+                                }
+                            } else {
+                                // if it is after user updated their message - AI response also needs to be overwritten in DB
+                                val messageId = currentMessage.messageId ?: return@launch // Ensure messageId is not null
+
+                                sendDBRequest(
+                                    "db_edit_message",
+                                    mapOf(
+                                        "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                                        "message_id" to messageId,
+                                        "update_text" to currentMessage.message,
+                                        "image_locations" to currentMessage.imageLocations,
+                                        "file_locations" to currentMessage.fileNames,
+                                        "chat_history" to chatItems,
+                                    )
                                 )
-                            )
+                            }
                         }
 
 
@@ -604,11 +664,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     // sending data to chat adapter
-    fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
+    fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()): ChatItem {
         val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         scrollToEnd()
+        // return chatItem value - will be used for example when we want to update uuid of the message from DB (in handleTextMessage)
+        return chatItem
     }
 
     // reset after submission - clean input text, images preview and scroll view in general
