@@ -47,6 +47,9 @@ class MainActivity : AppCompatActivity() {
     // this will be used when mentioning (via @) AI characters for single message
     private var originalAICharacter: String? = null
 
+    // this is to store DB session ID - so when submitting/updating DB messages - they will be assigned to proper session
+    private var currentDBSessionID: String? = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -84,10 +87,13 @@ class MainActivity : AppCompatActivity() {
         topMenuHandler.setupTopMenus(binding)
 
         characterManager = CharacterManager(this)
-        // on character selection - update character name in chat and set temporary character for single message
+        // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
         characterManager.setupCharacterCards(binding) { characterName ->
             insertCharacterName(characterName)
         }
+        // set default character (Assistant) - in case there is some remaining from previous app run
+        ConfigurationManager.setTextAICharacter("Assistant")
+
         // on purpose (for testing) - we set URL only on start - so switching in running app will not change it
         // mainly later once i have prod - it will be way to handle testing
         apiUrl = if (ConfigurationManager.getAppMode()) {
@@ -95,6 +101,19 @@ class MainActivity : AppCompatActivity() {
         } else {
             //"http://192.168.23.66:8000/"
             "http://192.168.1.19:8000/"
+        }
+
+        // start new chat session
+        // i tried many many different ways not to put it here (around 26-27May - check chatgpt if you want ;) )
+        // mainly wanted to put it when new message is sent - but there was problem with order of execution (for user request and AI response)
+        // and multiple sessions were created anyway
+        // so decided to do this way - probably will end up with many empty sessions - but i guess i ignore it (or clean up later)
+        CoroutineScope(Dispatchers.Main).launch {
+            sendDBRequest("db_new_session",
+                mapOf(
+                    "session_name" to "New chat",
+                    "ai_character_name" to ConfigurationManager.getTextAICharacter(),
+                    ))
         }
 
         // set status bar color (above app -where clock is)
@@ -193,7 +212,11 @@ class MainActivity : AppCompatActivity() {
         binding.newChatButton.setOnClickListener {
             resetChat()
             CoroutineScope(Dispatchers.Main).launch {
-                sendDBRequest("db_new_session")
+                sendDBRequest("db_new_session",
+                    mapOf(
+                        "session_name" to "New chat",
+                        "ai_character_name" to ConfigurationManager.getTextAICharacter(),
+                    ))
             }
         }
     }
@@ -285,16 +308,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        println("!")
-        println("chatItems : $chatItems")
-        // if chatItems is empty
-        // create new session on DB - because this is new chat (without any messages)
-        if (chatItems.isEmpty()) {
-            CoroutineScope(Dispatchers.Main).launch {
-                sendDBRequest("db_new_session")
-            }
-        }
-
         // Add message to chat
         editingMessagePosition?.let { position ->
             editMessageInChat(position, message, attachedImageLocations, attachedFiles)
@@ -311,7 +324,7 @@ class MainActivity : AppCompatActivity() {
                     "db_new_message",
                     mapOf(
                         "customer_id" to 1,
-                        "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                        "session_id" to (currentDBSessionID ?: ""),
                         "sender" to (newChatItem.aiCharacterName ?: "AI"),
                         "message" to newChatItem.message,
                         "image_locations" to newChatItem.imageLocations,
@@ -403,7 +416,7 @@ class MainActivity : AppCompatActivity() {
         sendDBRequest(
             "db_edit_message",
             mapOf(
-                "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                "session_id" to ( currentDBSessionID ?: ""),
                 "message_id" to messageId,
                 "update_text" to message,
                 "image_locations" to attachedImageLocations,
@@ -418,7 +431,7 @@ class MainActivity : AppCompatActivity() {
         println("DB RESPONSE: $response")
         when (action) {
             "db_new_session" -> {
-                ConfigurationManager.setDBCurrentSessionId(JSONObject(response).getJSONObject("message").getString("result"))
+                currentDBSessionID = JSONObject(response).getJSONObject("message").getString("result")
             }
             "db_all_sessions_for_user", "db_search_messages" -> {
                 val sessions = parseSessions(response)
@@ -429,7 +442,13 @@ class MainActivity : AppCompatActivity() {
                 restoreSessionData(sessionData)
             }
             "db_new_message" -> {
-                val messageId = JSONObject(response).getJSONObject("message").getString("result")
+                val messageContent = JSONObject(response).getJSONObject("message")
+                val messageId = messageContent.getString("result")
+
+                // if current DB session is empty it means that its new chat, so we have to set it - so messages are assigned to proper session in DB
+                // and in fact db_new_message in such case should return additional value - session_id
+                if (currentDBSessionID.isNullOrEmpty())
+                    currentDBSessionID = messageContent.getString("sessionId")
                 // if messageId is not null and its number - lets change it to integer
                 if (messageId.toIntOrNull() != null) {
                     dbNewMessageCallback?.invoke(messageId.toInt())
@@ -515,7 +534,7 @@ class MainActivity : AppCompatActivity() {
             chatItems.add(chatItem)
         }
 
-        ConfigurationManager.setDBCurrentSessionId(sessionData.getString("session_id"))
+        currentDBSessionID = sessionData.getString("session_id") ?: ""
         binding.characterHorizontalMainScrollView.visibility = View.GONE
 
         chatAdapter.notifyItemRangeInserted(0, chatItems.size)
@@ -613,7 +632,7 @@ class MainActivity : AppCompatActivity() {
                                     "db_new_message",
                                     mapOf(
                                         "customer_id" to 1,
-                                        "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                                        "session_id" to ( currentDBSessionID ?: ""),
                                         "sender" to (currentMessage.aiCharacterName ?: "AI"),
                                         "message" to currentMessage.message,
                                         "image_locations" to currentMessage.imageLocations,
@@ -631,7 +650,7 @@ class MainActivity : AppCompatActivity() {
                                 sendDBRequest(
                                     "db_edit_message",
                                     mapOf(
-                                        "session_id" to ConfigurationManager.getDBCurrentSessionId(),
+                                        "session_id" to ( currentDBSessionID ?: ""),
                                         "message_id" to messageId,
                                         "update_text" to currentMessage.message,
                                         "image_locations" to currentMessage.imageLocations,
