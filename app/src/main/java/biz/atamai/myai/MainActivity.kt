@@ -414,7 +414,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // handling response from DB (through API)
-    private fun handleDBResponse(action: String, response: String, callback: ((Int) -> Unit)? = null) {
+    private fun handleDBResponse(action: String, response: String, dbNewMessageCallback: ((Int) -> Unit)? = null) {
         println("DB RESPONSE: $response")
         when (action) {
             "db_new_session" -> {
@@ -432,7 +432,7 @@ class MainActivity : AppCompatActivity() {
                 val messageId = JSONObject(response).getJSONObject("message").getString("result")
                 // if messageId is not null and its number - lets change it to integer
                 if (messageId.toIntOrNull() != null) {
-                    callback?.invoke(messageId.toInt())
+                    dbNewMessageCallback?.invoke(messageId.toInt())
                 }
             }
         }
