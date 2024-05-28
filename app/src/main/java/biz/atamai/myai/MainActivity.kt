@@ -258,6 +258,7 @@ class MainActivity : AppCompatActivity() {
     // utility method to handle sending text requests for normal UI messages and transcriptions
     // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
     // and here in Main - same functionality when Send button is clicked
+    // also in ChatAdapter - for regenerate AI message
     fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()) {
         if (message.isEmpty()) {
             return
@@ -268,9 +269,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Currently chosen model does not support images. Remove image or change the model", Toast.LENGTH_SHORT).show()
             return
         }
-
-        println("!!!!!!!!!!!!!!!!! 55")
-        println(chatHelper.getEditingMessagePosition())
 
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
@@ -309,7 +307,7 @@ class MainActivity : AppCompatActivity() {
         }
         chatHelper.resetInputArea()
         // edit position reset
-        chatHelper.clearEditingMessagePosition()
+        chatHelper.setEditingMessagePosition(null)
         binding.characterHorizontalMainScrollView.visibility = View.GONE
     }
 

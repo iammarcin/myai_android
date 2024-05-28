@@ -160,6 +160,30 @@ class ChatAdapter(
                     }
                     R.id.regenerate -> {
                         // Handle regenerate action
+                        if (position > 0) {
+                            println("TOTOTOTO!!!!12")
+                            println(chatItems)
+                            println(position)
+                            println(chatItems[position])
+                            val previousChatItem = chatItems[position - 1]
+                            if (previousChatItem.isUserMessage) {
+                                val attachedImageLocations = previousChatItem.imageLocations
+                                val attachedFiles = previousChatItem.fileNames
+
+                                // Set the editing message position
+                                (context as MainActivity).chatHelper.setEditingMessagePosition(position - 1)
+
+                                // Trigger the regeneration
+                                (context as MainActivity).handleTextMessage(
+                                    previousChatItem.message,
+                                    attachedImageLocations,
+                                    attachedFiles
+                                )
+
+                                // Reset the editing message position
+                                (context as MainActivity).chatHelper.setEditingMessagePosition(null)
+                            }
+                        }
                         true
                     }
                     R.id.newSessionFromHere -> {

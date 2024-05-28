@@ -32,8 +32,8 @@ class ChatHelper(
     fun getEditingMessagePosition(): Int? {
         return editingMessagePosition
     }
-    fun clearEditingMessagePosition() {
-        editingMessagePosition = null
+    fun setEditingMessagePosition(position: Int?) {
+        editingMessagePosition = position
     }
 
     // helper functions for currentDBSessionID
@@ -47,7 +47,7 @@ class ChatHelper(
     // edit any user message
     fun startEditingMessage(position: Int, message: String) {
         val chatItem = chatItems[position]
-        editingMessagePosition = position
+        setEditingMessagePosition(position)
         binding.editTextMessage.setText(message)
         binding.editTextMessage.requestFocus()
         binding.editTextMessage.setSelection(message.length)
