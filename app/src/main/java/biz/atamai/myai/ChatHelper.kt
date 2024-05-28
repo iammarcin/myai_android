@@ -48,15 +48,34 @@ class ChatHelper(
 
         for (i in 0 until chatHistory.length()) {
             val chatItemJson = chatHistory.getJSONObject(i)
+
+            // Extract message, imageLocations, and fileNames
+            val message = chatItemJson.getString("message")
+            val imageLocations = chatItemJson.getJSONArray("imageLocations").let { jsonArray ->
+                List(jsonArray.length()) { index -> jsonArray.getString(index) }
+            }
+            val fileNames = chatItemJson.getJSONArray("fileNames").let { jsonArray ->
+                List(jsonArray.length()) { index ->
+                    val fileName = jsonArray.getString(index)
+                    if (fileName.isNotEmpty() && fileName != "{}") {
+                        Uri.parse(fileName)
+                    } else {
+                        null
+                    }
+                }.filterNotNull()
+            }
+
+            // Check if message is empty and imageLocations and fileNames are also empty
+            if (message.isEmpty() && imageLocations.isEmpty() && fileNames.isEmpty()) {
+                continue
+            }
+
+            // Create and add ChatItem if it passes the check
             val chatItem = ChatItem(
-                message = chatItemJson.getString("message"),
+                message = message,
                 isUserMessage = chatItemJson.getBoolean("isUserMessage"),
-                imageLocations = chatItemJson.getJSONArray("imageLocations").let { jsonArray ->
-                    List(jsonArray.length()) { index -> jsonArray.getString(index) }
-                },
-                fileNames = chatItemJson.getJSONArray("fileNames").let { jsonArray ->
-                    List(jsonArray.length()) { index -> Uri.parse(jsonArray.getString(index)) }
-                },
+                imageLocations = imageLocations,
+                fileNames = fileNames,
                 aiCharacterName = chatItemJson.optString("aiCharacterName", ""),
                 aiCharacterImageResId = chatItemJson.optInt("aiCharacterImageResId", R.drawable.brainstorm_assistant)
             )
