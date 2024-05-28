@@ -114,6 +114,7 @@ class ChatHelper(
         chatAdapter.notifyItemRangeRemoved(0, size)
         resetInputArea()
         binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
+        chatAdapter.releaseMediaPlayers()
     }
 
     // once we have all the data regarding session - we restore it in chat

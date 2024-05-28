@@ -79,6 +79,8 @@ class FileAttachmentHandler(
             if (filePath != null) {
                 val fileUri = Uri.fromFile(File(filePath))
                 activity.addMessageToChat("", listOf(), listOf(fileUri))
+                activity.hideProgressBar()
+                decrementUploadCounter()
                 return
             }
             // maybe one day we can handle potential error here
@@ -172,7 +174,7 @@ class FileAttachmentHandler(
         return filePath
     }
 
-    // helper function to handle uploadCounter -- explained above
+    // helper function to handle uploadCounter -- explained above in private var uploadCounter
     private fun incrementUploadCounter() {
         uploadCounter++
         disableActiveButtons()

@@ -83,9 +83,11 @@ class ChatAdapter(
                 binding.scrollViewImages.visibility = View.GONE
             }
 
+            println("TOTOTOTO!!!!2")
             // if filenames are set - those are non images but different kind of files
             // for the moment - audio - but later maybe others
             if (chatItem.fileNames.isNotEmpty()) {
+                println("chat item file names: ${chatItem.fileNames}")
                 binding.audioPlayer.visibility = View.VISIBLE
 
                 // here we assume this is audio file - as we did not implement anything else
@@ -117,6 +119,9 @@ class ChatAdapter(
                     utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
                 }
 
+            } else {
+                binding.audioPlayer.visibility = View.GONE
+                binding.transcribeButton.visibility = View.GONE
             }
         }
 
