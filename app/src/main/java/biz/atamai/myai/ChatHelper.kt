@@ -53,6 +53,9 @@ class ChatHelper(
         binding.editTextMessage.setSelection(message.length)
         binding.editTextMessage.maxLines = 10
 
+        // Show the keyboard
+        showKeyboard(binding.editTextMessage)
+
         // Show the send button and hide the record button
         manageBottomEditSection("show")
 
@@ -96,6 +99,12 @@ class ChatHelper(
     fun hideKeyboard(view: View) {
         val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+    private fun showKeyboard(view: View) {
+        if (view.requestFocus()) {
+            val inputMethodManager2 = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager2.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+        }
     }
 
     // once message is edited - update it in chat
