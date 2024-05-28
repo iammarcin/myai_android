@@ -164,6 +164,7 @@ class ChatAdapter(
                     }
                     R.id.newSessionFromHere -> {
                         // Handle new session from here action
+                        (context as MainActivity).chatHelper.createNewSessionFromHere(position)
                         true
                     }
                     R.id.copy -> {

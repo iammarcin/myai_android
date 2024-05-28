@@ -199,6 +199,29 @@ class ChatHelper(
         scrollToEnd()
     }
 
+    // in popup menu when we click on AI or user message there are few options... one is newSessionFromHere
+    // its where we create new session from selected message (and copy all previous)
+    // IMPORTANT - it is way simplified version - as we don't save those new messages in DB - we just recreate chatItems
+    // maybe one day we can work on it - downside is that we cannot edit properly previous messages
+    fun createNewSessionFromHere(position: Int) {
+        val selectedChatItems = chatItems.subList(0, position + 1).toMutableList()
+
+        resetChat()
+        // resetting DB session - it should create new one later in backend
+        setCurrentDBSessionID("")
+        binding.characterScrollView.visibility = View.GONE
+
+        // Add the selected chat items to the new session
+        for (chatItem in selectedChatItems) {
+            chatItem.messageId = null
+            chatItems.add(chatItem)
+            chatAdapter.notifyItemInserted(chatItems.size - 1)
+        }
+
+        scrollToEnd()
+    }
+
+
     fun scrollToEnd() {
         binding.chatContainer.scrollToPosition(chatItems.size - 1)
     }
