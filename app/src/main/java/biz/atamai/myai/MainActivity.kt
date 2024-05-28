@@ -269,8 +269,13 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        println("!!!!!!!!!!!!!!!!! 55")
+        println(chatHelper.getEditingMessagePosition())
+
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
+            println("!!!!!!!!!!!!!!!!! 66")
+            println("position: $position")
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(message, position)
             // edit message in DB
@@ -278,6 +283,7 @@ class MainActivity : AppCompatActivity() {
                 DatabaseHelper.updateDBMessage(position, message, attachedImageLocations, attachedFiles)
             }
         } ?: run {
+            println("!!!!!!!!!!!!!!!!! 77")
             val newChatItem = addMessageToChat(message, attachedImageLocations, attachedFiles)
             startStreaming(message)
             CoroutineScope(Dispatchers.Main).launch {
@@ -404,6 +410,11 @@ class MainActivity : AppCompatActivity() {
                                 ) { messageId ->
                                     chatItems[currentResponseItemPosition!!].messageId = messageId
                                     chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
+
+                                    println("33333########")
+                                    print(messageId)
+                                    print("chatItems: {chatItems}")
+                                    print(chatItems)
                                 }
                             } else {
                                 // if it is after user updated their message - AI response also needs to be overwritten in DB
