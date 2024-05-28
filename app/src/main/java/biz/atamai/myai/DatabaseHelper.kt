@@ -9,6 +9,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 
 object DatabaseHelper {
     private lateinit var mainActivity: MainActivity
@@ -127,7 +130,8 @@ object DatabaseHelper {
             val character = mainActivity.characterManager.characters.find { it.nameForAPI == aiCharacter }
             sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
             // last update date in format YYYY/MM/DD HH:MM
-            sessionViewBinding.sessionLastUpdate.text = session.lastUpdate  //.split("T")[0]
+            sessionViewBinding.sessionLastUpdate.text = formatDateTime(session.lastUpdate)
+
             //handle click on session
             sessionViewBinding.root.setOnClickListener {
                 println("Session ID: ${session.sessionId}")
@@ -139,5 +143,12 @@ object DatabaseHelper {
             }
             drawerLayout.addView(sessionViewBinding.root)
         }
+    }
+
+    private fun formatDateTime(input: String): String {
+        val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val date = LocalDateTime.parse(input, inputFormatter)
+        return date.format(outputFormatter)
     }
 }
