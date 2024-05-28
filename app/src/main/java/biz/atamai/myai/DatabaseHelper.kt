@@ -24,7 +24,7 @@ object DatabaseHelper {
         setCurrentDBSessionID = setSessionID
     }
 
-    suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Int) -> Unit)? = null) {
+    suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Any) -> Unit)? = null) {
         CoroutineScope(Dispatchers.IO).launch {
             val apiDataModel = APIDataModel(
                 category = "provider.db",
@@ -55,10 +55,12 @@ object DatabaseHelper {
         }
     }
 
-    private fun handleDBResponse(action: String, response: String, dbNewMessageCallback: ((Int) -> Unit)? = null) {
+    private fun handleDBResponse(action: String, response: String, callback: ((Any) -> Unit)? = null) {
         when (action) {
             "db_new_session" -> {
-                setCurrentDBSessionID(JSONObject(response).getJSONObject("message").getString("result"))
+                val sessionId = JSONObject(response).getJSONObject("message").getString("result")
+                setCurrentDBSessionID(sessionId)
+                callback?.invoke(sessionId)
             }
             "db_all_sessions_for_user", "db_search_messages" -> {
                 val sessions = parseSessions(response)
@@ -78,7 +80,7 @@ object DatabaseHelper {
                     setCurrentDBSessionID(messageContent.getString("sessionId"))
                 // if messageId is not null and its number - lets change it to integer
                 if (messageId.toIntOrNull() != null) {
-                    dbNewMessageCallback?.invoke(messageId.toInt())
+                    callback?.invoke(messageId.toInt())
                 }
             }
         }

@@ -299,8 +299,11 @@ class MainActivity : AppCompatActivity() {
                         "chat_history" to chatItems
                     )
                 ) { messageId ->
-                    newChatItem.messageId = messageId
-                    chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
+                    // it should be always Int - but we have to do it - as callback from DBHelper is Any
+                    if (messageId is Int) {
+                        newChatItem.messageId = messageId
+                        chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
+                    }
                 }
             }
         }
@@ -408,13 +411,11 @@ class MainActivity : AppCompatActivity() {
                                         "chat_history" to chatItems
                                     )
                                 ) { messageId ->
-                                    chatItems[currentResponseItemPosition!!].messageId = messageId
-                                    chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
-
-                                    println("33333########")
-                                    print(messageId)
-                                    print("chatItems: {chatItems}")
-                                    print(chatItems)
+                                    // it should be always Int - but we have to do it - as callback from DBHelper is Any
+                                    if (messageId is Int) {
+                                        chatItems[currentResponseItemPosition!!].messageId = messageId
+                                        chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
+                                    }
                                 }
                             } else {
                                 // if it is after user updated their message - AI response also needs to be overwritten in DB
