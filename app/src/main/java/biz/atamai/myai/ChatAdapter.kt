@@ -37,10 +37,19 @@ class ChatAdapter(
             // Initialize Markwon
             markwon = Markwon.create(binding.root.context)
             // long press listener - on messages to show popup menu
-            binding.root.setOnLongClickListener { view ->
+            val longClickListener = View.OnLongClickListener { view ->
                 showPopupMenu(view, adapterPosition)
                 true // Return true to indicate the callback consumed the long click
             }
+
+            // trying multiple ways to set long click listener (multiple items)
+            // goal is to have popup menu when click everywhere on the message
+            // first one for sure works (of course)
+            binding.root.setOnLongClickListener(longClickListener)
+            binding.chatItemMessageContainer.setOnLongClickListener(longClickListener)
+            binding.imageContainer.setOnLongClickListener(longClickListener)
+            binding.scrollViewImages.setOnLongClickListener(longClickListener)
+            binding.messageTextView.setOnLongClickListener(longClickListener)
         }
 
         fun bind(chatItem: ChatItem) {

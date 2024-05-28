@@ -139,6 +139,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+
         // this is listener for main chat container (taking most part of the screen)
         binding.chatContainer.setOnTouchListener { _, _ ->
             // idea is that when edit text has focus - recording button etc disappears
