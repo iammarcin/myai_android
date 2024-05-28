@@ -10,16 +10,10 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
-import biz.atamai.myai.databinding.TopLeftMenuChatSessionItemBinding
-import biz.atamai.myai.DatabaseHelper
 import kotlinx.coroutines.*
-import org.json.JSONArray
-import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -290,6 +284,12 @@ class MainActivity : AppCompatActivity() {
     // and here in Main - same functionality when Send button is clicked
     fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()) {
         if (message.isEmpty()) {
+            return
+        }
+
+        // if there is image attached and we use model that does not support images
+        if (attachedImageLocations != emptyList<String>() && ConfigurationManager.getTextModelName() != "GPT-4o" && ConfigurationManager.getTextModelName() != "GPT-4" ) {
+            Toast.makeText(this, "Currently chosen model does not support images. Remove image or change the model", Toast.LENGTH_SHORT).show()
             return
         }
 
