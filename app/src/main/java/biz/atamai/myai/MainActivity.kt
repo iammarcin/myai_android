@@ -40,9 +40,6 @@ class MainActivity : AppCompatActivity() {
     // this will be used when mentioning (via @) AI characters for single message
     private var originalAICharacter: String? = null
 
-    // this is to store DB session ID - so when submitting/updating DB messages - they will be assigned to proper session
-    var currentDBSessionID: String? = ""
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -60,8 +57,6 @@ class MainActivity : AppCompatActivity() {
         setupRecordButton()
         setupCamera()
         setupPermissions()
-
-        DatabaseHelper.initialize(this)
 
         // Initialize TopMenuHandler
         val topMenuHandler = TopMenuHandler(
@@ -86,8 +81,10 @@ class MainActivity : AppCompatActivity() {
             binding,
             chatAdapter,
             chatItems,
-            currentDBSessionID ?: "",
+            ConfigurationManager,
         )
+
+        DatabaseHelper.initialize(this, chatHelper::getCurrentDBSessionID, chatHelper::setCurrentDBSessionID)
 
         characterManager = CharacterManager(this)
         // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
@@ -115,7 +112,7 @@ class MainActivity : AppCompatActivity() {
             DatabaseHelper.sendDBRequest("db_new_session",
                 mapOf(
                     "session_name" to "New chat",
-                    "ai_character_name" to ConfigurationManager.getTextAICharacter(),
+                    "ai_character_name" to "Assistant",
                     ))
         }
 
@@ -211,11 +208,12 @@ class MainActivity : AppCompatActivity() {
         // Set up new chat button
         binding.newChatButton.setOnClickListener {
             chatHelper.resetChat()
+            ConfigurationManager.setTextAICharacter("Assistant")
             CoroutineScope(Dispatchers.Main).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",
                     mapOf(
                         "session_name" to "New chat",
-                        "ai_character_name" to ConfigurationManager.getTextAICharacter(),
+                        "ai_character_name" to "Assistant",
                     ))
             }
         }
@@ -287,7 +285,7 @@ class MainActivity : AppCompatActivity() {
                     "db_new_message",
                     mapOf(
                         "customer_id" to 1,
-                        "session_id" to (currentDBSessionID ?: ""),
+                        "session_id" to (chatHelper.getCurrentDBSessionID() ?: ""),
                         "sender" to (newChatItem.aiCharacterName ?: "AI"),
                         "message" to newChatItem.message,
                         "image_locations" to newChatItem.imageLocations,
@@ -396,7 +394,7 @@ class MainActivity : AppCompatActivity() {
                                     "db_new_message",
                                     mapOf(
                                         "customer_id" to 1,
-                                        "session_id" to ( currentDBSessionID ?: ""),
+                                        "session_id" to ( chatHelper.getCurrentDBSessionID() ?: ""),
                                         "sender" to (currentMessage.aiCharacterName ?: "AI"),
                                         "message" to currentMessage.message,
                                         "image_locations" to currentMessage.imageLocations,
@@ -414,7 +412,7 @@ class MainActivity : AppCompatActivity() {
                                 DatabaseHelper.sendDBRequest(
                                     "db_edit_message",
                                     mapOf(
-                                        "session_id" to ( currentDBSessionID ?: ""),
+                                        "session_id" to ( chatHelper.getCurrentDBSessionID() ?: ""),
                                         "message_id" to messageId,
                                         "update_text" to currentMessage.message,
                                         "image_locations" to currentMessage.imageLocations,

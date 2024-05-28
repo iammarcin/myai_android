@@ -17,7 +17,7 @@ class ChatHelper(
     private val binding: ActivityMainBinding,
     private val chatAdapter: ChatAdapter,
     private val chatItems: MutableList<ChatItem>,
-    private var currentDBSessionID: String,
+    private val configurationManager: ConfigurationManager,
 ) {
     // same string set in backend in config.py
     private val ERROR_MESSAGE_FOR_TEXT_GEN = "Error in Text Generator. Try again!"
@@ -25,12 +25,23 @@ class ChatHelper(
     // This will store the position of the message being edited
     private var editingMessagePosition: Int? = null
 
+    // this is to store DB session ID - so when submitting/updating DB messages - they will be assigned to proper session
+    private var currentDBSessionID: String? = ""
+
     // helper functions for editingMessagePosition
     fun getEditingMessagePosition(): Int? {
         return editingMessagePosition
     }
     fun clearEditingMessagePosition() {
         editingMessagePosition = null
+    }
+
+    // helper functions for currentDBSessionID
+    fun getCurrentDBSessionID(): String? {
+        return currentDBSessionID
+    }
+    fun setCurrentDBSessionID(sessionID: String) {
+        currentDBSessionID = sessionID
     }
 
     // edit any user message
@@ -157,12 +168,21 @@ class ChatHelper(
                 imageLocations = imageLocations,
                 fileNames = fileNames,
                 aiCharacterName = chatItemJson.optString("aiCharacterName", ""),
-                aiCharacterImageResId = chatItemJson.optInt("aiCharacterImageResId", R.drawable.brainstorm_assistant)
             )
+
+            // Conditionally set messageId if it exists in chatItemJson
+            if (chatItemJson.has("messageId") && chatItemJson.getInt("messageId") != 0) {
+                chatItem.messageId = chatItemJson.getInt("messageId")
+            }
+            // conditionally set aiCharacterImageResId
+            if (!chatItem.isUserMessage) {
+                chatItem.aiCharacterImageResId = chatItemJson.optInt("aiCharacterImageResId", R.drawable.brainstorm_assistant)
+            }
             chatItems.add(chatItem)
         }
 
-        currentDBSessionID = sessionData.getString("session_id") ?: ""
+        configurationManager.setTextAICharacter(sessionData.getString("ai_character_name"))
+        setCurrentDBSessionID(sessionData.getString("session_id") ?: "")
         binding.characterHorizontalMainScrollView.visibility = View.GONE
 
         chatAdapter.notifyItemRangeInserted(0, chatItems.size)

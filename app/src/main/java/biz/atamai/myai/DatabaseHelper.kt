@@ -15,9 +15,13 @@ import java.time.format.DateTimeFormatter
 
 object DatabaseHelper {
     private lateinit var mainActivity: MainActivity
+    private lateinit var getCurrentDBSessionID: () -> String?
+    private lateinit var setCurrentDBSessionID: (String) -> Unit
 
-    fun initialize(activity: MainActivity) {
+    fun initialize(activity: MainActivity, getSessionID: () -> String?, setSessionID: (String) -> Unit) {
         mainActivity = activity
+        getCurrentDBSessionID = getSessionID
+        setCurrentDBSessionID = setSessionID
     }
 
     suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Int) -> Unit)? = null) {
@@ -54,7 +58,7 @@ object DatabaseHelper {
     private fun handleDBResponse(action: String, response: String, dbNewMessageCallback: ((Int) -> Unit)? = null) {
         when (action) {
             "db_new_session" -> {
-                mainActivity.currentDBSessionID = JSONObject(response).getJSONObject("message").getString("result")
+                setCurrentDBSessionID(JSONObject(response).getJSONObject("message").getString("result"))
             }
             "db_all_sessions_for_user", "db_search_messages" -> {
                 val sessions = parseSessions(response)
@@ -70,8 +74,8 @@ object DatabaseHelper {
 
                 // if current DB session is empty it means that its new chat, so we have to set it - so messages are assigned to proper session in DB
                 // and in fact db_new_message in such case should return additional value - session_id
-                if (mainActivity.currentDBSessionID.isNullOrEmpty())
-                    mainActivity.currentDBSessionID = messageContent.getString("sessionId")
+                if (getCurrentDBSessionID().isNullOrEmpty())
+                    setCurrentDBSessionID(messageContent.getString("sessionId"))
                 // if messageId is not null and its number - lets change it to integer
                 if (messageId.toIntOrNull() != null) {
                     dbNewMessageCallback?.invoke(messageId.toInt())
@@ -87,7 +91,7 @@ object DatabaseHelper {
         sendDBRequest(
             "db_edit_message",
             mapOf(
-                "session_id" to ( mainActivity.currentDBSessionID ?: ""),
+                "session_id" to ( getCurrentDBSessionID() ?: ""),
                 "message_id" to messageId,
                 "update_text" to message,
                 "image_locations" to attachedImageLocations,
