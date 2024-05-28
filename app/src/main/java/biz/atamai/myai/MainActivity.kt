@@ -1,13 +1,11 @@
 package biz.atamai.myai
 
-import android.content.Context
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
@@ -38,9 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     // needed for chat items placement - if its null - chat hasn't been started, if it has value - this is latest msg
     private var currentResponseItemPosition: Int? = null
-
-    // for editing message - if we choose edit on any message
-    private var editingMessagePosition: Int? = null
 
     // this will be used when mentioning (via @) AI characters for single message
     private var originalAICharacter: String? = null
@@ -133,7 +128,7 @@ class MainActivity : AppCompatActivity() {
         // chat adapter - but when clicked on message - we can edit it
         // this is done via onEditMessage in chat adapter - we point it to startEditingMessage
         chatAdapter = ChatAdapter(chatItems) { position, message ->
-            startEditingMessage(position, message)
+            chatHelper.startEditingMessage(position, message)
         }
         binding.chatContainer.adapter = chatAdapter
     }
@@ -146,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             // so this is to clear the focus if we click somewhere on main screen
             binding.editTextMessage.clearFocus()
             // hide mobile keyboard
-            hideKeyboard(binding.editTextMessage)
+            chatHelper.hideKeyboard(binding.editTextMessage)
             // Call performClick
             // this is necessary! explained in CustomRecyclerView
             binding.chatContainer.performClick()
@@ -164,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                 chatHelper.manageBottomEditSection("show")
             } else {
                 chatHelper.manageBottomEditSection("hide")
-                hideKeyboard(view)
+                chatHelper.hideKeyboard(view)
             }
         }
 
@@ -226,24 +221,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // when dealing with hasFocus etc for edit text - if we lose hasFocus - keyboard remained on the screen
-    private fun hideKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-    }
-
-    // edit any user message
-    private fun startEditingMessage(position: Int, message: String) {
-        editingMessagePosition = position
-        binding.editTextMessage.setText(message)
-        binding.editTextMessage.requestFocus()
-        binding.editTextMessage.setSelection(message.length)
-        binding.editTextMessage.maxLines = 10
-
-        // Show the send button and hide the record button
-        chatHelper.manageBottomEditSection("show")
-    }
-
     // sending data to chat adapter
     // used from multiple places
     fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()): ChatItem {
@@ -295,7 +272,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Add message to chat
-        editingMessagePosition?.let { position ->
+        chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(message, position)
             // edit message in DB
@@ -325,7 +302,7 @@ class MainActivity : AppCompatActivity() {
         }
         chatHelper.resetInputArea()
         // edit position reset
-        editingMessagePosition = null
+        chatHelper.clearEditingMessagePosition()
         binding.characterHorizontalMainScrollView.visibility = View.GONE
     }
 

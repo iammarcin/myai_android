@@ -1,13 +1,14 @@
 package biz.atamai.myai
 
 import android.content.Context
-import androidx.core.content.ContextCompat
 import android.net.Uri
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
-import androidx.core.content.ContextCompat.getSystemService
 import biz.atamai.myai.databinding.ActivityMainBinding
+import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -20,6 +21,71 @@ class ChatHelper(
 ) {
     // same string set in backend in config.py
     private val ERROR_MESSAGE_FOR_TEXT_GEN = "Error in Text Generator. Try again!"
+
+    // This will store the position of the message being edited
+    private var editingMessagePosition: Int? = null
+
+    // helper functions for editingMessagePosition
+    fun getEditingMessagePosition(): Int? {
+        return editingMessagePosition
+    }
+    fun clearEditingMessagePosition() {
+        editingMessagePosition = null
+    }
+
+    // edit any user message
+    fun startEditingMessage(position: Int, message: String) {
+        val chatItem = chatItems[position]
+        editingMessagePosition = position
+        binding.editTextMessage.setText(message)
+        binding.editTextMessage.requestFocus()
+        binding.editTextMessage.setSelection(message.length)
+        binding.editTextMessage.maxLines = 10
+
+        // Show the send button and hide the record button
+        manageBottomEditSection("show")
+
+        // Clear existing previews
+        binding.imagePreviewContainer.removeAllViews()
+
+        // Add image previews
+        if (chatItem.imageLocations.isNotEmpty()) {
+            binding.scrollViewPreview.visibility = View.VISIBLE
+            for (imageUrl in chatItem.imageLocations) {
+                val imageView = ImageView(context).apply {
+                    layoutParams = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT
+                    )
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    adjustViewBounds = true
+                    Picasso.get().load(imageUrl).into(this)
+                    tag = imageUrl
+                }
+
+                // Wrap ImageView in FrameLayout
+                val frameLayout = FrameLayout(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT
+                    ).also {
+                        it.marginEnd = 8.dpToPx(context)
+                    }
+                    addView(imageView)
+                }
+
+                binding.imagePreviewContainer.addView(frameLayout)
+            }
+        } else {
+            binding.scrollViewPreview.visibility = View.GONE
+        }
+    }
+
+    // when dealing with hasFocus etc for edit text - if we lose hasFocus - keyboard remained on the screen
+    fun hideKeyboard(view: View) {
+        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
 
     // once message is edited - update it in chat
     fun editMessageInChat(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
@@ -65,6 +131,18 @@ class ChatHelper(
                         null
                     }
                 }.filterNotNull()
+            }
+
+            // this is not great but well
+            // if there is generate error from API (ERROR_MESSAGE_FOR_TEXT_GEN) - we skip it
+            // so we need to skip also user's message that is right before it
+            // if not it can cause some troubles here and there
+            // (for example editing this message will overwrite next user message with AI response)
+            if (i + 1 < chatHistory.length()) {
+                val nextMessage = chatHistory.getJSONObject(i + 1).getString("message")
+                if (nextMessage == ERROR_MESSAGE_FOR_TEXT_GEN) {
+                    continue
+                }
             }
 
             // Check if message is empty and imageLocations and fileNames are also empty
@@ -138,6 +216,10 @@ class ChatHelper(
             binding.editTextMessage.setText(newText)
             binding.editTextMessage.setSelection(atIndex + characterName.length + 2) // Position cursor after the character name
         }
+    }
+
+    private fun Int.dpToPx(context: Context): Int {
+        return (this * context.resources.displayMetrics.density).toInt()
     }
 
 }
