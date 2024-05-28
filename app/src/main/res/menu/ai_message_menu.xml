@@ -4,6 +4,9 @@
         android:id="@+id/regenerate"
         android:title="Regenerate"/>
     <item
+        android:id="@+id/newSessionFromHere"
+        android:title="New session from here"/>
+    <item
         android:id="@+id/copy"
         android:title="Copy"/>
 </menu>

@@ -132,11 +132,25 @@ class ChatAdapter(
 
             val popupMenu = PopupMenu(ContextThemeWrapper(context, R.style.PopupMenuStyle), view)
 
+            // Check if the message is one of the last two messages
+            val isLastTwoMessages = position >= chatItems.size - 2
+
             if (chatItem.isUserMessage) {
-                popupMenu.inflate(R.menu.user_message_menu)
+                if (isLastTwoMessages) {
+                    popupMenu.inflate(R.menu.user_message_menu)
+                } else {
+                    popupMenu.menu.add(0, R.id.copy, 0, "Copy")
+                    popupMenu.menu.add(0, R.id.newSessionFromHere, 1, "New session from here")
+                }
             } else {
-                popupMenu.inflate(R.menu.ai_message_menu)
+                if (isLastTwoMessages) {
+                    popupMenu.inflate(R.menu.ai_message_menu)
+                } else {
+                    popupMenu.menu.add(0, R.id.copy, 0, "Copy")
+                    popupMenu.menu.add(0, R.id.newSessionFromHere, 1, "New session from here")
+                }
             }
+
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.edit -> {
@@ -144,12 +158,12 @@ class ChatAdapter(
                         onEditMessage(position, chatItem.message)
                         true
                     }
-                    R.id.delete -> {
-                        // Handle delete action
-                        true
-                    }
                     R.id.regenerate -> {
                         // Handle regenerate action
+                        true
+                    }
+                    R.id.newSessionFromHere -> {
+                        // Handle new session from here action
                         true
                     }
                     R.id.copy -> {
