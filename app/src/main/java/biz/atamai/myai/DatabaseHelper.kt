@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter
 
 object DatabaseHelper {
     private lateinit var mainActivity: MainActivity
+
     fun initialize(activity: MainActivity) {
         mainActivity = activity
     }

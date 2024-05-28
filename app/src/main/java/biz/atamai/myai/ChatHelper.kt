@@ -18,6 +18,8 @@ class ChatHelper(
     private val chatItems: MutableList<ChatItem>,
     private var currentDBSessionID: String,
 ) {
+    // same string set in backend in config.py
+    private val ERROR_MESSAGE_FOR_TEXT_GEN = "Error in Text Generator. Try again!"
 
     // once message is edited - update it in chat
     fun editMessageInChat(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()) {
@@ -66,7 +68,7 @@ class ChatHelper(
             }
 
             // Check if message is empty and imageLocations and fileNames are also empty
-            if (message.isEmpty() && imageLocations.isEmpty() && fileNames.isEmpty()) {
+            if ((message.isEmpty() || message == ERROR_MESSAGE_FOR_TEXT_GEN ) && imageLocations.isEmpty() && fileNames.isEmpty()) {
                 continue
             }
 
