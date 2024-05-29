@@ -31,9 +31,6 @@ class MainActivity : AppCompatActivity() {
     // some chat methods
     lateinit var chatHelper: ChatHelper
 
-    // api URLs
-    lateinit var apiUrl: String
-
     // needed for chat items placement - if its null - chat hasn't been started, if it has value - this is latest msg
     private var currentResponseItemPosition: Int? = null
 
@@ -47,9 +44,9 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        audioRecorder = AudioRecorder(this, ConfigurationManager.getUseBluetooth())
+        audioRecorder = AudioRecorder(this, ConfigurationManager.getUseBluetooth(), ConfigurationManager.getAppModeApiUrl())
 
-        fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview)
+        fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview, ConfigurationManager.getAppModeApiUrl())
         cameraHandler = CameraHandler(this, activityResultRegistry)
 
         setupListeners()
@@ -94,15 +91,6 @@ class MainActivity : AppCompatActivity() {
         // set default character (Assistant) - in case there is some remaining from previous app run
         ConfigurationManager.setTextAICharacter("Assistant")
 
-        // on purpose (for testing) - we set URL only on start - so switching in running app will not change it
-        // mainly later once i have prod - it will be way to handle testing
-        apiUrl = if (ConfigurationManager.getAppMode()) {
-            "http://ufcbot.com:8000/"
-        } else {
-            //"http://192.168.23.66:8000/"
-            "http://192.168.1.19:8000/"
-        }
-
         // start new chat session
         // i tried many many different ways not to put it here (around 26-27May - check chatgpt if you want ;) )
         // mainly wanted to put it when new message is sent - but there was problem with order of execution (for user request and AI response)
@@ -124,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupChatAdapter() {
         // chat adapter - but when clicked on message - we can edit it
         // this is done via onEditMessage in chat adapter - we point it to startEditingMessage
-        chatAdapter = ChatAdapter(chatItems) { position, message ->
+        chatAdapter = ChatAdapter(chatItems, ConfigurationManager.getAppModeApiUrl()) { position, message ->
             chatHelper.startEditingMessage(position, message)
         }
         binding.chatContainer.adapter = chatAdapter
@@ -351,7 +339,7 @@ class MainActivity : AppCompatActivity() {
             customerId = 1,
         )
 
-        val streamUrl = apiUrl + "chat"
+        val streamUrl = ConfigurationManager.getAppModeApiUrl() + "chat"
 
         // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }

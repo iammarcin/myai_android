@@ -24,6 +24,7 @@ class FileAttachmentHandler(
     private val activity: MainActivity,
     private val imagePreviewContainer: LinearLayout,
     private val scrollViewPreview: HorizontalScrollView,
+    private val apiUrl: String
 ) {
     // this will be used in case where multiple files are being attached / uploaded
     // it caused some troubles - like disabling progress bar or enabling send button too soon
@@ -119,7 +120,7 @@ class FileAttachmentHandler(
                 }
             )
             // upload to S3 - so sending request to nodejs API
-            utilityTools.uploadFileToServer(filePath, activity.apiUrl, "api/aws", "provider.s3", "s3_upload")
+            utilityTools.uploadFileToServer(filePath, apiUrl, "api/aws", "provider.s3", "s3_upload")
         } else {
             val placeholder = View(activity).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {

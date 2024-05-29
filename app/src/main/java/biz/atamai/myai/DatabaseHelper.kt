@@ -34,7 +34,7 @@ object DatabaseHelper {
                 customerId = 1,
             )
 
-            val dbUrl = mainActivity.apiUrl + "api/db"
+            val dbUrl = ConfigurationManager.getAppModeApiUrl() + "api/db"
 
             val handler = ResponseHandler(
                 handlerType = HandlerType.NonStreaming(

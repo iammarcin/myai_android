@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 object ConfigurationManager {
     private const val PREFS_NAME = "AIAppSettings"
     private const val APP_MODE_PRODUCTION = "app_mode" // production or test - different URL will be in use
+    private const val APP_MODE_API_URL = "app_mode_api_url" // URL to be used depending on the mode
     private const val TEXT_MODEL_NAME = "text_model_name"
     private const val TEXT_TEMPERATURE = "text_temperature"
     private const val TEXT_MEMORY_SIZE = "text_memory_size"
@@ -28,6 +29,10 @@ object ConfigurationManager {
     // Default values
     private val defaultSettings = mapOf(
         APP_MODE_PRODUCTION to false, // "production" - true or "test" - false
+        // http://192.168.1.19:8000/ - test ES
+        // http://192.168.23.66:8000/ - test PT
+        // "DOMAIN" - prod
+        APP_MODE_API_URL to "http://192.168.1.19:8000/",
         TEXT_MODEL_NAME to "GPT-4o",
         TEXT_AI_CHARACTER to "Assistant",
         TEXT_TEMPERATURE to 0.0f,
@@ -82,6 +87,7 @@ object ConfigurationManager {
 
     // getter methods
     fun getAppMode() = getBoolean(APP_MODE_PRODUCTION, defaultSettings[APP_MODE_PRODUCTION] as Boolean)
+    fun getAppModeApiUrl() = getString(APP_MODE_API_URL, defaultSettings[APP_MODE_API_URL] as String)
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
     fun getTextAICharacter() = getString(TEXT_AI_CHARACTER, defaultSettings[TEXT_AI_CHARACTER] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
@@ -97,6 +103,7 @@ object ConfigurationManager {
 
     // setter methods
     fun setAppMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
+    fun setAppModeApiUrl(value: String) = setString(APP_MODE_API_URL, value)
     fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
     fun setTextAICharacter(value: String) = setString(TEXT_AI_CHARACTER, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)

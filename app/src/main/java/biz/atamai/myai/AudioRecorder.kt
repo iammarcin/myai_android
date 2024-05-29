@@ -23,7 +23,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.IOException
 
-class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnected: Boolean) {
+class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnected: Boolean, var apiUrl: String) {
 
     private var mediaRecorder: MediaRecorder? = null
     private var audioFilePath: String? = null
@@ -195,7 +195,7 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
                 }
             }
         )
-        utilityTools.uploadFileToServer(audioFilePath, activity.apiUrl, "chat_audio2text", "speech", "chat")
+        utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
     }
 
     private fun addRecordingToFileList(filePath: String?) {

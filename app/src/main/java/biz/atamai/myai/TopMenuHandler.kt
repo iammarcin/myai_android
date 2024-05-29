@@ -209,6 +209,12 @@ class TopMenuHandler(
             // add production mode setting
             addView(createSwitchRow("Production Mode", ConfigurationManager.getAppMode()) { isChecked ->
                 ConfigurationManager.setAppMode(isChecked)
+                if (isChecked) {
+                    ConfigurationManager.setAppModeApiUrl("http://ufcbot.com:8000/")
+                } else {
+                    //"http://192.168.23.66:8000/"
+                    ConfigurationManager.setAppModeApiUrl("http://192.168.1.19:8000/")
+                }
             })
             // token for connecting to backend API
             addView(createTextEditRow("API auth Token", ConfigurationManager.getAuthTokenForBackend(), isPassword = true) { value ->

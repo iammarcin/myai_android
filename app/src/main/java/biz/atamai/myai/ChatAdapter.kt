@@ -19,6 +19,7 @@ import io.noties.markwon.Markwon
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
+    private val apiUrl: String,
     private val onEditMessage: (position: Int, message: String) -> Unit
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
@@ -100,7 +101,6 @@ class ChatAdapter(
                 binding.transcribeButton.setOnClickListener {
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
-                    val apiUrl = (binding.root.context as MainActivity).apiUrl
                     val utilityTools = UtilityTools(
                         context = binding.root.context,
                         onResponseReceived = { response ->
