@@ -1,5 +1,7 @@
 package biz.atamai.myai
 
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -11,6 +13,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
+import biz.atamai.myai.databinding.ChatItemBinding
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
@@ -36,6 +39,8 @@ class MainActivity : AppCompatActivity() {
 
     // this will be used when mentioning (via @) AI characters for single message
     private var originalAICharacter: String? = null
+
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupChatAdapter() {
         // chat adapter - but when clicked on message - we can edit it
         // this is done via onEditMessage in chat adapter - we point it to startEditingMessage
-        chatAdapter = ChatAdapter(chatItems, ConfigurationManager.getAppModeApiUrl()) { position, message ->
+        chatAdapter = ChatAdapter(chatItems, ConfigurationManager.getAppModeApiUrl(), this) { position, message ->
             chatHelper.startEditingMessage(position, message)
         }
         binding.chatContainer.adapter = chatAdapter
@@ -499,5 +504,58 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         chatAdapter.releaseMediaPlayers()  // Ensure all media players are released when the activity is destroyed
         audioRecorder.release()  // Release resources held by AudioRecorder
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
+
+    fun handleTTSRequest(message: String) {
+        val apiUrl = ConfigurationManager.getAppModeApiUrl()
+        val utilityTools = UtilityTools(
+            context = this,
+            onResponseReceived = { audioUrl ->
+                playAudioFromUrl(audioUrl)
+
+            },
+            onError = { error ->
+                runOnUiThread {
+                    Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+        utilityTools.sendTTSRequest(message, apiUrl)
+    }
+
+    private fun playAudioFromUrl(audioUrl: String) {
+        if (mediaPlayer == null) {
+            mediaPlayer = MediaPlayer().apply {
+                setAudioStreamType(AudioManager.STREAM_MUSIC)
+                setDataSource(audioUrl)
+                isLooping = false
+                prepareAsync()
+            }
+
+            mediaPlayer?.setOnPreparedListener {
+                it.start()
+            }
+
+            mediaPlayer?.setOnCompletionListener {
+                it.release()
+                mediaPlayer = null
+                Toast.makeText(this@MainActivity, "Audio playback finished", Toast.LENGTH_SHORT).show()
+            }
+
+            mediaPlayer?.setOnErrorListener { mp, what, extra ->
+                mp.release()
+                mediaPlayer = null
+                Toast.makeText(this@MainActivity, "Error playing audio", Toast.LENGTH_SHORT).show()
+                true
+            }
+        } else {
+            Toast.makeText(this@MainActivity, "Audio is already playing", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
+
 }

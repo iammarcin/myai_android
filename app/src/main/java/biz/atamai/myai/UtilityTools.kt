@@ -57,5 +57,32 @@ class UtilityTools(
         handler.sendFileRequest(fullApiUrl, apiDataModel, filePath)
     }
 
+    fun sendTTSRequest(message: String, apiUrl: String) {
+        val apiEndpoint = "tts"
+        val fullApiUrl = apiUrl + apiEndpoint
+        val apiDataModel = APIDataModel(
+            category = "audio",
+            action = "tts",
+            userInput = mapOf("text" to message),
+            userSettings = ConfigurationManager.getSettingsDict(),
+            customerId = 1
+        )
+
+        val handler = ResponseHandler(
+            handlerType = HandlerType.NonStreaming(onResponseReceived = { response ->
+                try {
+                    val jsonResponse = JSONObject(response)
+                    val audioUrl = jsonResponse.getString("audio_url")
+                    onResponseReceived(audioUrl)
+                } catch (e: JSONException) {
+                    onError(e)
+                }
+            }),
+            onError = onError,
+            authToken = ConfigurationManager.getAuthTokenForBackend()
+        )
+
+        handler.sendRequest(fullApiUrl, apiDataModel)
+    }
 
 }

@@ -160,7 +160,7 @@ class TopMenuHandler(
         val categories = listOf(
             "GENERAL" to 1,
             "TEXT" to 2,
-            "AUDIO" to 3,
+            "TTS" to 3,
             "SPEECH" to 4,
         )
 

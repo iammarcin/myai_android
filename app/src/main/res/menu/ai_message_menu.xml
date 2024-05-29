@@ -7,6 +7,9 @@
         android:id="@+id/newSessionFromHere"
         android:title="New session from here"/>
     <item
+        android:id="@+id/tts"
+        android:title="Speak"/>
+    <item
         android:id="@+id/copy"
         android:title="Copy"/>
 </menu>

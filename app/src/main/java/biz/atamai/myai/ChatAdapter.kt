@@ -20,16 +20,34 @@ import io.noties.markwon.Markwon
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
+    private val context: Context,
     private val onEditMessage: (position: Int, message: String) -> Unit
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
+    private lateinit var utilityTools: UtilityTools
 
     fun releaseMediaPlayers() {
         for (audioPlayerManager in audioPlayerManagers) {
             audioPlayerManager.releaseMediaPlayer()
         }
         audioPlayerManagers.clear() // Clear the list after releasing
+    }
+
+    init {
+        utilityTools = UtilityTools(
+            context = context,
+            onResponseReceived = { response ->
+                (context as MainActivity).runOnUiThread {
+                    (context as MainActivity).handleTextMessage(response)
+                }
+            },
+            onError = { error ->
+                (context as MainActivity).runOnUiThread {
+                    Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
 
     inner class ChatViewHolder(private val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -101,19 +119,6 @@ class ChatAdapter(
                 binding.transcribeButton.setOnClickListener {
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
-                    val utilityTools = UtilityTools(
-                        context = binding.root.context,
-                        onResponseReceived = { response ->
-                            (binding.root.context as MainActivity).runOnUiThread {
-                                (binding.root.context as MainActivity).handleTextMessage(response)
-                            }
-                        },
-                        onError = { error ->
-                            (binding.root.context as MainActivity).runOnUiThread {
-                                Toast.makeText(binding.root.context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    )
                     utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
                 }
 
@@ -137,15 +142,16 @@ class ChatAdapter(
                 if (isLastTwoMessages) {
                     popupMenu.inflate(R.menu.user_message_menu)
                 } else {
-                    popupMenu.menu.add(0, R.id.copy, 0, "Copy")
-                    popupMenu.menu.add(0, R.id.newSessionFromHere, 1, "New session from here")
+                    popupMenu.menu.add(0, R.id.newSessionFromHere, 0, "New session from here")
+                    popupMenu.menu.add(0, R.id.copy, 1, "Copy")
                 }
             } else {
                 if (isLastTwoMessages) {
                     popupMenu.inflate(R.menu.ai_message_menu)
                 } else {
-                    popupMenu.menu.add(0, R.id.copy, 0, "Copy")
-                    popupMenu.menu.add(0, R.id.newSessionFromHere, 1, "New session from here")
+                    popupMenu.menu.add(0, R.id.newSessionFromHere, 0, "New session from here")
+                    popupMenu.menu.add(0, R.id.tts, 1, "Speak")
+                    popupMenu.menu.add(0, R.id.copy, 2, "Copy")
                 }
             }
 
@@ -183,6 +189,11 @@ class ChatAdapter(
                     R.id.newSessionFromHere -> {
                         // Handle new session from here action
                         (context as MainActivity).chatHelper.createNewSessionFromHere(position)
+                        true
+                    }
+                    R.id.tts -> {
+                        // Handle tts
+                        (context as MainActivity).handleTTSRequest(chatItem.message)
                         true
                     }
                     R.id.copy -> {
