@@ -210,7 +210,7 @@ class TopMenuHandler(
             addView(createSwitchRow("Production Mode", ConfigurationManager.getAppMode()) { isChecked ->
                 ConfigurationManager.setAppMode(isChecked)
                 if (isChecked) {
-                    ConfigurationManager.setAppModeApiUrl("http://ufcbot.com:8000/")
+                    ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
                 } else {
                     //"http://192.168.23.66:8000/"
                     ConfigurationManager.setAppModeApiUrl("http://192.168.1.19:8000/")
