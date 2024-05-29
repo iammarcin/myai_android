@@ -272,8 +272,6 @@ class MainActivity : AppCompatActivity() {
 
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
-            println("!!!!!!!!!!!!!!!!! 66")
-            println("position: $position")
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(message, position)
             // edit message in DB
@@ -281,7 +279,6 @@ class MainActivity : AppCompatActivity() {
                 DatabaseHelper.updateDBMessage(position, message, attachedImageLocations, attachedFiles)
             }
         } ?: run {
-            println("!!!!!!!!!!!!!!!!! 77")
             val newChatItem = addMessageToChat(message, attachedImageLocations, attachedFiles)
             startStreaming(message)
             CoroutineScope(Dispatchers.Main).launch {

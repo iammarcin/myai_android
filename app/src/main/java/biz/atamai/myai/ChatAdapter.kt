@@ -83,11 +83,9 @@ class ChatAdapter(
                 binding.scrollViewImages.visibility = View.GONE
             }
 
-            println("TOTOTOTO!!!!2")
             // if filenames are set - those are non images but different kind of files
             // for the moment - audio - but later maybe others
             if (chatItem.fileNames.isNotEmpty()) {
-                println("chat item file names: ${chatItem.fileNames}")
                 binding.audioPlayer.visibility = View.VISIBLE
 
                 // here we assume this is audio file - as we did not implement anything else
@@ -161,10 +159,6 @@ class ChatAdapter(
                     R.id.regenerate -> {
                         // Handle regenerate action
                         if (position > 0) {
-                            println("TOTOTOTO!!!!12")
-                            println(chatItems)
-                            println(position)
-                            println(chatItems[position])
                             val previousChatItem = chatItems[position - 1]
                             if (previousChatItem.isUserMessage) {
                                 val attachedImageLocations = previousChatItem.imageLocations
