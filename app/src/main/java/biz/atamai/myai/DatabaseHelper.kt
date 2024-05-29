@@ -39,12 +39,15 @@ object DatabaseHelper {
             val handler = ResponseHandler(
                 handlerType = HandlerType.NonStreaming(
                     onResponseReceived = { response ->
+                        println("DB RESPOSNE: $response")
                         CoroutineScope(Dispatchers.Main).launch {
                             handleDBResponse(action, response, callback)
                         }
                     }
                 ),
                 onError = { error ->
+                    println("!!!!!!! DB Error")
+                    println(error)
                     CoroutineScope(Dispatchers.Main).launch {
                         Toast.makeText(mainActivity, "Error: ${error.message}", Toast.LENGTH_LONG).show()
                     }
@@ -56,9 +59,16 @@ object DatabaseHelper {
     }
 
     private fun handleDBResponse(action: String, response: String, callback: ((Any) -> Unit)? = null) {
+        val jsonResponse = JSONObject(response)
+        val success = jsonResponse.getBoolean("success")
+        if (!success) {
+            val errorMessage = jsonResponse.getJSONObject("message").getString("result")
+            Toast.makeText(mainActivity, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+            return
+        }
         when (action) {
             "db_new_session" -> {
-                val sessionId = JSONObject(response).getJSONObject("message").getString("result")
+                val sessionId = jsonResponse.getJSONObject("message").getString("result")
                 setCurrentDBSessionID(sessionId)
                 callback?.invoke(sessionId)
             }
@@ -67,11 +77,11 @@ object DatabaseHelper {
                 displayChatSessions(sessions)
             }
             "db_get_user_session" -> {
-                val sessionData = JSONObject(response).getJSONObject("message").getJSONObject("result")
+                val sessionData = jsonResponse.getJSONObject("message").getJSONObject("result")
                 mainActivity.chatHelper.restoreSessionData(sessionData)
             }
             "db_new_message" -> {
-                val messageContent = JSONObject(response).getJSONObject("message")
+                val messageContent = jsonResponse.getJSONObject("message")
                 val messageId = messageContent.getString("result")
 
                 // if current DB session is empty it means that its new chat, so we have to set it - so messages are assigned to proper session in DB

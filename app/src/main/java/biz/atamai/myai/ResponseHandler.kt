@@ -58,6 +58,7 @@ class ResponseHandler(
                             } else {
                                 onError(Exception("Network error: ${e.message}"))
                             }
+                            println("ERROR! ${e.message}")
                         }
                     }
 
@@ -78,6 +79,7 @@ class ResponseHandler(
             } catch (e: Exception) {
                 coroutineScope.launch(Dispatchers.Main) {
                     onError(e)
+                    println("ERROR! ${e.message}")
                 }
             }
         }

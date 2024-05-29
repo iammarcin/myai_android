@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         // on purpose (for testing) - we set URL only on start - so switching in running app will not change it
         // mainly later once i have prod - it will be way to handle testing
         apiUrl = if (ConfigurationManager.getAppMode()) {
-            "https://fancydomain.com:8000/"
+            "http://ufcbot.com:8000/"
         } else {
             //"http://192.168.23.66:8000/"
             "http://192.168.1.19:8000/"
