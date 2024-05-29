@@ -16,6 +16,7 @@ import biz.atamai.myai.databinding.TopRightPopupMenuLayoutBinding
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
@@ -209,6 +210,10 @@ class TopMenuHandler(
             addView(createSwitchRow("Production Mode", ConfigurationManager.getAppMode()) { isChecked ->
                 ConfigurationManager.setAppMode(isChecked)
             })
+            // token for connecting to backend API
+            addView(createTextEditRow("API auth Token", ConfigurationManager.getAuthTokenForBackend(), isPassword = true) { value ->
+                ConfigurationManager.setAuthTokenForBackend(value)
+            })
         }
     }
 
@@ -294,8 +299,8 @@ class TopMenuHandler(
         }
     }
 
-
-    private fun createTextEditRow(label: String, initialValue: String, onValueChanged: (String) -> Unit): LinearLayout {
+    // for normal text or password / token
+    private fun createTextEditRow(label: String, initialValue: String, isPassword: Boolean = false, onValueChanged: (String) -> Unit, ): LinearLayout {
         return LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, 16, 0, 16)
@@ -311,6 +316,11 @@ class TopMenuHandler(
                 textSize = 16f
                 setTextColor(ContextCompat.getColor(context, R.color.white))
                 setPadding(8, 0, 0, 0)
+                inputType = if (isPassword) {
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                } else {
+                    InputType.TYPE_CLASS_TEXT
+                }
                 addTextChangedListener(object : TextWatcher {
                     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -329,6 +339,7 @@ class TopMenuHandler(
             ))
         }
     }
+
 
 
     private fun createSeekBarRow(label: String, max: Int, step: Float, initialValue: Float, onValueChanged: (Float) -> Unit): LinearLayout {

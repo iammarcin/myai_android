@@ -50,7 +50,8 @@ class UtilityTools(
             }),
             onError = { error ->
                 onError(error)
-            }
+            },
+            authToken = ConfigurationManager.getAuthTokenForBackend()
         )
 
         handler.sendFileRequest(fullApiUrl, apiDataModel, filePath)

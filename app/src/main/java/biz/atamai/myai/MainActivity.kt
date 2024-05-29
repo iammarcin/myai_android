@@ -439,7 +439,8 @@ class MainActivity : AppCompatActivity() {
                     hideProgressBar()
                     Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
                 }
-            }
+            },
+            authToken = ConfigurationManager.getAuthTokenForBackend(),
         )
 
         handler.sendRequest(streamUrl, apiDataModel)

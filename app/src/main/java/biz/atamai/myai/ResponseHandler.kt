@@ -32,7 +32,8 @@ sealed class HandlerType {
 
 class ResponseHandler(
     private val handlerType: HandlerType,
-    private val onError: (Exception) -> Unit
+    private val onError: (Exception) -> Unit,
+    private val authToken: String
 ) {
     private val timeoutInSecs = 60L
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
@@ -47,7 +48,11 @@ class ResponseHandler(
         coroutineScope.launch {
             try {
                 val requestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(apiDataModel).toByteArray())
-                val request = Request.Builder().url(url).post(requestBody).build()
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .addHeader("Authorization", "Bearer $authToken")
+                    .build()
                 client.newCall(request).enqueue(object : Callback {
 
                     override fun onFailure(call: Call, e: IOException) {
@@ -140,7 +145,11 @@ class ResponseHandler(
                     .addFormDataPart("customerId", apiDataModel.customerId.toString())
                     .build()
 
-                val request = Request.Builder().url(url).post(requestBody).build()
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .addHeader("Authorization", "Bearer $authToken")
+                    .build()
                 client.newCall(request).enqueue(object : Callback {
 
                     override fun onFailure(call: Call, e: IOException) {

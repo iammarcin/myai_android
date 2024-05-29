@@ -17,6 +17,7 @@ object ConfigurationManager {
     private const val SPEECH_TEMPERATURE = "speech_temperature"
     private const val AUDIO_STABILITY = "audio_stability"
     private const val AUDIO_SIMILARITY = "audio_similarity"
+    private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -38,6 +39,7 @@ object ConfigurationManager {
         SPEECH_TEMPERATURE to 0.0f,
         AUDIO_STABILITY to 0.0f,
         AUDIO_SIMILARITY to 0.0f,
+        AUTH_TOKEN_FOR_BACKEND to "",
 
         // Add other default values
     )
@@ -91,6 +93,7 @@ object ConfigurationManager {
     fun getSpeechTemperature() = getFloat(SPEECH_TEMPERATURE, defaultSettings[SPEECH_TEMPERATURE] as Float)
     fun getAudioStability() = getFloat(AUDIO_STABILITY, defaultSettings[AUDIO_STABILITY] as Float)
     fun getAudioSimilarity() = getFloat(AUDIO_SIMILARITY, defaultSettings[AUDIO_SIMILARITY] as Float)
+    fun getAuthTokenForBackend() = getString(AUTH_TOKEN_FOR_BACKEND, defaultSettings[AUTH_TOKEN_FOR_BACKEND] as String)
 
     // setter methods
     fun setAppMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
@@ -105,6 +108,7 @@ object ConfigurationManager {
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
     fun setAudioStability(value: Float) = setFloat(AUDIO_STABILITY, value)
     fun setAudioSimilarity(value: Float) = setFloat(AUDIO_SIMILARITY, value)
+    fun setAuthTokenForBackend(value: String) = setString(AUTH_TOKEN_FOR_BACKEND, value)
 
     // used for API calls - to prepare dict with all settings
     fun getSettingsDict(): Map<String, Map<String, Any>> {

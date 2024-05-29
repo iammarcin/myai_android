@@ -51,7 +51,8 @@ object DatabaseHelper {
                     CoroutineScope(Dispatchers.Main).launch {
                         Toast.makeText(mainActivity, "Error: ${error.message}", Toast.LENGTH_LONG).show()
                     }
-                }
+                },
+                authToken = ConfigurationManager.getAuthTokenForBackend()
             )
 
             handler.sendRequest(dbUrl, apiDataModel)
@@ -60,7 +61,13 @@ object DatabaseHelper {
 
     private fun handleDBResponse(action: String, response: String, callback: ((Any) -> Unit)? = null) {
         val jsonResponse = JSONObject(response)
-        val success = jsonResponse.getBoolean("success")
+        // check if jsonResponse.getBoolean("success")  exists
+        if (!jsonResponse.has("success")) {
+            Toast.makeText(mainActivity, "Error: ${jsonResponse.getString("detail")}", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val success = jsonResponse.getBoolean("success") ?: false
         if (!success) {
             val errorMessage = jsonResponse.getJSONObject("message").getString("result")
             Toast.makeText(mainActivity, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
