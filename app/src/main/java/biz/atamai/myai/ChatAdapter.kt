@@ -217,6 +217,7 @@ class ChatAdapter(
     }
 
     private fun sendTTSRequest(message: String, position: Int) {
+        (context as MainActivity).showProgressBar()
         val chatItem = chatItems[position]
 
         // Check if the chatItem already has a TTS file
@@ -230,6 +231,7 @@ class ChatAdapter(
             { audioUrl -> handleTTSCompletedResponse(audioUrl, position) },
             { error ->
                 (context as MainActivity).runOnUiThread {
+                    (context as MainActivity).hideProgressBar()
                     Toast.makeText(context, "Error generating TTS: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -244,6 +246,7 @@ class ChatAdapter(
             chatItem.fileNames = listOf(Uri.parse(audioUrl))
             chatItem.isTTS = true
             notifyItemChanged(position)
+            (context as MainActivity).hideProgressBar()
         }
     }
 
