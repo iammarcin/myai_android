@@ -255,7 +255,7 @@ class TopMenuHandler(
 
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("OpenAI"))
-            
+
             addView(createTextEditRow("Voice", ConfigurationManager.getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
                 ConfigurationManager.setTTSVoice(value)
             })
