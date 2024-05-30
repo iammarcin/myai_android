@@ -249,8 +249,12 @@ class TopMenuHandler(
                 ConfigurationManager.setTTSModelName(value)
             })
 
-            addView(createSwitchRow("Streaming", ConfigurationManager.getIsStreamingEnabled()) { isChecked ->
-                ConfigurationManager.setIsStreamingEnabled(isChecked)
+            addView(createSwitchRow("Streaming", ConfigurationManager.getTTSStreaming()) { isChecked ->
+                ConfigurationManager.setTTSStreaming(isChecked)
+            })
+
+            addView(createSwitchRow("Auto execute", ConfigurationManager.getTTSAutoExecute()) { isChecked ->
+                ConfigurationManager.setTTSAutoExecute(isChecked)
             })
 
             addView(createTextLabelRow(""))

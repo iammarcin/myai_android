@@ -381,6 +381,11 @@ class MainActivity : AppCompatActivity() {
                 onStreamEnd = {
                     runOnUiThread {
                         hideProgressBar()
+                        if (ConfigurationManager.getTTSAutoExecute()) {
+                            showProgressBar()
+                            chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
+
+                        }
                         // save to DB
                         val currentMessage = chatItems[currentResponseItemPosition!!]
                         CoroutineScope(Dispatchers.Main).launch {

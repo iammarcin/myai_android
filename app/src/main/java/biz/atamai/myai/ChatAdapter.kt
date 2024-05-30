@@ -216,7 +216,7 @@ class ChatAdapter(
         }
     }
 
-    private fun sendTTSRequest(message: String, position: Int) {
+    fun sendTTSRequest(message: String, position: Int) {
         (context as MainActivity).showProgressBar()
         val chatItem = chatItems[position]
 
