@@ -383,7 +383,6 @@ class MainActivity : AppCompatActivity() {
                         hideProgressBar()
                         // save to DB
                         val currentMessage = chatItems[currentResponseItemPosition!!]
-
                         CoroutineScope(Dispatchers.Main).launch {
                             // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
                             if (responseItemPosition == null) {

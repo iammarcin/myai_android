@@ -26,10 +26,13 @@ object DatabaseHelper {
 
     suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Any) -> Unit)? = null) {
         CoroutineScope(Dispatchers.IO).launch {
+            // serialization of data (uri -> string) explained in ChatItem
+            val serializableChatItems = mainActivity.chatItems.map { it.toSerializableMap() }
+
             val apiDataModel = APIDataModel(
                 category = "provider.db",
                 action = action,
-                userInput = userInput,
+                userInput = userInput + ("chat_history" to serializableChatItems),
                 userSettings = ConfigurationManager.getSettingsDict(),
                 customerId = 1,
             )
