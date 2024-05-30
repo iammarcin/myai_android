@@ -127,7 +127,7 @@ object ConfigurationManager {
                 "ai_character" to getTextAICharacter(),
                 "streaming" to getIsStreamingEnabled(),
             ),
-            "audio" to mapOf(
+            "tts" to mapOf(
                 "stability" to getAudioStability(),
                 "similarity_boost" to getAudioSimilarity()
             ),

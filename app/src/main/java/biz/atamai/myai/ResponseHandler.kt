@@ -68,6 +68,13 @@ class ResponseHandler(
                     }
 
                     override fun onResponse(call: Call, response: Response) {
+                        if (!response.isSuccessful) {
+                            coroutineScope.launch(Dispatchers.Main) {
+                                onError(Exception("HTTP error: ${response.code} ${response.message}"))
+                            }
+                            return
+                        }
+
                         response.body?.let { body ->
                             when (handlerType) {
                                 is HandlerType.Streaming -> handleStreamingResponse(body)
@@ -164,6 +171,13 @@ class ResponseHandler(
                     }
 
                     override fun onResponse(call: Call, response: Response) {
+                        if (!response.isSuccessful) {
+                            coroutineScope.launch(Dispatchers.Main) {
+                                onError(Exception("HTTP error: ${response.code} ${response.message}"))
+                            }
+                            return
+                        }
+
                         response.body?.let { body ->
                             coroutineScope.launch(Dispatchers.Main) {
                                 (handlerType as HandlerType.FileUpload).onResponseReceived(body.string())

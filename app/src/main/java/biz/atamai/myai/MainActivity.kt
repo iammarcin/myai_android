@@ -508,23 +508,6 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer = null
     }
 
-    fun handleTTSRequest(message: String) {
-        val apiUrl = ConfigurationManager.getAppModeApiUrl()
-        val utilityTools = UtilityTools(
-            context = this,
-            onResponseReceived = { audioUrl ->
-                playAudioFromUrl(audioUrl)
-
-            },
-            onError = { error ->
-                runOnUiThread {
-                    Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-        utilityTools.sendTTSRequest(message, apiUrl)
-    }
-
     private fun playAudioFromUrl(audioUrl: String) {
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer().apply {
@@ -554,8 +537,4 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, "Audio is already playing", Toast.LENGTH_SHORT).show()
         }
     }
-
-
-
-
 }

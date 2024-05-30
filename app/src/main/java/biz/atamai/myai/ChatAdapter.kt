@@ -3,6 +3,7 @@ package biz.atamai.myai
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -193,7 +194,9 @@ class ChatAdapter(
                     }
                     R.id.tts -> {
                         // Handle tts
-                        (context as MainActivity).handleTTSRequest(chatItem.message)
+                        //utilityTools.sendTTSRequest(chatItem.message, apiUrl)
+                        //(context as MainActivity).handleTTSRequest(chatItem.message)
+                        sendTTSRequest(chatItem.message, position)
                         true
                     }
                     R.id.copy -> {
@@ -208,6 +211,33 @@ class ChatAdapter(
                 }
             }
             popupMenu.show()
+        }
+    }
+
+    private fun sendTTSRequest(message: String, position: Int) {
+        val apiUrl = ConfigurationManager.getAppModeApiUrl()
+        utilityTools.sendTTSRequest(
+            message,
+            apiUrl,
+            { audioUrl -> handleTTSCompletedResponse(audioUrl, position) },
+            { error ->
+                (context as MainActivity).runOnUiThread {
+                    Toast.makeText(context, "Error generating TTS: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    private fun handleTTSCompletedResponse(audioUrl: String, position: Int) {
+        println("audioUrl: $audioUrl")
+        (context as MainActivity).runOnUiThread {
+            // Add the audio URL to the corresponding chat item
+
+            val chatItem = chatItems[position]
+            chatItem.fileNames = listOf(Uri.parse(audioUrl))
+            notifyItemChanged(position)
+
+
         }
     }
 
