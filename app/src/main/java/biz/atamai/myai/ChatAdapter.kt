@@ -217,6 +217,12 @@ class ChatAdapter(
     }
 
     private fun sendTTSRequest(message: String, position: Int) {
+        val chatItem = chatItems[position]
+
+        // Check if the chatItem already has a TTS file
+        if (chatItem.fileNames.isNotEmpty()) {
+            return
+        }
         val apiUrl = ConfigurationManager.getAppModeApiUrl()
         utilityTools.sendTTSRequest(
             message,
