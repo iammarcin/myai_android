@@ -507,34 +507,4 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
-
-    private fun playAudioFromUrl(audioUrl: String) {
-        if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer().apply {
-                setAudioStreamType(AudioManager.STREAM_MUSIC)
-                setDataSource(audioUrl)
-                isLooping = false
-                prepareAsync()
-            }
-
-            mediaPlayer?.setOnPreparedListener {
-                it.start()
-            }
-
-            mediaPlayer?.setOnCompletionListener {
-                it.release()
-                mediaPlayer = null
-                Toast.makeText(this@MainActivity, "Audio playback finished", Toast.LENGTH_SHORT).show()
-            }
-
-            mediaPlayer?.setOnErrorListener { mp, what, extra ->
-                mp.release()
-                mediaPlayer = null
-                Toast.makeText(this@MainActivity, "Error playing audio", Toast.LENGTH_SHORT).show()
-                true
-            }
-        } else {
-            Toast.makeText(this@MainActivity, "Audio is already playing", Toast.LENGTH_SHORT).show()
-        }
-    }
 }
