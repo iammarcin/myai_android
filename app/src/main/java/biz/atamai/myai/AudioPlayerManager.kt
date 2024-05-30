@@ -21,7 +21,7 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
         setupPlayButtonClickListener()
     }
 
-    fun setupMediaPlayer(audioUri: Uri?) {
+    fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false) {
         currentUri = audioUri
         releaseMediaPlayer() // Release any existing player
         mediaPlayer = MediaPlayer().apply {
@@ -30,6 +30,8 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                 isPrepared = true
                 binding.seekBar.max = mp.duration  // Set maximum value of the seek bar
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                if (autoPlay)
+                    binding.playButton.performClick()
             }
 
             setOnCompletionListener {

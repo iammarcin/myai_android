@@ -51,7 +51,7 @@ class ChatAdapter(
         )
     }
 
-    inner class ChatViewHolder(private val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ChatViewHolder(val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             // Initialize Markwon
@@ -112,7 +112,7 @@ class ChatAdapter(
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0])
+                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], true)
                 audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button
                 binding.transcribeButton.visibility = View.VISIBLE
@@ -194,8 +194,6 @@ class ChatAdapter(
                     }
                     R.id.tts -> {
                         // Handle tts
-                        //utilityTools.sendTTSRequest(chatItem.message, apiUrl)
-                        //(context as MainActivity).handleTTSRequest(chatItem.message)
                         sendTTSRequest(chatItem.message, position)
                         true
                     }
@@ -228,16 +226,13 @@ class ChatAdapter(
         )
     }
 
+    // upon receiving TTS response - we have to update chat item with audio file
     private fun handleTTSCompletedResponse(audioUrl: String, position: Int) {
         println("audioUrl: $audioUrl")
         (context as MainActivity).runOnUiThread {
-            // Add the audio URL to the corresponding chat item
-
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(audioUrl))
             notifyItemChanged(position)
-
-
         }
     }
 
