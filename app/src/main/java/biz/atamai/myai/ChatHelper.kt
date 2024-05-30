@@ -171,6 +171,11 @@ class ChatHelper(
                 continue
             }
 
+            // if message is empty, but files are present - it means that it is attached audio file or recording that was transcribed... so we don't need it
+            if (message.isEmpty() && fileNames.isNotEmpty()) {
+                continue
+            }
+
             // Create and add ChatItem if it passes the check
             val chatItem = ChatItem(
                 message = message,
