@@ -112,6 +112,7 @@ class ChatAdapter(
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
+                println("CHAT ADATPER EXECUTED - AUDIO PLAYER")
                 audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
                 audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button - but only for uploaded files (non tts)
@@ -217,6 +218,7 @@ class ChatAdapter(
     }
 
     fun sendTTSRequest(message: String, position: Int) {
+        println("Sending TTS request - EXECUTED")
         (context as MainActivity).showProgressBar()
         val chatItem = chatItems[position]
 

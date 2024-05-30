@@ -290,7 +290,7 @@ class MainActivity : AppCompatActivity() {
                     // it should be always Int - but we have to do it - as callback from DBHelper is Any
                     if (messageId is Int) {
                         newChatItem.messageId = messageId
-                        chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
+                        //chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
                     }
                 }
             }

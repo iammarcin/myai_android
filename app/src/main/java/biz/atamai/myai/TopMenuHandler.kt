@@ -123,7 +123,7 @@ class TopMenuHandler(
 
         dialog.window?.setLayout(
             FrameLayout.LayoutParams.MATCH_PARENT,
-            (context.resources.displayMetrics.heightPixels * 0.6).toInt()
+            (context.resources.displayMetrics.heightPixels * 0.7).toInt()
         )
 
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
@@ -253,7 +253,7 @@ class TopMenuHandler(
                 ConfigurationManager.setTTSStreaming(isChecked)
             })
 
-            addView(createSwitchRow("Auto execute", ConfigurationManager.getTTSAutoExecute()) { isChecked ->
+            addView(createSwitchRow("Auto trigger TTS upon AI response", ConfigurationManager.getTTSAutoExecute()) { isChecked ->
                 ConfigurationManager.setTTSAutoExecute(isChecked)
             })
 

@@ -67,6 +67,7 @@ object DatabaseHelper {
 
         when (action) {
             "db_new_session" -> {
+                println("Db_new_session response: $response")
                 val sessionId = jsonResponse.getJSONObject("message").getString("result")
                 setCurrentDBSessionID(sessionId)
                 callback?.invoke(sessionId)
@@ -80,6 +81,7 @@ object DatabaseHelper {
                 mainActivity.chatHelper.restoreSessionData(sessionData)
             }
             "db_new_message" -> {
+                println("Db_new_message response: $response")
                 val messageContent = jsonResponse.getJSONObject("message")
                 val messageId = messageContent.getString("result")
 
