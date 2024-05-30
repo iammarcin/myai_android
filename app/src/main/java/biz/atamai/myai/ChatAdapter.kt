@@ -112,10 +112,14 @@ class ChatAdapter(
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], true)
+                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
                 audioPlayerManagers.add(audioPlayerManager)
-                // set transcribe button
-                binding.transcribeButton.visibility = View.VISIBLE
+                // set transcribe button - but only for uploaded files (non tts)
+                if (chatItem.isTTS) {
+                    binding.transcribeButton.visibility = View.GONE
+                } else {
+                    binding.transcribeButton.visibility = View.VISIBLE
+                }
 
                 binding.transcribeButton.setOnClickListener {
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
@@ -232,6 +236,7 @@ class ChatAdapter(
         (context as MainActivity).runOnUiThread {
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(audioUrl))
+            chatItem.isTTS = true
             notifyItemChanged(position)
         }
     }

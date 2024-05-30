@@ -79,7 +79,8 @@ class FileAttachmentHandler(
             val filePath = getFilePathFromUri(uri)
             if (filePath != null) {
                 val fileUri = Uri.fromFile(File(filePath))
-                activity.addMessageToChat("", listOf(), listOf(fileUri))
+                val chatItem = activity.addMessageToChat("", listOf(), listOf(fileUri))
+                chatItem.isTTS = false // when uploaded we set it it to false on purpose (we treat TTS diff way)
                 activity.hideProgressBar()
                 decrementUploadCounter()
                 return
