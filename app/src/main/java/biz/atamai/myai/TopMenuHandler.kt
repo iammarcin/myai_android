@@ -123,7 +123,7 @@ class TopMenuHandler(
 
         dialog.window?.setLayout(
             FrameLayout.LayoutParams.MATCH_PARENT,
-            (context.resources.displayMetrics.heightPixels * 0.4).toInt()
+            (context.resources.displayMetrics.heightPixels * 0.6).toInt()
         )
 
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
@@ -189,7 +189,7 @@ class TopMenuHandler(
         return when (layoutId) {
             1 -> createGeneralFragmentView()
             2 -> createTextFragmentView()
-            3 -> createAudioFragmentView()
+            3 -> createTTSFragmentView()
             4 -> createSpeechFragmentView()
             else -> View(context)
         }
@@ -240,16 +240,39 @@ class TopMenuHandler(
         }
     }
 
-    private fun createAudioFragmentView(): View {
+    private fun createTTSFragmentView(): View {
         return LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSeekBarRow("Stability", 1, 0.05f, ConfigurationManager.getAudioStability()) { value ->
-                ConfigurationManager.setAudioStability(value)
+            addView(createTextEditRow("Model", ConfigurationManager.getTTSModelName(), isPassword = false, additionalText = "Possible values: tts-1, tts-1-hd", ) { value ->
+                ConfigurationManager.setTTSModelName(value)
             })
-            addView(createSeekBarRow("Similarity", 1, 0.05f, ConfigurationManager.getAudioSimilarity()) { value ->
-                ConfigurationManager.setAudioSimilarity(value)
+
+            addView(createSwitchRow("Streaming", ConfigurationManager.getIsStreamingEnabled()) { isChecked ->
+                ConfigurationManager.setIsStreamingEnabled(isChecked)
+            })
+
+            addView(createTextLabelRow(""))
+            addView(createTextLabelRow("OpenAI"))
+            
+            addView(createTextEditRow("Voice", ConfigurationManager.getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
+                ConfigurationManager.setTTSVoice(value)
+            })
+
+            // speed
+            addView(createSeekBarRow("Speed", 4, 0.05f, ConfigurationManager.getTTSSpeed()) { value ->
+                ConfigurationManager.setTTSSpeed(value)
+            })
+
+            addView(createTextLabelRow(""))
+            addView(createTextLabelRow("Elevenlabs"))
+
+            addView(createSeekBarRow("Stability", 1, 0.05f, ConfigurationManager.getTTSStability()) { value ->
+                ConfigurationManager.setTTSStability(value)
+            })
+            addView(createSeekBarRow("Similarity", 1, 0.05f, ConfigurationManager.getTTSSimilarity()) { value ->
+                ConfigurationManager.setTTSSimilarity(value)
             })
         }
     }
@@ -306,9 +329,9 @@ class TopMenuHandler(
     }
 
     // for normal text or password / token
-    private fun createTextEditRow(label: String, initialValue: String, isPassword: Boolean = false, onValueChanged: (String) -> Unit, ): LinearLayout {
+    private fun createTextEditRow(label: String, initialValue: String, isPassword: Boolean = false, additionalText: String? = null, onValueChanged: (String) -> Unit, ): LinearLayout {
         return LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
+            orientation = LinearLayout.VERTICAL
             setPadding(0, 16, 0, 16)
 
             val textView = TextView(context).apply {
@@ -337,16 +360,44 @@ class TopMenuHandler(
             }
 
             addView(textView, LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.3f
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ))
 
             addView(editText, LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.7f
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ))
+
+            additionalText?.let {
+                val additionalTextView = TextView(context).apply {
+                    text = it
+                    textSize = 12f // smaller font size
+                    setTextColor(ContextCompat.getColor(context, R.color.top_left_menu_date_text_color)) // light gray color
+                    setPadding(8, 4, 0, 0)
+                }
+                addView(additionalTextView, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                ))
+            }
         }
     }
 
+    private fun createTextLabelRow(label: String): LinearLayout {
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 16, 0, 16)
 
+            val textView = TextView(context).apply {
+                text = label
+                textSize = 16f // larger font size for subsection labels
+                setTypeface(null, Typeface.BOLD) // make it bold
+                setTextColor(ContextCompat.getColor(context, R.color.white))
+            }
+
+            addView(textView, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ))
+        }
+    }
 
     private fun createSeekBarRow(label: String, max: Int, step: Float, initialValue: Float, onValueChanged: (Float) -> Unit): LinearLayout {
         return LinearLayout(context).apply {

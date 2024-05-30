@@ -16,8 +16,12 @@ object ConfigurationManager {
     private const val GENERAL_TEST_DATA = "general_test_data"
     private const val SPEECH_LANGUAGE = "speech_language"
     private const val SPEECH_TEMPERATURE = "speech_temperature"
-    private const val AUDIO_STABILITY = "audio_stability"
-    private const val AUDIO_SIMILARITY = "audio_similarity"
+    private const val TTS_STABILITY = "tts_stability"
+    private const val TTS_SIMILARITY = "tts_similarity"
+    private const val TTS_VOICE = "tts_voice"
+    private const val TTS_STREAMING = "tts_streaming"
+    private const val TTS_SPEED = "tts_speed"
+    private const val TTS_MODEL_NAME = "tts_model_name"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -42,8 +46,12 @@ object ConfigurationManager {
         GENERAL_TEST_DATA to false,
         SPEECH_LANGUAGE to "en",
         SPEECH_TEMPERATURE to 0.0f,
-        AUDIO_STABILITY to 0.0f,
-        AUDIO_SIMILARITY to 0.0f,
+        TTS_STABILITY to 0.0f,
+        TTS_SIMILARITY to 0.0f,
+        TTS_VOICE to "alloy",
+        TTS_STREAMING to false,
+        TTS_SPEED to 1.0f,
+        TTS_MODEL_NAME to "tts-1",
         AUTH_TOKEN_FOR_BACKEND to "",
 
         // Add other default values
@@ -97,8 +105,12 @@ object ConfigurationManager {
     fun getUseTestData() = getBoolean(GENERAL_TEST_DATA, defaultSettings[GENERAL_TEST_DATA] as Boolean)
     fun getSpeechLanguage() = getString(SPEECH_LANGUAGE, defaultSettings[SPEECH_LANGUAGE] as String)
     fun getSpeechTemperature() = getFloat(SPEECH_TEMPERATURE, defaultSettings[SPEECH_TEMPERATURE] as Float)
-    fun getAudioStability() = getFloat(AUDIO_STABILITY, defaultSettings[AUDIO_STABILITY] as Float)
-    fun getAudioSimilarity() = getFloat(AUDIO_SIMILARITY, defaultSettings[AUDIO_SIMILARITY] as Float)
+    fun getTTSStability() = getFloat(TTS_STABILITY, defaultSettings[TTS_STABILITY] as Float)
+    fun getTTSSimilarity() = getFloat(TTS_SIMILARITY, defaultSettings[TTS_SIMILARITY] as Float)
+    fun getTTSVoice() = getString(TTS_VOICE, defaultSettings[TTS_VOICE] as String)
+    fun getTTSStreaming() = getBoolean(TTS_STREAMING, defaultSettings[TTS_STREAMING] as Boolean)
+    fun getTTSSpeed() = getFloat(TTS_SPEED, defaultSettings[TTS_SPEED] as Float)
+    fun getTTSModelName() = getString(TTS_MODEL_NAME, defaultSettings[TTS_MODEL_NAME] as String)
     fun getAuthTokenForBackend() = getString(AUTH_TOKEN_FOR_BACKEND, defaultSettings[AUTH_TOKEN_FOR_BACKEND] as String)
 
     // setter methods
@@ -113,8 +125,12 @@ object ConfigurationManager {
     fun setUseTestData(value: Boolean) = setBoolean(GENERAL_TEST_DATA, value)
     fun setSpeechLanguage(value: String) = setString(SPEECH_LANGUAGE, value.lowercase())
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
-    fun setAudioStability(value: Float) = setFloat(AUDIO_STABILITY, value)
-    fun setAudioSimilarity(value: Float) = setFloat(AUDIO_SIMILARITY, value)
+    fun setTTSStability(value: Float) = setFloat(TTS_STABILITY, value)
+    fun setTTSSimilarity(value: Float) = setFloat(TTS_SIMILARITY, value)
+    fun setTTSVoice(value: String) = setString(TTS_VOICE, value)
+    fun setTTSStreaming(value: Boolean) = setBoolean(TTS_STREAMING, value)
+    fun setTTSSpeed(value: Float) = setFloat(TTS_SPEED, value)
+    fun setTTSModelName(value: String) = setString(TTS_MODEL_NAME, value)
     fun setAuthTokenForBackend(value: String) = setString(AUTH_TOKEN_FOR_BACKEND, value)
 
     // used for API calls - to prepare dict with all settings
@@ -128,8 +144,12 @@ object ConfigurationManager {
                 "streaming" to getIsStreamingEnabled(),
             ),
             "tts" to mapOf(
-                "stability" to getAudioStability(),
-                "similarity_boost" to getAudioSimilarity()
+                "stability" to getTTSStability(),
+                "similarity_boost" to getTTSSimilarity(),
+                "voice" to getTTSVoice(),
+                "streaming" to getTTSStreaming(),
+                "speed" to getTTSSpeed(),
+                "model" to getTTSModelName(),
             ),
             "speech" to mapOf(
                 "language" to getSpeechLanguage(),
