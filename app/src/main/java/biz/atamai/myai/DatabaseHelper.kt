@@ -97,10 +97,31 @@ object DatabaseHelper {
         }
     }
 
-    suspend fun updateDBMessage(position: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
-        val chatItem = mainActivity.chatItems[position]
-        val messageId = chatItem.messageId ?: return
+    suspend fun addNewDBMessage(chatItem: ChatItem) {
+        sendDBRequest(
+            "db_new_message",
+            mapOf(
+                "customer_id" to 1,
+                "session_id" to (getCurrentDBSessionID() ?: ""),
+                "sender" to (chatItem.aiCharacterName ?: "AI"),
+                "message" to chatItem.message,
+                "image_locations" to chatItem.imageLocations,
+                "file_locations" to chatItem.fileNames,
+                "chat_history" to mainActivity.chatItems,
+            )
+        ) { messageId ->
+            // it should be always Int - but we have to do it - as callback from DBHelper is Any
+            if (messageId is Int) {
+                chatItem.messageId = messageId
+                // this is commented out on purpose - because (of course) it triggered bind in ChatAdapter
+                // but it wasn't needed because no changes in UI and btw it was causing TTS file to be played (which wasn't exactly what we wanted - as sometimes it collided with real execution of TTS autoplay)
+                //chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
+            }
+        }
+    }
 
+    // update DB message with new message and attached files
+    suspend fun updateDBMessage(messageId: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
         sendDBRequest(
             "db_edit_message",
             mapOf(
@@ -114,7 +135,7 @@ object DatabaseHelper {
         )
     }
 
-    // upon receving data from DB - we parse session data to later display them
+    // upon receiving data from DB - we parse session data to later display them
     // for the moment used in top left menu
     private fun parseSessions(response: String): List<ChatSessionForTopLeftMenu> {
         val jsonObject = JSONObject(response)
@@ -152,7 +173,6 @@ object DatabaseHelper {
 
             //handle click on session
             sessionViewBinding.root.setOnClickListener {
-                println("Session ID: ${session.sessionId}")
                 // get data for this specific session
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest("db_get_user_session", mapOf("session_id" to session.sessionId))

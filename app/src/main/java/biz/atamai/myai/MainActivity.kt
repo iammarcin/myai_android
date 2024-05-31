@@ -269,30 +269,14 @@ class MainActivity : AppCompatActivity() {
             startStreaming(message, position)
             // edit message in DB
             CoroutineScope(Dispatchers.Main).launch {
-                DatabaseHelper.updateDBMessage(position, message, attachedImageLocations, attachedFiles)
+                val messageId = chatItems[position].messageId ?: return@launch // Ensure messageId is not null
+                DatabaseHelper.updateDBMessage(messageId, message, attachedImageLocations, attachedFiles)
             }
         } ?: run {
             val newChatItem = addMessageToChat(message, attachedImageLocations, attachedFiles)
             startStreaming(message)
             CoroutineScope(Dispatchers.Main).launch {
-                DatabaseHelper.sendDBRequest(
-                    "db_new_message",
-                    mapOf(
-                        "customer_id" to 1,
-                        "session_id" to (chatHelper.getCurrentDBSessionID() ?: ""),
-                        "sender" to (newChatItem.aiCharacterName ?: "AI"),
-                        "message" to newChatItem.message,
-                        "image_locations" to newChatItem.imageLocations,
-                        "file_locations" to newChatItem.fileNames,
-                        "chat_history" to chatItems
-                    )
-                ) { messageId ->
-                    // it should be always Int - but we have to do it - as callback from DBHelper is Any
-                    if (messageId is Int) {
-                        newChatItem.messageId = messageId
-                        //chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
-                    }
-                }
+                DatabaseHelper.addNewDBMessage(newChatItem)
             }
         }
         chatHelper.resetInputArea()
@@ -384,50 +368,22 @@ class MainActivity : AppCompatActivity() {
                         if (ConfigurationManager.getTTSAutoExecute()) {
                             showProgressBar()
                             chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
-
                         }
                         // save to DB
                         val currentMessage = chatItems[currentResponseItemPosition!!]
-                        CoroutineScope(Dispatchers.Main).launch {
-                            // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
-                            if (responseItemPosition == null) {
-                                DatabaseHelper.sendDBRequest(
-                                    "db_new_message",
-                                    mapOf(
-                                        "customer_id" to 1,
-                                        "session_id" to ( chatHelper.getCurrentDBSessionID() ?: ""),
-                                        "sender" to (currentMessage.aiCharacterName ?: "AI"),
-                                        "message" to currentMessage.message,
-                                        "image_locations" to currentMessage.imageLocations,
-                                        "file_locations" to currentMessage.fileNames,
-                                        "chat_history" to chatItems
-                                    )
-                                ) { messageId ->
-                                    // it should be always Int - but we have to do it - as callback from DBHelper is Any
-                                    if (messageId is Int) {
-                                        chatItems[currentResponseItemPosition!!].messageId = messageId
-                                        chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
-                                    }
-                                }
-                            } else {
-                                // if it is after user updated their message - AI response also needs to be overwritten in DB
-                                val messageId = currentMessage.messageId ?: return@launch // Ensure messageId is not null
 
-                                DatabaseHelper.sendDBRequest(
-                                    "db_edit_message",
-                                    mapOf(
-                                        "session_id" to ( chatHelper.getCurrentDBSessionID() ?: ""),
-                                        "message_id" to messageId,
-                                        "update_text" to currentMessage.message,
-                                        "image_locations" to currentMessage.imageLocations,
-                                        "file_locations" to currentMessage.fileNames,
-                                        "chat_history" to chatItems,
-                                    )
-                                )
+                        // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
+                        if (responseItemPosition == null) {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                DatabaseHelper.addNewDBMessage(currentMessage)
+                            }
+                        } else {
+                            // if it is after user updated their message - AI response also needs to be overwritten in DB
+                            CoroutineScope(Dispatchers.Main).launch {
+                                val messageId = currentMessage.messageId ?: return@launch // Ensure messageId is not null
+                                DatabaseHelper.updateDBMessage(messageId, currentMessage.message, currentMessage.imageLocations, currentMessage.fileNames)
                             }
                         }
-
-
                     }
                 }
             ),
