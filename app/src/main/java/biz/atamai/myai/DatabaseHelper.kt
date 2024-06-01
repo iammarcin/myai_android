@@ -12,6 +12,12 @@ import org.json.JSONObject
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// sealed class because same we can have different type of DBResponses
+sealed class DBResponse {
+    data class SessionId(val sessionId: String) : DBResponse()
+    data class MessageId(val messageId: Int) : DBResponse()
+    data class MessageIds(val userMessageId: Int, val aiMessageId: Int) : DBResponse()
+}
 
 object DatabaseHelper {
     private lateinit var mainActivity: MainActivity
@@ -24,7 +30,8 @@ object DatabaseHelper {
         setCurrentDBSessionID = setSessionID
     }
 
-    suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((Any) -> Unit)? = null) {
+    // (DBResponse) - callback type (it's sealed class set above)
+    suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((DBResponse) -> Unit)? = null) {
         CoroutineScope(Dispatchers.IO).launch {
             // serialization of data (uri -> string) explained in ChatItem
             val serializableChatItems = mainActivity.chatItems.map { it.toSerializableMap() }
@@ -42,7 +49,7 @@ object DatabaseHelper {
             val handler = ResponseHandler(
                 handlerType = HandlerType.NonStreaming(
                     onResponseReceived = { response ->
-                        println("DB RESPOSNE: $response")
+                        println("DB RESPONSE: $response")
                         CoroutineScope(Dispatchers.Main).launch {
                             handleDBResponse(action, response, callback)
                         }
@@ -62,7 +69,7 @@ object DatabaseHelper {
         }
     }
 
-    private fun handleDBResponse(action: String, response: String, callback: ((Any) -> Unit)? = null) {
+    private fun handleDBResponse(action: String, response: String, callback: ((DBResponse) -> Unit)? = null) {
         val jsonResponse = JSONObject(response)
 
         when (action) {
@@ -70,7 +77,8 @@ object DatabaseHelper {
                 println("Db_new_session response: $response")
                 val sessionId = jsonResponse.getJSONObject("message").getString("result")
                 setCurrentDBSessionID(sessionId)
-                callback?.invoke(sessionId)
+
+                callback?.invoke(DBResponse.SessionId(sessionId))
             }
             "db_all_sessions_for_user", "db_search_messages" -> {
                 val sessions = parseSessions(response)
@@ -82,40 +90,48 @@ object DatabaseHelper {
             }
             "db_new_message" -> {
                 println("Db_new_message response: $response")
-                val messageContent = jsonResponse.getJSONObject("message")
-                val messageId = messageContent.getString("result")
+                val messageContent = jsonResponse.getJSONObject("message").getJSONObject("result")
+                val userMessageId = messageContent.getString("userMessageId").toInt()
+                val aiMessageId = messageContent.getString("aiMessageId").toInt()
 
                 // if current DB session is empty it means that its new chat, so we have to set it - so messages are assigned to proper session in DB
                 // and in fact db_new_message in such case should return additional value - session_id
                 if (getCurrentDBSessionID().isNullOrEmpty())
                     setCurrentDBSessionID(messageContent.getString("sessionId"))
-                // if messageId is not null and its number - lets change it to integer
-                if (messageId.toIntOrNull() != null) {
-                    callback?.invoke(messageId.toInt())
-                }
+
+                // this returns 2 values - userMessageId and aiMessageId
+                callback?.invoke(DBResponse.MessageIds(userMessageId, aiMessageId))
             }
         }
     }
 
-    suspend fun addNewDBMessage(chatItem: ChatItem) {
+    suspend fun addNewDBMessage(userMessage: ChatItem, aiResponse: ChatItem) {
         sendDBRequest(
             "db_new_message",
             mapOf(
                 "customer_id" to 1,
                 "session_id" to (getCurrentDBSessionID() ?: ""),
-                "sender" to (chatItem.aiCharacterName ?: "AI"),
-                "message" to chatItem.message,
-                "image_locations" to chatItem.imageLocations,
-                "file_locations" to chatItem.fileNames,
+                "userMessage" to mapOf(
+                        "sender" to "User",
+                        "message" to userMessage.message,
+                        "image_locations" to userMessage.imageLocations,
+                        "file_locations" to userMessage.fileNames,
+                    ),
+                "aiResponse" to mapOf(
+                        "sender" to "AI",
+                        "message" to aiResponse.message,
+                        "image_locations" to aiResponse.imageLocations,
+                        "file_locations" to aiResponse.fileNames,
+                    ),
                 "chat_history" to mainActivity.chatItems,
             )
-        ) { messageId ->
-            // it should be always Int - but we have to do it - as callback from DBHelper is Any
-            if (messageId is Int) {
-                chatItem.messageId = messageId
-                // this is commented out on purpose - because (of course) it triggered bind in ChatAdapter
-                // but it wasn't needed because no changes in UI and btw it was causing TTS file to be played (which wasn't exactly what we wanted - as sometimes it collided with real execution of TTS autoplay)
-                //chatAdapter.notifyItemChanged(chatItems.indexOf(newChatItem))
+        ) { response ->
+            if (response is DBResponse.MessageIds) {
+                val (userMessageId, aiMessageId) = response
+                userMessage.messageId = userMessageId
+                // if its 0 - it means there was problem with text generation
+                if (aiMessageId > 0)
+                    aiResponse.messageId = aiMessageId
             }
         }
     }
