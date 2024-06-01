@@ -286,7 +286,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     // streaming request to API - text
-    private fun startStreaming(userInput: String, responseItemPosition: Int? = null) {
+    // userInput - clear
+    // responseItemPosition - if it's null - it's new message - otherwise it's edited message
+    // chatItemOfUserMessage - this is to store chatItem of user message - so we can save in DB (goal is to write to DB at the end of whole chat exchange - so user sees results earlier)
+    private fun startStreaming(userInput: String, responseItemPosition: Int? = null, chatItemOfUserMessage: ChatItem? = null) {
         showProgressBar()
 
         // collect chat history (needed to send it API to get whole context of chat)
