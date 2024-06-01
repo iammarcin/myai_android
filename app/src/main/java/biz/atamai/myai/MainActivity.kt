@@ -371,13 +371,12 @@ class MainActivity : AppCompatActivity() {
                         // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
                         if (responseItemPosition == null) {
                             CoroutineScope(Dispatchers.Main).launch {
-                                DatabaseHelper.addNewDBMessage(currentUserMessage, currentAIResponse)
+                                DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentUserMessage, currentAIResponse)
                             }
                         } else {
                             // if it is after user updated their message - AI response also needs to be overwritten in DB
                             CoroutineScope(Dispatchers.Main).launch {
-                                val messageId = currentAIResponse.messageId ?: return@launch // Ensure messageId is not null
-                                DatabaseHelper.updateDBMessage(messageId, currentAIResponse.message, currentAIResponse.imageLocations, currentAIResponse.fileNames)
+                                DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentUserMessage, currentAIResponse)
                             }
                         }
                     }

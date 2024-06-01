@@ -105,39 +105,45 @@ object DatabaseHelper {
         }
     }
 
-    suspend fun addNewDBMessage(userMessage: ChatItem, aiResponse: ChatItem) {
+    suspend fun addNewOrEditDBMessage(method: String, userMessage: ChatItem, aiResponse: ChatItem) {
         sendDBRequest(
-            "db_new_message",
+            method,
             mapOf(
                 "customer_id" to 1,
                 "session_id" to (getCurrentDBSessionID() ?: ""),
                 "userMessage" to mapOf(
                         "sender" to "User",
                         "message" to userMessage.message,
+                        "message_id" to userMessage.messageId,
                         "image_locations" to userMessage.imageLocations,
                         "file_locations" to userMessage.fileNames,
                     ),
                 "aiResponse" to mapOf(
                         "sender" to "AI",
                         "message" to aiResponse.message,
+                        "message_id" to aiResponse.messageId,
                         "image_locations" to aiResponse.imageLocations,
                         "file_locations" to aiResponse.fileNames,
                     ),
                 "chat_history" to mainActivity.chatItems,
             )
         ) { response ->
-            if (response is DBResponse.MessageIds) {
-                val (userMessageId, aiMessageId) = response
-                userMessage.messageId = userMessageId
-                // if its 0 - it means there was problem with text generation
-                if (aiMessageId > 0)
-                    aiResponse.messageId = aiMessageId
+            // if its new message - update message id in chatItem
+            // if its edit - we dont need to
+            if (method == "db_new_message" ) {
+                if (response is DBResponse.MessageIds) {
+                    val (userMessageId, aiMessageId) = response
+                    userMessage.messageId = userMessageId
+                    // if its 0 - it means there was problem with text generation
+                    if (aiMessageId > 0)
+                        aiResponse.messageId = aiMessageId
+                }
             }
         }
     }
 
     // update DB message with new message and attached files
-    suspend fun updateDBMessage(messageId: Int, message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
+    /*suspend fun updateDBMessage(userMessage: ChatItem, aiResponse: ChatItem) {
         sendDBRequest(
             "db_edit_message",
             mapOf(
@@ -149,7 +155,7 @@ object DatabaseHelper {
                 "chat_history" to mainActivity.chatItems,
             )
         )
-    }
+    }*/
 
     // upon receiving data from DB - we parse session data to later display them
     // for the moment used in top left menu
