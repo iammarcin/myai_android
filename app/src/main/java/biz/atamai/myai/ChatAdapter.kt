@@ -22,6 +22,7 @@ class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
     private val context: Context,
+    private val characterManager: CharacterManager,
     private val onEditMessage: (position: Int, message: String) -> Unit
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
@@ -78,14 +79,15 @@ class ChatAdapter(
             // Render message using Markwon
             markwon.setMarkdown(binding.messageTextView, chatItem.message)
 
-            binding.avatarImageView.setImageResource(
-                if (chatItem.isUserMessage) R.drawable.user_avatar_placeholder
-                else {
-                    println("chatItem.aiCharacterImageResId: ${chatItem.aiCharacterImageResId}")
-                    chatItem.aiCharacterImageResId ?: R.drawable.ai_avatar_placeholder
-                }
-            )
+            val avatarResId = if (chatItem.isUserMessage) {
+                R.drawable.user_avatar_placeholder
+            } else {
+                chatItem.aiCharacterName?.let { characterName ->
+                    characterManager.getCharacterImageResId(characterName)
+                } ?: R.drawable.ai_avatar_placeholder
+            }
 
+            binding.avatarImageView.setImageResource(avatarResId)
             // if URIs for images are set - those are images
             if (chatItem.imageLocations.isNotEmpty()) {
                 binding.scrollViewImages.visibility = View.VISIBLE

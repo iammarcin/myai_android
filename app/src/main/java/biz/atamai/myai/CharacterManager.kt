@@ -56,6 +56,12 @@ class CharacterManager(private val context: Context) {
         displayCharacterCards(binding, characters, onCharacterSelected)
     }
 
+    // when restoring data from DB - using just resId will not be enough (because for example if you reinstall app - IDs will be different)
+    // so we will use this method to lookup directly images based on name of character
+    fun getCharacterImageResId(characterNameForAPI: String): Int {
+        return characters.find { it.nameForAPI == characterNameForAPI }?.imageResId ?: R.drawable.ai_avatar_placeholder
+    }
+
     private fun displayCharacterCards(binding: ActivityMainBinding, characters: List<Character>, onCharacterSelected: (String) -> Unit) {
         binding.characterScrollView.removeAllViews()
         for (character in characters) {
