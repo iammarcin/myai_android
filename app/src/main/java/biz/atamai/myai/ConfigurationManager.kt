@@ -23,6 +23,11 @@ object ConfigurationManager {
     private const val TTS_SPEED = "tts_speed"
     private const val TTS_MODEL_NAME = "tts_model_name"
     private const val TTS_AUTO_EXECUTE = "tts_auto_execute"
+    private const val IMAGE_MODEL_NAME = "image_model_name"
+    private const val IMAGE_NUMBER_IMAGES = "image_number_images"
+    private const val IMAGE_SIZE = "image_model_size"
+    private const val IMAGE_QUALITY = "image_quality"
+    private const val IMAGE_DISABLE_SAFE_PROMPT = "image_disable_safe_prompt"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -54,6 +59,11 @@ object ConfigurationManager {
         TTS_SPEED to 1.0f,
         TTS_MODEL_NAME to "tts-1",
         TTS_AUTO_EXECUTE to false,
+        IMAGE_MODEL_NAME to "dall-e-3",
+        IMAGE_NUMBER_IMAGES to 1,
+        IMAGE_SIZE to 1024,
+        IMAGE_QUALITY to "standard", //hd
+        IMAGE_DISABLE_SAFE_PROMPT to false,
         AUTH_TOKEN_FOR_BACKEND to "",
 
         // Add other default values
@@ -114,6 +124,11 @@ object ConfigurationManager {
     fun getTTSSpeed() = getFloat(TTS_SPEED, defaultSettings[TTS_SPEED] as Float)
     fun getTTSModelName() = getString(TTS_MODEL_NAME, defaultSettings[TTS_MODEL_NAME] as String)
     fun getTTSAutoExecute() = getBoolean(TTS_AUTO_EXECUTE, defaultSettings[TTS_AUTO_EXECUTE] as Boolean)
+    fun getImageModelName() = getString(IMAGE_MODEL_NAME, defaultSettings[IMAGE_MODEL_NAME] as String)
+    fun getImageNumberImages() = getInt(IMAGE_NUMBER_IMAGES, defaultSettings[IMAGE_NUMBER_IMAGES] as Int)
+    fun getImageSize() = getInt(IMAGE_SIZE, defaultSettings[IMAGE_SIZE] as Int)
+    fun getImageQuality() = getString(IMAGE_QUALITY, defaultSettings[IMAGE_QUALITY] as String)
+    fun getImageDisableSafePrompt() = getBoolean(IMAGE_DISABLE_SAFE_PROMPT, defaultSettings[IMAGE_DISABLE_SAFE_PROMPT] as Boolean)
     fun getAuthTokenForBackend() = getString(AUTH_TOKEN_FOR_BACKEND, defaultSettings[AUTH_TOKEN_FOR_BACKEND] as String)
 
     // setter methods
@@ -135,6 +150,12 @@ object ConfigurationManager {
     fun setTTSSpeed(value: Float) = setFloat(TTS_SPEED, value)
     fun setTTSModelName(value: String) = setString(TTS_MODEL_NAME, value)
     fun setTTSAutoExecute(value: Boolean) = setBoolean(TTS_AUTO_EXECUTE, value)
+    fun setImageModelName(value: String) = setString(IMAGE_MODEL_NAME, value)
+    fun setImageNumberImages(value: Int) = setInt(IMAGE_NUMBER_IMAGES, value)
+    fun setImageSize(value: Int) = setInt(IMAGE_SIZE, value)
+    fun setImageQuality(value: String) = setString(IMAGE_QUALITY, value)
+    fun setImageDisableSafePrompt(value: Boolean) = setBoolean(IMAGE_DISABLE_SAFE_PROMPT, value)
+
     fun setAuthTokenForBackend(value: String) = setString(AUTH_TOKEN_FOR_BACKEND, value)
 
     // used for API calls - to prepare dict with all settings
@@ -158,6 +179,13 @@ object ConfigurationManager {
             "speech" to mapOf(
                 "language" to getSpeechLanguage(),
                 "temperature" to getSpeechTemperature()
+            ),
+            "image" to mapOf(
+                "model" to getImageModelName(),
+                "number_of_images" to getImageNumberImages(),
+                "size_of_image" to getImageSize(),
+                "quality" to getImageQuality(),
+                "disable_safe_prompt_adjust" to getImageDisableSafePrompt(),
             ),
             "general" to mapOf(
                 "returnTestData" to getUseTestData(),
