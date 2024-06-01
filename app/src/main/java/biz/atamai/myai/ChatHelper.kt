@@ -189,10 +189,7 @@ class ChatHelper(
             if (chatItemJson.has("messageId") && chatItemJson.getInt("messageId") != 0) {
                 chatItem.messageId = chatItemJson.getInt("messageId")
             }
-            // conditionally set aiCharacterImageResId
-            if (!chatItem.isUserMessage) {
-                chatItem.aiCharacterImageResId = chatItemJson.optInt("aiCharacterImageResId", R.drawable.brainstorm_assistant)
-            }
+
             chatItems.add(chatItem)
         }
 

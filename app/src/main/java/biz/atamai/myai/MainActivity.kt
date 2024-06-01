@@ -346,7 +346,7 @@
             // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
             if (responseItemPosition == null) {
                 // This is a new message, add a new response item
-                val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI, aiCharacterImageResId = character?.imageResId)
+                val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI)
                 chatItems.add(responseItem)
                 currentResponseItemPosition = chatItems.size - 1
                 chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
