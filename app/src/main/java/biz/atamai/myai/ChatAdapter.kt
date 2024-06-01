@@ -41,10 +41,12 @@ class ChatAdapter(
             onResponseReceived = { response ->
                 (context as MainActivity).runOnUiThread {
                     (context as MainActivity).handleTextMessage(response)
+                    (context as MainActivity).hideProgressBar()
                 }
             },
             onError = { error ->
                 (context as MainActivity).runOnUiThread {
+                    (context as MainActivity).hideProgressBar()
                     Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -112,7 +114,6 @@ class ChatAdapter(
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                println("CHAT ADATPER EXECUTED - AUDIO PLAYER")
                 audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
                 audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button - but only for uploaded files (non tts)
@@ -123,6 +124,7 @@ class ChatAdapter(
                 }
 
                 binding.transcribeButton.setOnClickListener {
+                    (context as MainActivity).showProgressBar()
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
                     utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")

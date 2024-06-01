@@ -319,7 +319,7 @@ class MainActivity : AppCompatActivity() {
         println(chatItems)
         println("22222")
         println(chatHistory)
-        
+
         val apiDataModel = APIDataModel(
             category = "text",
             action = "chat",
