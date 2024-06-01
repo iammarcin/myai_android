@@ -80,7 +80,10 @@ class ChatAdapter(
 
             binding.avatarImageView.setImageResource(
                 if (chatItem.isUserMessage) R.drawable.user_avatar_placeholder
-                else chatItem.aiCharacterImageResId ?: R.drawable.ai_avatar_placeholder
+                else {
+                    println("chatItem.aiCharacterImageResId: ${chatItem.aiCharacterImageResId}")
+                    chatItem.aiCharacterImageResId ?: R.drawable.ai_avatar_placeholder
+                }
             )
 
             // if URIs for images are set - those are images
