@@ -180,8 +180,7 @@ class FileAttachmentHandler(
     private fun incrementUploadCounter() {
         uploadCounter++
         disableActiveButtons()
-        activity.showProgressBar()
-
+        activity.showProgressBar("Uploading files")
     }
     private fun decrementUploadCounter() {
         uploadCounter--

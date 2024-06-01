@@ -124,7 +124,7 @@ class ChatAdapter(
                 }
 
                 binding.transcribeButton.setOnClickListener {
-                    (context as MainActivity).showProgressBar()
+                    (context as MainActivity).showProgressBar("Transcription")
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
                     utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
@@ -221,7 +221,7 @@ class ChatAdapter(
 
     fun sendTTSRequest(message: String, position: Int) {
         println("Sending TTS request - EXECUTED")
-        (context as MainActivity).showProgressBar()
+        (context as MainActivity).showProgressBar("TTS")
         val chatItem = chatItems[position]
 
         // Check if the chatItem already has a TTS file

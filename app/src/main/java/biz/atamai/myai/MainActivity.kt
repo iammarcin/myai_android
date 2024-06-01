@@ -290,7 +290,7 @@ class MainActivity : AppCompatActivity() {
     // responseItemPosition - if it's null - it's new message - otherwise it's edited message
     // chatItemOfUserMessage - this is to store chatItem of user message - so we can save in DB (goal is to write to DB at the end of whole chat exchange - so user sees results earlier)
     private fun startStreaming(userInput: String, responseItemPosition: Int? = null, chatItemOfUserMessage: ChatItem? = null) {
-        showProgressBar()
+        showProgressBar("Text generation")
 
         // collect chat history (needed to send it API to get whole context of chat)
         // (excluding the latest message - as this will be sent via userPrompt), including images if any
@@ -369,7 +369,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         hideProgressBar()
                         if (ConfigurationManager.getTTSAutoExecute()) {
-                            showProgressBar()
+                            showProgressBar("TTS")
                             chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
                         }
                         // save to DB
@@ -434,12 +434,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     // PROGRESS BAR
-    fun showProgressBar() {
-        binding.progressBar.visibility = View.VISIBLE
+    fun showProgressBar(message: String = "") {
+        binding.progressContainer.visibility = View.VISIBLE
+        binding.progressText.text = message
     }
 
     fun hideProgressBar() {
-        binding.progressBar.visibility = View.GONE
+        binding.progressContainer.visibility = View.GONE
     }
 
     // permissions
