@@ -1,12 +1,16 @@
 package biz.atamai.myai
 
+import android.app.Dialog
 import android.net.Uri
+import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.TopLeftMenuChatSessionItemBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.time.LocalDateTime
@@ -142,21 +146,6 @@ object DatabaseHelper {
         }
     }
 
-    // update DB message with new message and attached files
-    /*suspend fun updateDBMessage(userMessage: ChatItem, aiResponse: ChatItem) {
-        sendDBRequest(
-            "db_edit_message",
-            mapOf(
-                "session_id" to ( getCurrentDBSessionID() ?: ""),
-                "message_id" to messageId,
-                "update_text" to message,
-                "image_locations" to attachedImageLocations,
-                "file_locations" to attachedFiles,
-                "chat_history" to mainActivity.chatItems,
-            )
-        )
-    }*/
-
     // upon receiving data from DB - we parse session data to later display them
     // for the moment used in top left menu
     private fun parseSessions(response: String): List<ChatSessionForTopLeftMenu> {
@@ -201,8 +190,48 @@ object DatabaseHelper {
                 }
                 mainActivity.binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
+
+            // Handle long-press to rename session
+            sessionViewBinding.root.setOnLongClickListener {
+
+                showSessionRenameDialog(session)
+                true
+            }
+
             drawerLayout.addView(sessionViewBinding.root)
         }
+    }
+
+    private fun showSessionRenameDialog(session: ChatSessionForTopLeftMenu) {
+        val dialog = Dialog(mainActivity)
+        dialog.setContentView(R.layout.dialog_rename_session)
+        dialog.window?.setLayout(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        val editText = dialog.findViewById<EditText>(R.id.editTextNewSessionName)
+        val buttonSubmit = dialog.findViewById<Button>(R.id.buttonSubmitNewSessionName)
+
+        editText.setText(session.sessionName)
+
+        buttonSubmit.setOnClickListener {
+            val newName = editText.text.toString().trim()
+            if (newName.isNotEmpty()) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    sendDBRequest(
+                        "db_rename_session",
+                        mapOf("session_id" to session.sessionId, "new_session_name" to newName)
+                    )
+                }
+                // Here you can handle the rename action (e.g., send it to the server)
+                dialog.dismiss()
+            } else {
+                Toast.makeText(mainActivity, "Name cannot be empty", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
     }
 
     private fun formatDateTime(input: String): String {
