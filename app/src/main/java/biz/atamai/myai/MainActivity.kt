@@ -12,6 +12,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.ChatItemBinding
 import kotlinx.coroutines.*
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
             onFetchChatSessions = {
                 CoroutineScope(Dispatchers.Main).launch {
-                    DatabaseHelper.sendDBRequest("db_all_sessions_for_user")
+                    DatabaseHelper.loadChatSessions()
                 }
             },
             onSearchMessages = { query ->
@@ -208,6 +209,18 @@ class MainActivity : AppCompatActivity() {
                         "session_name" to "New chat",
                         "ai_character_name" to "Assistant",
                     ))
+            }
+        }
+
+        // scrollview with sessions list on top left menu
+        val scrollView = binding.topLeftMenuChatSessionListScrollView
+        scrollView.viewTreeObserver.addOnScrollChangedListener {
+            val view = scrollView.getChildAt(scrollView.childCount - 1) as View
+            val diff = (view.bottom - (scrollView.height + scrollView.scrollY))
+
+            if (diff == 0) {
+                // User has scrolled to the bottom
+                DatabaseHelper.loadMoreChatSessions()
             }
         }
     }

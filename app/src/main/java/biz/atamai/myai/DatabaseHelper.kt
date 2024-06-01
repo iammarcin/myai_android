@@ -28,6 +28,11 @@ object DatabaseHelper {
     private lateinit var getCurrentDBSessionID: () -> String?
     private lateinit var setCurrentDBSessionID: (String) -> Unit
 
+    // these 3 will be needed for pagination of session list on top left menu
+    private var isLoading = false
+    private var limit = 13
+    private var offset = 0
+
     fun initialize(activity: MainActivity, getSessionID: () -> String?, setSessionID: (String) -> Unit) {
         mainActivity = activity
         getCurrentDBSessionID = getSessionID
@@ -146,6 +151,28 @@ object DatabaseHelper {
         }
     }
 
+    private suspend fun fetchChatSessions(limit: Int = 30, offset: Int = 0) {
+        sendDBRequest(
+            action = "db_all_sessions_for_user",
+            userInput = mapOf("limit" to limit, "offset" to offset)
+        ) { response ->
+            // handle response if necessary
+        }
+    }
+
+    fun loadChatSessions() {
+        CoroutineScope(Dispatchers.Main).launch {
+            isLoading = true
+            fetchChatSessions(limit, offset)
+            isLoading = false
+        }
+    }
+
+    fun loadMoreChatSessions() {
+        offset += limit
+        loadChatSessions()
+    }
+
     // upon receiving data from DB - we parse session data to later display them
     // for the moment used in top left menu
     private fun parseSessions(response: String): List<ChatSessionForTopLeftMenu> {
@@ -170,7 +197,7 @@ object DatabaseHelper {
     private fun displayChatSessions(sessions: List<ChatSessionForTopLeftMenu>) {
         val drawerLayout = mainActivity.binding.topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
 
-        drawerLayout.removeAllViews()
+        //drawerLayout.removeAllViews()
 
         sessions.forEach { session ->
             val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(mainActivity.layoutInflater, drawerLayout, false)

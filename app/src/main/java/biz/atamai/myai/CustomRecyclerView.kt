@@ -25,6 +25,11 @@ class CustomRecyclerView @JvmOverloads constructor(
         return super.onTouchEvent(e)
     }
 
+    override fun onScrolled(dx: Int, dy: Int) {
+        super.onScrolled(dx, dy)
+        println("SCROLLED ON 1")
+    }
+
     override fun performClick(): Boolean {
         super.performClick()
         return true
