@@ -28,6 +28,11 @@ sealed class HandlerType {
     data class FileUpload(
         val onResponseReceived: (String) -> Unit
     ) : HandlerType()
+
+    data class AudioStreaming(
+        val onAudioChunkReceived: (ByteArray) -> Unit,
+        val onStreamEnd: () -> Unit
+    ) : HandlerType()
 }
 
 class ResponseHandler(
@@ -80,6 +85,7 @@ class ResponseHandler(
                                 is HandlerType.Streaming -> handleStreamingResponse(body)
                                 is HandlerType.NonStreaming -> handleNonStreamingResponse(body)
                                 is HandlerType.FileUpload -> handleAudioUploadResponse(body)
+                                is HandlerType.AudioStreaming -> handleAudioStreamingResponse(body)
                             }
                         } ?: run {
                             coroutineScope.launch(Dispatchers.Main) {
@@ -93,6 +99,28 @@ class ResponseHandler(
                     onError(e)
                     println("ERROR! ${e.message}")
                 }
+            }
+        }
+    }
+
+    private fun handleAudioStreamingResponse(body: ResponseBody) {
+        coroutineScope.launch {
+            body.source().use { source ->
+                val buffer = Buffer()
+                while (true) {
+                    val read = source.read(buffer, 1024)
+                    if (read == -1L) break
+                    val chunk = buffer.readByteArray()
+                    coroutineScope.launch(Dispatchers.Main) {
+                        println("Chunk received: ${chunk.size} ")
+                        println(chunk)
+                        (handlerType as HandlerType.AudioStreaming).onAudioChunkReceived(chunk)
+                    }
+                    buffer.clear()
+                }
+            }
+            coroutineScope.launch(Dispatchers.Main) {
+                (handlerType as HandlerType.AudioStreaming).onStreamEnd()
             }
         }
     }
