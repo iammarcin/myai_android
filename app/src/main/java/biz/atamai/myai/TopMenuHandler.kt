@@ -213,7 +213,7 @@ class TopMenuHandler(
                     ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
                 } else {
                     //"http://192.168.23.66:8000/"
-                    ConfigurationManager.setAppModeApiUrl("http://192.168.1.19:8000/")
+                    ConfigurationManager.setAppModeApiUrl("http://192.168.1.110:8000/")
                 }
             })
             // token for connecting to backend API

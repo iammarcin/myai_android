@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import android.os.Environment
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import com.squareup.picasso.Picasso
 import io.noties.markwon.Markwon
+import java.io.File
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -27,7 +29,7 @@ class ChatAdapter(
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
-    private lateinit var utilityTools: UtilityTools
+    private var utilityTools: UtilityTools
 
     fun releaseMediaPlayers() {
         for (audioPlayerManager in audioPlayerManagers) {
@@ -52,10 +54,10 @@ class ChatAdapter(
                 }
             }
         )
+
     }
 
     inner class ChatViewHolder(val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
-
         init {
             // Initialize Markwon
             markwon = Markwon.create(binding.root.context)
@@ -234,9 +236,11 @@ class ChatAdapter(
             return
         }
         val apiUrl = ConfigurationManager.getAppModeApiUrl()
+        val action = if (ConfigurationManager.getTTSStreaming()) "tts_stream" else "tts_no_stream"
         utilityTools.sendTTSRequest(
             message,
             apiUrl,
+            action,
             { audioUrl -> handleTTSCompletedResponse(audioUrl, position) },
             { error ->
                 (context as MainActivity).runOnUiThread {

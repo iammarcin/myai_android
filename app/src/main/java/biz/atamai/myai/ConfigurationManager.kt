@@ -42,7 +42,7 @@ object ConfigurationManager {
         // http://192.168.1.19:8000/ - test ES
         // http://192.168.23.66:8000/ - test PT
         // "DOMAIN" - prod
-        APP_MODE_API_URL to "http://192.168.1.19:8000/",
+        APP_MODE_API_URL to "http://192.168.1.110:8000/",
         TEXT_MODEL_NAME to "GPT-4o",
         TEXT_AI_CHARACTER to "Assistant",
         TEXT_TEMPERATURE to 0.0f,
