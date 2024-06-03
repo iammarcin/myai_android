@@ -23,7 +23,9 @@ class UtilityTools(
     private val customerId = 1
 
     private var audioFile = File(storageDir, "streamed_audio.$customerId.opus")
+    private var audioUri = Uri.fromFile(audioFile).toString()
     //private var audioFile = File.createTempFile("audio", ".opus", context.cacheDir)
+
     // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
     fun uploadFileToServer(
         filePath: String?,
@@ -69,6 +71,10 @@ class UtilityTools(
         handler.sendFileRequest(fullApiUrl, apiDataModel, filePath)
     }
 
+    // UNFORTUNATELY - this is not really streaming
+    // backend generated chunks in streaming and here we receive chunk by chunk
+    // but after quite a bit of time i did not make it work... i tried with exoplayer - with custom data sources - but everytime it failed
+    // so here even though we're streaming it is just waiting until full file is received
     fun sendTTSRequest(
         message: String,
         apiUrl: String,
@@ -94,9 +100,9 @@ class UtilityTools(
                 handlerType = HandlerType.AudioStreaming(
                     onAudioChunkReceived = { chunk ->
                         saveChunkToFile(chunk)
+                        onResponseReceived(audioUri)
                     },
                     onStreamEnd = {
-                        val audioUri = Uri.fromFile(audioFile).toString()
                         onResponseReceived(audioUri)
                     }
                 ),
