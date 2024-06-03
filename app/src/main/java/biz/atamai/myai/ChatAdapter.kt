@@ -116,7 +116,7 @@ class ChatAdapter(
             // for the moment - audio - but later maybe others
             if (chatItem.fileNames.isNotEmpty()) {
                 binding.audioPlayer.visibility = View.VISIBLE
-
+                println("chatAdapter filenames EXEC")
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
@@ -228,20 +228,21 @@ class ChatAdapter(
 
     fun sendTTSRequest(message: String, position: Int) {
         println("Sending TTS request - EXECUTED")
-        (context as MainActivity).showProgressBar("TTS")
         val chatItem = chatItems[position]
 
         // Check if the chatItem already has a TTS file
         if (chatItem.fileNames.isNotEmpty()) {
             return
         }
+        (context as MainActivity).showProgressBar("TTS")
+
         val apiUrl = ConfigurationManager.getAppModeApiUrl()
         val action = if (ConfigurationManager.getTTSStreaming()) "tts_stream" else "tts_no_stream"
         utilityTools.sendTTSRequest(
             message,
             apiUrl,
             action,
-            { audioUrl -> handleTTSCompletedResponse(audioUrl, position) },
+            { result -> handleTTSCompletedResponse(result, position) },
             { error ->
                 (context as MainActivity).runOnUiThread {
                     (context as MainActivity).hideProgressBar()
@@ -252,11 +253,16 @@ class ChatAdapter(
     }
 
     // upon receiving TTS response - we have to update chat item with audio file
-    private fun handleTTSCompletedResponse(audioUrl: String, position: Int) {
-        println("audioUrl: $audioUrl")
+    private fun handleTTSCompletedResponse(result: String, position: Int) {
         (context as MainActivity).runOnUiThread {
             val chatItem = chatItems[position]
-            chatItem.fileNames = listOf(Uri.parse(audioUrl))
+
+            // Check if the audio is already playing
+            if (audioPlayerManagers.any { it.isPlaying() }) {
+                return@runOnUiThread
+            }
+
+            chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             notifyItemChanged(position)
             (context as MainActivity).hideProgressBar()

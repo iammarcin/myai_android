@@ -113,7 +113,6 @@ class ResponseHandler(
                     val chunk = buffer.readByteArray()
                     coroutineScope.launch(Dispatchers.Main) {
                         println("Chunk received: ${chunk.size} ")
-                        println(chunk)
                         (handlerType as HandlerType.AudioStreaming).onAudioChunkReceived(chunk)
                     }
                     buffer.clear()
