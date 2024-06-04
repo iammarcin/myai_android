@@ -160,8 +160,9 @@ class TopMenuHandler(
         val categories = listOf(
             "GENERAL" to 1,
             "TEXT" to 2,
-            "TTS" to 3,
-            "SPEECH" to 4,
+            "IMAGE" to 3,
+            "TTS" to 4,
+            "SPEECH" to 5,
         )
 
         val buttons = categories.map { (name, layoutId) ->
@@ -189,8 +190,9 @@ class TopMenuHandler(
         return when (layoutId) {
             1 -> createGeneralFragmentView()
             2 -> createTextFragmentView()
-            3 -> createTTSFragmentView()
-            4 -> createSpeechFragmentView()
+            3 -> createImageFragmentView()
+            4 -> createTTSFragmentView()
+            5 -> createSpeechFragmentView()
             else -> View(context)
         }
     }
@@ -236,6 +238,25 @@ class TopMenuHandler(
             })
             addView(createSwitchRow("Streaming", ConfigurationManager.getIsStreamingEnabled()) { isChecked ->
                 ConfigurationManager.setIsStreamingEnabled(isChecked)
+            })
+        }
+    }
+
+    private fun createImageFragmentView(): View {
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(16, 16, 16, 16)
+
+            addView(createTextEditRow("Model", ConfigurationManager.getImageModelName(), isPassword = false, additionalText = "Possible values: dall-e-3", ) { value ->
+                ConfigurationManager.setImageModelName(value)
+            })
+
+            addView(createSwitchRow("HD Quality", ConfigurationManager.getImageQualityHD()) { isChecked ->
+                ConfigurationManager.setImageQualityHD(isChecked)
+            })
+
+            addView(createSwitchRow("Disable Openai revised prompt", ConfigurationManager.getImageDisableSafePrompt()) { isChecked ->
+                ConfigurationManager.setImageDisableSafePrompt(isChecked)
             })
         }
     }
@@ -449,7 +470,7 @@ class TopMenuHandler(
         return TextView(context).apply {
             text = name
             setTextColor(ContextCompat.getColor(context, R.color.white))
-            textSize = 18f
+            textSize = 15f
             setPadding(8, 8, 25, 8)
             setOnClickListener {
                 onClick(this)

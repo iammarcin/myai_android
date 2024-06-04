@@ -26,7 +26,7 @@ object ConfigurationManager {
     private const val IMAGE_MODEL_NAME = "image_model_name"
     private const val IMAGE_NUMBER_IMAGES = "image_number_images"
     private const val IMAGE_SIZE = "image_model_size"
-    private const val IMAGE_QUALITY = "image_quality"
+    private const val IMAGE_QUALITY_HD = "image_quality_id"
     private const val IMAGE_DISABLE_SAFE_PROMPT = "image_disable_safe_prompt"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
 
@@ -62,26 +62,26 @@ object ConfigurationManager {
         IMAGE_MODEL_NAME to "dall-e-3",
         IMAGE_NUMBER_IMAGES to 1,
         IMAGE_SIZE to 1024,
-        IMAGE_QUALITY to "standard", //hd
+        IMAGE_QUALITY_HD to false, //hd or standard (true = hd)
         IMAGE_DISABLE_SAFE_PROMPT to false,
         AUTH_TOKEN_FOR_BACKEND to "",
 
         // Add other default values
     )
 
-    fun getString(key: String, defaultValue: String): String {
+    private fun getString(key: String, defaultValue: String): String {
         return sharedPreferences.getString(key, defaultValue) ?: defaultValue
     }
 
-    fun getFloat(key: String, defaultValue: Float): Float {
+    private fun getFloat(key: String, defaultValue: Float): Float {
         return sharedPreferences.getFloat(key, defaultValue)
     }
 
-    fun getInt(key: String, defaultValue: Int): Int {
+    private fun getInt(key: String, defaultValue: Int): Int {
         return sharedPreferences.getInt(key, defaultValue)
     }
 
-    fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+    private fun getBoolean(key: String, defaultValue: Boolean): Boolean {
         return sharedPreferences.getBoolean(key, defaultValue)
     }
 
@@ -89,19 +89,19 @@ object ConfigurationManager {
         return sharedPreferences.getString(key, defaultValue) ?: defaultValue
     }
 
-    fun setString(key: String, value: String) {
+    private fun setString(key: String, value: String) {
         sharedPreferences.edit().putString(key, value).apply()
     }
 
-    fun setFloat(key: String, value: Float) {
+    private fun setFloat(key: String, value: Float) {
         sharedPreferences.edit().putFloat(key, value).apply()
     }
 
-    fun setInt(key: String, value: Int) {
+    private fun setInt(key: String, value: Int) {
         sharedPreferences.edit().putInt(key, value).apply()
     }
 
-    fun setBoolean(key: String, value: Boolean) {
+    private fun setBoolean(key: String, value: Boolean) {
         sharedPreferences.edit().putBoolean(key, value).apply()
     }
 
@@ -127,7 +127,7 @@ object ConfigurationManager {
     fun getImageModelName() = getString(IMAGE_MODEL_NAME, defaultSettings[IMAGE_MODEL_NAME] as String)
     fun getImageNumberImages() = getInt(IMAGE_NUMBER_IMAGES, defaultSettings[IMAGE_NUMBER_IMAGES] as Int)
     fun getImageSize() = getInt(IMAGE_SIZE, defaultSettings[IMAGE_SIZE] as Int)
-    fun getImageQuality() = getString(IMAGE_QUALITY, defaultSettings[IMAGE_QUALITY] as String)
+    fun getImageQualityHD() = getBoolean(IMAGE_QUALITY_HD, defaultSettings[IMAGE_QUALITY_HD] as Boolean)
     fun getImageDisableSafePrompt() = getBoolean(IMAGE_DISABLE_SAFE_PROMPT, defaultSettings[IMAGE_DISABLE_SAFE_PROMPT] as Boolean)
     fun getAuthTokenForBackend() = getString(AUTH_TOKEN_FOR_BACKEND, defaultSettings[AUTH_TOKEN_FOR_BACKEND] as String)
 
@@ -153,7 +153,7 @@ object ConfigurationManager {
     fun setImageModelName(value: String) = setString(IMAGE_MODEL_NAME, value)
     fun setImageNumberImages(value: Int) = setInt(IMAGE_NUMBER_IMAGES, value)
     fun setImageSize(value: Int) = setInt(IMAGE_SIZE, value)
-    fun setImageQuality(value: String) = setString(IMAGE_QUALITY, value)
+    fun setImageQualityHD(value: Boolean) = setBoolean(IMAGE_QUALITY_HD, value)
     fun setImageDisableSafePrompt(value: Boolean) = setBoolean(IMAGE_DISABLE_SAFE_PROMPT, value)
 
     fun setAuthTokenForBackend(value: String) = setString(AUTH_TOKEN_FOR_BACKEND, value)
@@ -184,7 +184,7 @@ object ConfigurationManager {
                 "model" to getImageModelName(),
                 "number_of_images" to getImageNumberImages(),
                 "size_of_image" to getImageSize(),
-                "quality" to getImageQuality(),
+                "quality_hd" to getImageQualityHD(),
                 "disable_safe_prompt_adjust" to getImageDisableSafePrompt(),
             ),
             "general" to mapOf(

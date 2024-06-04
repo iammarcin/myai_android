@@ -47,6 +47,8 @@ class CharacterManager(private val context: Context) {
         Character("Shaan Puri", R.drawable.brainstorm_shaan, "Shaan"),
         Character("Sir David", R.drawable.brainstorm_david, "David"),
         Character("Rick Sanchez", R.drawable.brainstorm_rick, "Rick"),
+        Character("TLDR", R.drawable.tools_tldr, "tldr"),
+        Character("Art gen", R.drawable.tools_artgen, "artgen"),
     )
 
     // Function to programmatically set up character cards
