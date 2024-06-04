@@ -15,7 +15,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
     private val handler = Handler(Looper.getMainLooper())
     private var currentUri: Uri? = null
     private var isPrepared = false
-    private var audioPlayCounter = 0
 
     init {
         setupSeekBarChangeListener()
@@ -23,8 +22,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
     }
 
     fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false) {
-        println("setupMediaPlayer EXEC. isPlaying: $audioPlayCounter")
-        if (audioPlayCounter > 0) return
         currentUri = audioUri
         releaseMediaPlayer() // Release any existing player
         mediaPlayer = MediaPlayer().apply {
@@ -33,11 +30,7 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                 isPrepared = true
                 binding.seekBar.max = mp.duration  // Set maximum value of the seek bar
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                if (autoPlay && audioPlayCounter == 0 && !mp.isPlaying) {
-                    println("EXECUTE autoplay")
-                    //incrementAudioPlayCounter()
-                    println("4AUDIO PLAYER play click mp.isPlaying: ${mp.isPlaying}")
-                    println("5AUDIO PLAYER play click mp.isPlaying: ${mediaPlayer?.isPlaying}")
+                if (autoPlay && !mp.isPlaying) {
                     binding.playButton.performClick()
                 }
             }
@@ -46,14 +39,11 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 binding.seekBar.progress = 0
                 isPrepared = false
-                decrementAudioPlayCounter()
-                println("COMPLETED!!!!")
             }
 
             setOnErrorListener { _, what, extra ->
                 println("MediaPlayer Error - what: $what, extra: $extra")
                 Toast.makeText(context, "Error playing audio 0", Toast.LENGTH_SHORT).show()
-                decrementAudioPlayCounter()
                 releaseMediaPlayer()
                 true
             }
@@ -82,22 +72,17 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
 
     private fun setupPlayButtonClickListener() {
         binding.playButton.setOnClickListener {
-            println("3AUDIO PLAYER play click mp.isPlaying: ${mediaPlayer?.isPlaying}")
             mediaPlayer?.let { mp ->
                 if (mp.isPlaying) {
                     mp.pause()
                     binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                    decrementAudioPlayCounter()
                 } else {
                     try {
                         if (isPrepared) {
-                            println("1AUDIO PLAYER play click mp.isPlaying: ${mp.isPlaying}")
-                            println("2AUDIO PLAYER play click mp.isPlaying: ${mediaPlayer?.isPlaying}")
                             if (!mp.isPlaying) {
                                 mp.start()
                                 binding.playButton.setImageResource(R.drawable.ic_pause_24)
                                 handler.post(updateSeekBarTask)  // Start updating the seek bar
-                                incrementAudioPlayCounter()
                             }
                         } else {
                             resetAndPrepareMediaPlayer()
@@ -126,19 +111,16 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                         mp.start()
                         binding.playButton.setImageResource(R.drawable.ic_pause_24)
                         handler.post(updateSeekBarTask)
-                        incrementAudioPlayCounter()
                     }
                 }
                 setOnCompletionListener {
                     binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     binding.seekBar.progress = 0
                     isPrepared = false
-                    decrementAudioPlayCounter()
                 }
                 setOnErrorListener { _, _, _ ->
                     Toast.makeText(context, "Error playing audio 2", Toast.LENGTH_SHORT).show()
                     releaseMediaPlayer()
-                    decrementAudioPlayCounter()
                     true
                 }
                 prepareAsync()
@@ -162,19 +144,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                 }
             }
         }
-    }
-
-    private fun incrementAudioPlayCounter() {
-
-        audioPlayCounter++
-        println("INcrease! current value: $audioPlayCounter")
-    }
-    private fun decrementAudioPlayCounter() {
-
-        if (audioPlayCounter > 0)
-            audioPlayCounter--
-
-            println("DEcrease! current value: $audioPlayCounter")
     }
 
     // Check if the media player is playing (used in ChatAdapter in handleTTSCompletedResponse)

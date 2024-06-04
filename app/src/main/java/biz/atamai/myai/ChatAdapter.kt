@@ -116,10 +116,13 @@ class ChatAdapter(
             // for the moment - audio - but later maybe others
             if (chatItem.fileNames.isNotEmpty()) {
                 binding.audioPlayer.visibility = View.VISIBLE
-                println("chatAdapter filenames EXEC")
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
+                audioPlayerManagers.forEach {
+                    println("AudioPlayerManager isPlaying: ${it.isPlaying()}")
+                }
+
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
                 audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
                 audioPlayerManagers.add(audioPlayerManager)

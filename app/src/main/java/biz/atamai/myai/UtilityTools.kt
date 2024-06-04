@@ -73,8 +73,9 @@ class UtilityTools(
 
     // UNFORTUNATELY - this is not really streaming
     // backend generated chunks in streaming and here we receive chunk by chunk
-    // but after quite a bit of time i did not make it work... i tried with exoplayer - with custom data sources - but everytime it failed
+    // but after quite a bit of time i did not make it work... i tried with exoplayer - with custom data sources, with audio player itself - but everytime it failed
     // so here even though we're streaming it is just waiting until full file is received
+    // maybe one day
     fun sendTTSRequest(
         message: String,
         apiUrl: String,
@@ -100,7 +101,7 @@ class UtilityTools(
                 handlerType = HandlerType.AudioStreaming(
                     onAudioChunkReceived = { chunk ->
                         saveChunkToFile(chunk)
-                        onResponseReceived(audioUri)
+                        //onResponseReceived(audioUri)
                     },
                     onStreamEnd = {
                         onResponseReceived(audioUri)
