@@ -28,11 +28,17 @@ class ChatAdapter(
     private val apiUrl: String,
     private val context: Context,
     private val characterManager: CharacterManager,
-    private val onEditMessage: (position: Int, message: String) -> Unit
+    private val mainHandler: MainHandler,
+    private val onEditMessage: (position: Int, message: String) -> Unit,
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
     private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
+    private var chatHelperHandler: ChatHelperHandler? = null
+
+    fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
+        this.chatHelperHandler = chatHelperHandler
+    }
 
     fun releaseMediaPlayers() {
         for (audioPlayerManager in audioPlayerManagers) {
@@ -45,14 +51,14 @@ class ChatAdapter(
         utilityTools = UtilityTools(
             context = context,
             onResponseReceived = { response ->
-                (context as MainActivity).runOnUiThread {
-                    (context as MainActivity).handleTextMessage(response)
-                    (context as MainActivity).hideProgressBar()
+                mainHandler.executeOnUIThread {
+                    mainHandler.handleTextMessage(response)
+                    mainHandler.hideProgressBar()
                 }
             },
             onError = { error ->
-                (context as MainActivity).runOnUiThread {
-                    (context as MainActivity).hideProgressBar()
+                mainHandler.executeOnUIThread {
+                    mainHandler.hideProgressBar()
                     Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -133,7 +139,7 @@ class ChatAdapter(
                 }
 
                 binding.transcribeButton.setOnClickListener {
-                    (context as MainActivity).showProgressBar("Transcription")
+                    mainHandler.showProgressBar("Transcription")
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
                     utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
@@ -188,24 +194,24 @@ class ChatAdapter(
                                 val attachedFiles = previousChatItem.fileNames
 
                                 // Set the editing message position
-                                (context as MainActivity).chatHelper.setEditingMessagePosition(position - 1)
+                                chatHelperHandler?.setEditingMessagePosition(position - 1)
 
                                 // Trigger the regeneration
-                                (context as MainActivity).handleTextMessage(
+                                mainHandler.handleTextMessage(
                                     previousChatItem.message,
                                     attachedImageLocations,
                                     attachedFiles
                                 )
 
                                 // Reset the editing message position
-                                (context as MainActivity).chatHelper.setEditingMessagePosition(null)
+                                chatHelperHandler?.setEditingMessagePosition(null)
                             }
                         }
                         true
                     }
                     R.id.newSessionFromHere -> {
                         // Handle new session from here action
-                        (context as MainActivity).chatHelper.createNewSessionFromHere(position)
+                        chatHelperHandler?.createNewSessionFromHere(position)
                         true
                     }
                     R.id.tts -> {
@@ -236,7 +242,7 @@ class ChatAdapter(
         if (chatItem.fileNames.isNotEmpty()) {
             return
         }
-        (context as MainActivity).showProgressBar("TTS")
+        mainHandler.showProgressBar("TTS")
 
         val apiUrl = ConfigurationManager.getAppModeApiUrl()
         val action = if (ConfigurationManager.getTTSStreaming()) "tts_stream" else "tts_no_stream"
@@ -246,8 +252,8 @@ class ChatAdapter(
             action,
             { result -> handleTTSCompletedResponse(result, position, action) },
             { error ->
-                (context as MainActivity).runOnUiThread {
-                    (context as MainActivity).hideProgressBar()
+                mainHandler.executeOnUIThread {
+                    mainHandler.hideProgressBar()
                     Toast.makeText(context, "Error generating TTS: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -256,26 +262,26 @@ class ChatAdapter(
 
     // upon receiving TTS response - we have to update chat item with audio file
     private fun handleTTSCompletedResponse(result: String, position: Int, action: String) {
-        (context as MainActivity).runOnUiThread {
+        mainHandler.executeOnUIThread {
             println("handleTTSCompletedResponse result: $result")
             val chatItem = chatItems[position]
 
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             notifyItemChanged(position)
-            (context as MainActivity).hideProgressBar()
+            mainHandler.hideProgressBar()
 
             val utilityToolsTTS = UtilityTools(
                 context = context,
                 onResponseReceived = { response ->
-                    (context as MainActivity).runOnUiThread {
+                    mainHandler.executeOnUIThread {
                         chatItem.fileNames = listOf(Uri.parse(response))
 
                         CoroutineScope(Dispatchers.Main).launch {
                             DatabaseHelper.sendDBRequest(
                                 "db_update_session",
                                 mapOf(
-                                    "session_id" to ((context as MainActivity).chatHelper.getCurrentDBSessionID() ?: ""),
+                                    "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
                                     "chat_history" to chatItems.map { it.toSerializableMap() }
                                 )
                             )
@@ -283,8 +289,8 @@ class ChatAdapter(
                     }
                 },
                 onError = { error ->
-                    (context as MainActivity).runOnUiThread {
-                        (context as MainActivity).hideProgressBar()
+                    mainHandler.executeOnUIThread {
+                        mainHandler.hideProgressBar()
                         println("Error handleTTSCompletedResponse: ${error.message}")
                         Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -307,7 +313,7 @@ class ChatAdapter(
                     DatabaseHelper.sendDBRequest(
                         "db_update_session",
                         mapOf(
-                            "session_id" to ((context as MainActivity).chatHelper.getCurrentDBSessionID() ?: ""),
+                            "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
                             "chat_history" to chatItems.map { it.toSerializableMap() }
                         )
                     )

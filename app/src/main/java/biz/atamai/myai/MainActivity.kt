@@ -17,7 +17,7 @@
     import biz.atamai.myai.databinding.ChatItemBinding
     import kotlinx.coroutines.*
 
-    class MainActivity : AppCompatActivity() {
+    class MainActivity : AppCompatActivity(), MainHandler {
 
         lateinit var binding: ActivityMainBinding
 
@@ -82,13 +82,8 @@
             )
             topMenuHandler.setupTopMenus(binding)
 
-            chatHelper = ChatHelper(
-                this,
-                binding,
-                chatAdapter,
-                chatItems,
-                ConfigurationManager,
-            )
+            chatHelper = ChatHelper(this, binding, chatAdapter, chatItems, ConfigurationManager)
+            chatAdapter.setChatHelperHandler(chatHelper)
 
             DatabaseHelper.initialize(this, chatHelper::getCurrentDBSessionID, chatHelper::setCurrentDBSessionID)
 
@@ -120,9 +115,17 @@
         private fun setupChatAdapter() {
             // chat adapter - but when clicked on message - we can edit it
             // this is done via onEditMessage in chat adapter - we point it to startEditingMessage
-            chatAdapter = ChatAdapter(chatItems, ConfigurationManager.getAppModeApiUrl(), this, characterManager) { position, message ->
-                chatHelper.startEditingMessage(position, message)
-            }
+            chatAdapter = ChatAdapter(
+                chatItems,
+                ConfigurationManager.
+                getAppModeApiUrl(),
+                this,
+                characterManager,
+                this,
+            )
+                { position, message -> chatHelper.startEditingMessage(position, message) }
+                //this,
+
             binding.chatContainer.adapter = chatAdapter
         }
 
@@ -267,7 +270,7 @@
         // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
         // and here in Main - same functionality when Send button is clicked
         // also in ChatAdapter - for regenerate AI message
-        fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()) {
+        override fun handleTextMessage(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
             if (message.isEmpty()) {
                 return
             }
@@ -441,14 +444,20 @@
         }
 
         // PROGRESS BAR
-        fun showProgressBar(message: String = "") {
+        override fun showProgressBar(message: String) {
             binding.progressContainer.visibility = View.VISIBLE
             binding.progressText.text = message
         }
 
-        fun hideProgressBar() {
+        override fun hideProgressBar() {
             binding.progressContainer.visibility = View.GONE
         }
+
+        // needed for chatHelperInterfaces
+        override fun executeOnUIThread(action: Runnable) {
+            this@MainActivity.runOnUiThread(action)
+        }
+
 
         // permissions
         private fun setupPermissions() {

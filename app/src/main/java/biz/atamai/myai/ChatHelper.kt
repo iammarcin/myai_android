@@ -7,6 +7,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import biz.atamai.myai.databinding.ActivityMainBinding
 import com.squareup.picasso.Picasso
 import org.json.JSONArray
@@ -18,7 +19,7 @@ class ChatHelper(
     private val chatAdapter: ChatAdapter,
     private val chatItems: MutableList<ChatItem>,
     private val configurationManager: ConfigurationManager,
-) {
+) : ChatHelperHandler {
     // same string set in backend in config.py
     private val ERROR_MESSAGE_FOR_TEXT_GEN = "Error in Text Generator. Try again!"
 
@@ -32,12 +33,14 @@ class ChatHelper(
     fun getEditingMessagePosition(): Int? {
         return editingMessagePosition
     }
-    fun setEditingMessagePosition(position: Int?) {
+    override fun setEditingMessagePosition(position: Int?) {
         editingMessagePosition = position
     }
 
+
+
     // helper functions for currentDBSessionID
-    fun getCurrentDBSessionID(): String? {
+    override fun getCurrentDBSessionID(): String? {
         return currentDBSessionID
     }
     fun setCurrentDBSessionID(sessionID: String) {
@@ -205,7 +208,7 @@ class ChatHelper(
     // its where we create new session from selected message (and copy all previous)
     // IMPORTANT - it is way simplified version - as we don't save those new messages in DB - we just recreate chatItems
     // maybe one day we can work on it - downside is that we cannot edit properly previous messages
-    fun createNewSessionFromHere(position: Int) {
+    override fun createNewSessionFromHere(position: Int) {
         val selectedChatItems = chatItems.subList(0, position + 1).toMutableList()
 
         resetChat()
