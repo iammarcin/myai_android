@@ -247,7 +247,7 @@ object DatabaseHelper {
             if (newName.isNotEmpty()) {
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest(
-                        "db_rename_session",
+                        "db_update_session",
                         mapOf("session_id" to session.sessionId, "new_session_name" to newName)
                     )
                 }

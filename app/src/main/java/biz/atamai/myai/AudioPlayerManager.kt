@@ -23,6 +23,7 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
 
     fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false) {
         currentUri = audioUri
+        println("!!! AUDIO URI: $audioUri")
         releaseMediaPlayer() // Release any existing player
         mediaPlayer = MediaPlayer().apply {
             setDataSource(context, audioUri!!)
@@ -72,6 +73,7 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
 
     private fun setupPlayButtonClickListener() {
         binding.playButton.setOnClickListener {
+            println("!!! AUDIO URI 222 : $currentUri")
             mediaPlayer?.let { mp ->
                 if (mp.isPlaying) {
                     mp.pause()

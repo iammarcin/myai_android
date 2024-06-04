@@ -23,8 +23,9 @@ class UtilityTools(
     private val customerId = 1
 
     private var audioFile = File(storageDir, "streamed_audio.$customerId.opus")
-    private var audioUri = Uri.fromFile(audioFile).toString()
+
     //private var audioFile = File.createTempFile("audio", ".opus", context.cacheDir)
+    //private var audioUri = Uri.fromFile(audioFile).toString()
 
     // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
     fun uploadFileToServer(
@@ -83,7 +84,7 @@ class UtilityTools(
         onResponseReceived: (String) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        val apiEndpoint = if (action == "tts_no_stream") "generate" else "tts"
+        val apiEndpoint = "generate"
         val fullApiUrl = apiUrl + apiEndpoint
         val apiDataModel = APIDataModel(
             category = "tts",
@@ -94,6 +95,7 @@ class UtilityTools(
         )
 
         // remove audioFile (so there are no remaining from prev session)
+
         audioFile.delete()
 
         val handler = if (action == "tts_stream") {
@@ -104,7 +106,7 @@ class UtilityTools(
                         //onResponseReceived(audioUri)
                     },
                     onStreamEnd = {
-                        onResponseReceived(audioUri)
+                        onResponseReceived(audioFile.absolutePath)
                     }
                 ),
                 onError = { e ->

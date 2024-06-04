@@ -18,6 +18,9 @@ import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import com.squareup.picasso.Picasso
 import io.noties.markwon.Markwon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 class ChatAdapter(
@@ -119,10 +122,6 @@ class ChatAdapter(
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
-                audioPlayerManagers.forEach {
-                    println("AudioPlayerManager isPlaying: ${it.isPlaying()}")
-                }
-
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
                 audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
                 audioPlayerManagers.add(audioPlayerManager)
@@ -245,7 +244,7 @@ class ChatAdapter(
             message,
             apiUrl,
             action,
-            { result -> handleTTSCompletedResponse(result, position) },
+            { result -> handleTTSCompletedResponse(result, position, action) },
             { error ->
                 (context as MainActivity).runOnUiThread {
                     (context as MainActivity).hideProgressBar()
@@ -256,19 +255,64 @@ class ChatAdapter(
     }
 
     // upon receiving TTS response - we have to update chat item with audio file
-    private fun handleTTSCompletedResponse(result: String, position: Int) {
+    private fun handleTTSCompletedResponse(result: String, position: Int, action: String) {
         (context as MainActivity).runOnUiThread {
+            println("handleTTSCompletedResponse result: $result")
             val chatItem = chatItems[position]
-
-            // Check if the audio is already playing
-            if (audioPlayerManagers.any { it.isPlaying() }) {
-                return@runOnUiThread
-            }
 
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             notifyItemChanged(position)
             (context as MainActivity).hideProgressBar()
+
+            val utilityToolsTTS = UtilityTools(
+                context = context,
+                onResponseReceived = { response ->
+                    (context as MainActivity).runOnUiThread {
+                        chatItem.fileNames = listOf(Uri.parse(response))
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            DatabaseHelper.sendDBRequest(
+                                "db_update_session",
+                                mapOf(
+                                    "session_id" to ((context as MainActivity).chatHelper.getCurrentDBSessionID() ?: ""),
+                                    "chat_history" to chatItems.map { it.toSerializableMap() }
+                                )
+                            )
+                        }
+                    }
+                },
+                onError = { error ->
+                    (context as MainActivity).runOnUiThread {
+                        (context as MainActivity).hideProgressBar()
+                        println("Error handleTTSCompletedResponse: ${error.message}")
+                        Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+
+            // if its stream - we should upload to S3, if its not stream - its already uploaded via backend
+            if (action == "tts_stream") {
+                // this already consists of chat session update
+                utilityToolsTTS.uploadFileToServer(
+                    result,
+                    apiUrl,
+                    "api/aws",
+                    "provider.s3",
+                    "s3_upload"
+                )
+            } else {
+                // here - we still need to update chat session with new audio file
+                CoroutineScope(Dispatchers.Main).launch {
+                    DatabaseHelper.sendDBRequest(
+                        "db_update_session",
+                        mapOf(
+                            "session_id" to ((context as MainActivity).chatHelper.getCurrentDBSessionID() ?: ""),
+                            "chat_history" to chatItems.map { it.toSerializableMap() }
+                        )
+                    )
+                }
+            }
         }
     }
 
