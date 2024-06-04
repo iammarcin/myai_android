@@ -12,6 +12,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
+// LIMITATIONS / BUGS
+// no really streaming (see comments in sendTTSRequest)
+
 // Common place for common tools?!
 class UtilityTools(
     private val context: Context,

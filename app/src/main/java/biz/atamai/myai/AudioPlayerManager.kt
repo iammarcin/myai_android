@@ -8,6 +8,14 @@ import android.os.Looper
 import android.widget.SeekBar
 import android.widget.Toast
 import biz.atamai.myai.databinding.ChatItemBinding
+import android.media.MediaMetadataRetriever
+
+
+
+// LIMITATIONS / KNOWN BUGS
+// duration of file cannot be taken if it's remote URL (like my S3 after tts no stream)
+// so we're setting it statically to few seconds (blah)
+// maybe try with streaming and exo player one day
 
 class AudioPlayerManager(private val context: Context, private val binding: ChatItemBinding) {
 
@@ -25,6 +33,7 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
         currentUri = audioUri
         println("!!! Setting up MediaPlayer with URI: $audioUri")
         releaseMediaPlayer() // Release any existing player
+
         mediaPlayer = MediaPlayer().apply {
             setDataSource(context, audioUri!!)
             setOnPreparedListener { mp ->
@@ -32,7 +41,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                 // it's very nasty ... but if i get file from S3 (for example TTS no stream) - there is no way to get duration of audio file... so we're setting it to few seconds (it's bad)
                 binding.seekBar.max = if (mp.duration > 0) mp.duration else 8000
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                println("!!! MediaPlayer is prepared. Duration: ${mp.duration}")
                 if (autoPlay && !mp.isPlaying) {
                     binding.playButton.performClick()
                 }
@@ -158,6 +166,22 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
             } ?: println("!!! MediaPlayer is null.")
         }
     }
+
+    // as we cannot get duration from remote file - we're using :
+    private fun getAudioDuration(audioUri: Uri): Long {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(context, audioUri)
+            val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            durationStr?.toLongOrNull() ?: -1
+        } catch (e: Exception) {
+            e.printStackTrace()
+            -1
+        } finally {
+            retriever.release()
+        }
+    }
+
 
     // Check if the media player is playing (used in ChatAdapter in handleTTSCompletedResponse)
     fun isPlaying(): Boolean {
