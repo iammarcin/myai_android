@@ -17,7 +17,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
     private var isPrepared = false
 
     init {
-        println("INIT From audio player")
         setupSeekBarChangeListener()
         setupPlayButtonClickListener()
     }
@@ -30,7 +29,8 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
             setDataSource(context, audioUri!!)
             setOnPreparedListener { mp ->
                 isPrepared = true
-                binding.seekBar.max = mp.duration  // Set maximum value of the seek bar
+                // it's very nasty ... but if i get file from S3 (for example TTS no stream) - there is no way to get duration of audio file... so we're setting it to few seconds (it's bad)
+                binding.seekBar.max = if (mp.duration > 0) mp.duration else 8000
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 println("!!! MediaPlayer is prepared. Duration: ${mp.duration}")
                 if (autoPlay && !mp.isPlaying) {
@@ -44,7 +44,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                 binding.seekBar.progress = 0
                 isPrepared = false
                 handler.removeCallbacks(updateSeekBarTask)
-                println("!!! MediaPlayer completed playing.")
             }
 
             setOnErrorListener { _, what, extra ->
@@ -55,8 +54,8 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
             }
 
             prepareAsync()
-            println("!!! MediaPlayer is preparing asynchronously.")
         }
+
     }
 
     private fun setupSeekBarChangeListener() {
@@ -120,7 +119,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                         mp.start()
                         binding.playButton.setImageResource(R.drawable.ic_pause_24)
                         handler.post(updateSeekBarTask)
-                        println("!!! MediaPlayer is prepared and started. Duration: ${mp.duration}")
                     }
                 }
                 setOnCompletionListener {
@@ -128,7 +126,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                     binding.seekBar.progress = 0
                     isPrepared = false
                     handler.removeCallbacks(updateSeekBarTask)
-                    println("!!! MediaPlayer completed playing.")
                 }
                 setOnErrorListener { _, _, _ ->
                     Toast.makeText(context, "Error playing audio 2", Toast.LENGTH_SHORT).show()
@@ -136,7 +133,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
                     true
                 }
                 prepareAsync()
-                println("!!! MediaPlayer is preparing asynchronously.")
             }
         }
     }

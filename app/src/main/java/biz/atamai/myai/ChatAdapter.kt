@@ -3,6 +3,7 @@ package biz.atamai.myai
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Environment
 import android.view.ContextThemeWrapper
@@ -265,7 +266,6 @@ class ChatAdapter(
         mainHandler.executeOnUIThread {
             println("handleTTSCompletedResponse result: $result")
             val chatItem = chatItems[position]
-
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             notifyItemChanged(position)
