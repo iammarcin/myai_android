@@ -304,7 +304,12 @@
 
             // collect chat history (needed to send it API to get whole context of chat)
             // (excluding the latest message - as this will be sent via userPrompt), including images if any
-            val chatHistory = chatItems.dropLast(1).map {
+            // or excluding 2 last messages - if its edited user message
+            var dropHowMany = 1
+            if (responseItemPosition != null) {
+                dropHowMany = 2
+            }
+            val chatHistory = chatItems.dropLast(dropHowMany).map {
                 if (it.isUserMessage) {
                     val content = mutableListOf<Map<String, Any>>()
                     content.add(mapOf("type" to "text", "text" to it.message))
@@ -317,8 +322,18 @@
                 }
             }
 
-            // get the last user message and its images (if exists)
-            val lastChatItem = chatItems.last()
+            println("Start streaming")
+            println("Chat history: $chatHistory")
+
+            val lastChatItem: ChatItem
+            // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
+            if (responseItemPosition == null) {
+                // get the last user message and its images (if exists)
+                lastChatItem = chatItems.last()
+            } else {
+                // if edited message its last -1 (because last is  AI response)
+                lastChatItem = chatItems[responseItemPosition]
+            }
             val userPrompt = mutableListOf<Map<String, Any>>()
             userPrompt.add(mapOf("type" to "text", "text" to lastChatItem.message))
             lastChatItem.imageLocations.forEach { imageUrl ->
