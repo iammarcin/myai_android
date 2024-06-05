@@ -159,6 +159,12 @@ class ChatAdapter(
             if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
                 binding.imageGenerationView.visibility = View.VISIBLE
 
+                if (ConfigurationManager.getImageAutoGenerateImage())
+                    binding.messageTextView.visibility = View.GONE
+                    // auto generate image (and make sure it's only once)
+                    if (chatItem.imageLocations.isEmpty())
+                        binding.generateImageButton.performClick()
+
                 binding.generateImageButton.setOnClickListener {
                     mainHandler.showProgressBar("Image")
                     val prompt = chatItem.message
