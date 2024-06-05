@@ -1,6 +1,8 @@
     package biz.atamai.myai
 
+    import android.app.Activity
     import android.content.Context
+    import android.content.Intent
     import android.media.AudioManager
     import android.media.MediaPlayer
     import android.net.Uri
@@ -10,8 +12,13 @@
     import android.text.TextWatcher
     import android.view.View
     import android.widget.FrameLayout
+    import android.widget.HorizontalScrollView
     import android.widget.ImageView
+    import android.widget.LinearLayout
     import android.widget.Toast
+    import androidx.activity.result.ActivityResult
+    import androidx.activity.result.ActivityResultLauncher
+    import androidx.activity.result.contract.ActivityResultContracts
     import androidx.core.content.ContextCompat
     import androidx.recyclerview.widget.RecyclerView
     import biz.atamai.myai.databinding.ActivityMainBinding
@@ -53,7 +60,7 @@
 
             audioRecorder = AudioRecorder(this, ConfigurationManager.getUseBluetooth(), ConfigurationManager.getAppModeApiUrl())
 
-            fileAttachmentHandler = FileAttachmentHandler(this, binding.imagePreviewContainer, binding.scrollViewPreview, ConfigurationManager.getAppModeApiUrl())
+            fileAttachmentHandler = FileAttachmentHandler(this, ConfigurationManager.getAppModeApiUrl())
             cameraHandler = CameraHandler(this, activityResultRegistry)
 
             // has to BEFORE chat adapter
@@ -461,7 +468,7 @@
             )
         }
 
-        // needed for chatHelperInterfaces
+        // needed for chatInterfaces
         // PROGRESS BAR
         override fun showProgressBar(message: String) {
             binding.progressContainer.visibility = View.VISIBLE
@@ -476,6 +483,12 @@
         override fun executeOnUIThread(action: Runnable) {
             this@MainActivity.runOnUiThread(action)
         }
+        override fun getMainActivity(): Activity {
+            return this
+        }
+        override fun getMainActivityContext(): Context {
+            return this
+        }
         override fun getMainBinding(): ActivityMainBinding {
              return binding
         }
@@ -486,6 +499,15 @@
             Toast.makeText(this, message, duration).show()
         }
 
+        override fun getImagePreviewContainer(): LinearLayout {
+            return binding.imagePreviewContainer
+        }
+        override fun getScrollViewPreview(): HorizontalScrollView {
+            return binding.scrollViewPreview
+        }
+        override fun registerForActivityResult(contract: ActivityResultContracts.StartActivityForResult, callback: (ActivityResult) -> Unit): ActivityResultLauncher<Intent> {
+            return super.registerForActivityResult(contract, callback)
+        }
         // permissions
         private fun setupPermissions() {
             permissionsUtil = PermissionsUtil(this)

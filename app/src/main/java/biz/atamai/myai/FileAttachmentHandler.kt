@@ -17,13 +17,12 @@ import androidx.core.content.ContextCompat
 import android.database.Cursor
 import android.provider.OpenableColumns
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import java.io.File
 
 class FileAttachmentHandler(
-    private val activity: MainActivity,
-    private val imagePreviewContainer: LinearLayout,
-    private val scrollViewPreview: HorizontalScrollView,
+    private val mainHandler: MainHandler,
     private val apiUrl: String
 ) {
     // this will be used in case where multiple files are being attached / uploaded
@@ -31,7 +30,7 @@ class FileAttachmentHandler(
     // (after first successful upload)
     // so we introduce this counter
     private var uploadCounter = 0
-    private val fileChooserLauncher: ActivityResultLauncher<Intent> = activity.registerForActivityResult(
+    private val fileChooserLauncher: ActivityResultLauncher<Intent> = mainHandler.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
         handleActivityResult(result)
@@ -47,7 +46,7 @@ class FileAttachmentHandler(
     }
 
     private fun handleActivityResult(result: ActivityResult) {
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == AppCompatActivity.RESULT_OK) {
             val clipData = result.data?.clipData
             if (clipData != null) {
                 for (i in 0 until clipData.itemCount) {
@@ -67,8 +66,8 @@ class FileAttachmentHandler(
         if (incrementCounter) {
             incrementUploadCounter()
         }
-        val mimeType = activity.contentResolver.getType(uri)
-        val frameLayout = FrameLayout(activity).apply {
+        val mimeType = mainHandler.getMainActivityContext().contentResolver.getType(uri)
+        val frameLayout = FrameLayout(mainHandler.getMainActivityContext()).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80.toPx()).apply {
                 marginStart = 8.toPx()
                 marginEnd = 8.toPx()
@@ -79,9 +78,9 @@ class FileAttachmentHandler(
             val filePath = getFilePathFromUri(uri)
             if (filePath != null) {
                 val fileUri = Uri.fromFile(File(filePath))
-                val chatItem = activity.addMessageToChat("", listOf(), listOf(fileUri))
+                val chatItem = mainHandler.addMessageToChat("", listOf(), listOf(fileUri))
                 chatItem.isTTS = false // when uploaded we set it it to false on purpose (we treat TTS diff way)
-                activity.hideProgressBar()
+                mainHandler.hideProgressBar()
                 decrementUploadCounter()
                 return
             }
@@ -90,7 +89,7 @@ class FileAttachmentHandler(
             decrementUploadCounter()
             return
         } else if (mimeType?.startsWith("image/") == true) {
-            val imageView = ImageView(activity).apply {
+            val imageView = ImageView(mainHandler.getMainActivityContext()).apply {
                 layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT)
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 adjustViewBounds = true
@@ -103,9 +102,9 @@ class FileAttachmentHandler(
 
             val filePath = getFilePathFromUri(uri)
             val utilityTools = UtilityTools(
-                context = activity,
+                context = mainHandler.getMainActivityContext(),
                 onResponseReceived = { response ->
-                    activity.runOnUiThread {
+                    mainHandler.executeOnUIThread {
                         imageView.setImageURI(null) // Clear local URI
                         // set imageview tag as response - so we can use it to remove image from preview
                         imageView.tag = response
@@ -114,22 +113,22 @@ class FileAttachmentHandler(
                     }
                 },
                 onError = { error ->
-                    activity.runOnUiThread {
+                    mainHandler.executeOnUIThread {
                         decrementUploadCounter()
-                        Toast.makeText(activity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                        mainHandler.createToastMessage("Error: ${error.message}")
                     }
                 }
             )
             // upload to S3 - so sending request to nodejs API
             utilityTools.uploadFileToServer(filePath, apiUrl, "api/aws", "provider.s3", "s3_upload")
         } else {
-            val placeholder = View(activity).apply {
+            val placeholder = View(mainHandler.getMainActivityContext()).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
                     gravity = Gravity.CENTER
                 }
                 setBackgroundColor(
                     ContextCompat.getColor(
-                        activity,
+                        mainHandler.getMainActivityContext(),
                         R.color.attached_file_placeholder
                     )
                 )
@@ -139,34 +138,34 @@ class FileAttachmentHandler(
             decrementUploadCounter()
         }
 
-        val removeButton = ImageButton(activity).apply {
+        val removeButton = ImageButton(mainHandler.getMainActivityContext()).apply {
             layoutParams = FrameLayout.LayoutParams(24.toPx(), 24.toPx()).apply {
                 gravity = Gravity.TOP or Gravity.END
             }
             setImageResource(R.drawable.ic_close)
-            background = ContextCompat.getDrawable(activity, R.drawable.rounded_button_background)
+            background = ContextCompat.getDrawable(mainHandler.getMainActivityContext(), R.drawable.rounded_button_background)
             setOnClickListener {
-                imagePreviewContainer.removeView(frameLayout)
-                if (imagePreviewContainer.childCount == 0) {
-                    scrollViewPreview.visibility = View.GONE
+                mainHandler.getImagePreviewContainer().removeView(frameLayout)
+                if (mainHandler.getImagePreviewContainer().childCount == 0) {
+                    mainHandler.getScrollViewPreview().visibility = View.GONE
                 }
             }
         }
 
         frameLayout.addView(removeButton)
-        imagePreviewContainer.addView(frameLayout)
-        scrollViewPreview.visibility = View.VISIBLE
+        mainHandler.getImagePreviewContainer().addView(frameLayout)
+        mainHandler.getScrollViewPreview().visibility = View.VISIBLE
     }
 
     // there was problem with getting file path from URI (when i wanted to transcribe audio file) - so we need to save it to cache and get path from there
     private fun getFilePathFromUri(uri: Uri): String? {
         var filePath: String? = null
-        val cursor: Cursor? = activity.contentResolver.query(uri, null, null, null, null)
+        val cursor: Cursor? = mainHandler.getMainActivityContext().contentResolver.query(uri, null, null, null, null)
         cursor?.use {
             if (it.moveToFirst()) {
                 val displayName: String = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-                val inputStream = activity.contentResolver.openInputStream(uri)
-                val file = File(activity.cacheDir, displayName)
+                val inputStream = mainHandler.getMainActivityContext().contentResolver.openInputStream(uri)
+                val file = File(mainHandler.getMainActivityContext().cacheDir, displayName)
                 file.outputStream().use { output ->
                     inputStream?.copyTo(output)
                 }
@@ -180,13 +179,13 @@ class FileAttachmentHandler(
     private fun incrementUploadCounter() {
         uploadCounter++
         disableActiveButtons()
-        activity.showProgressBar("Uploading files")
+        mainHandler.showProgressBar("Uploading files")
     }
     private fun decrementUploadCounter() {
         uploadCounter--
         if (uploadCounter <= 0) {
             enableActiveButtons()
-            activity.hideProgressBar()
+            mainHandler.hideProgressBar()
         }
     }
 
@@ -194,15 +193,15 @@ class FileAttachmentHandler(
     // for sure used when file is uploaded in FileAttachmentHandler
     // - because we want to be sure that file is uploaded to S3 before user can send request
     private fun disableActiveButtons() {
-        activity.binding.btnSend.isEnabled = false
-        activity.binding.btnRecord.isEnabled = false
-        activity.binding.newChatButton.isEnabled = false
+        mainHandler.getMainBinding().btnSend.isEnabled = false
+        mainHandler.getMainBinding().btnRecord.isEnabled = false
+        mainHandler.getMainBinding().newChatButton.isEnabled = false
     }
     private fun enableActiveButtons() {
-        activity.binding.btnSend.isEnabled = true
-        activity.binding.btnRecord.isEnabled = true
-        activity.binding.newChatButton.isEnabled = true
+        mainHandler.getMainBinding().btnSend.isEnabled = true
+        mainHandler.getMainBinding().btnRecord.isEnabled = true
+        mainHandler.getMainBinding().newChatButton.isEnabled = true
     }
 
-    private fun Int.toPx(): Int = (this * activity.resources.displayMetrics.density).toInt()
+    private fun Int.toPx(): Int = (this * mainHandler.getMainActivityContext().resources.displayMetrics.density).toInt()
 }
