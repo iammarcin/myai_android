@@ -1,5 +1,6 @@
 package biz.atamai.myai
 
+import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -10,6 +11,7 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -99,41 +101,18 @@ class ChatAdapter(
                 } ?: R.drawable.ai_avatar_placeholder
             }
 
-            // if its message (or whole chat) for artgen - we want to allow user to create images
-            if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
-                binding.imageGenerationView.visibility = View.VISIBLE
-
-                binding.generateImageButton.setOnClickListener {
-                    mainHandler.showProgressBar("Image")
-                    val prompt = chatItem.message
-
-                    utilityTools.sendImageRequest(
-                        prompt,
-                        apiUrl,
-                        { result ->
-                            println("Image result: $result")
-                            chatItem.imageLocations = listOf(result)
-                            notifyItemChanged(adapterPosition)
-                            mainHandler.hideProgressBar()
-
-                        },
-                        { error ->
-                            mainHandler.executeOnUIThread {
-                                mainHandler.hideProgressBar()
-                                println("Error image: ${error.message}")
-                                Toast.makeText(context, "Error generating image", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    )
-                }
-            }
-
             binding.avatarImageView.setImageResource(avatarResId)
             // if URIs for images are set - those are images
             if (chatItem.imageLocations.isNotEmpty()) {
+                println("BIND IMAGE LOCATION")
+                println("chatItem: $chatItem")
+                println("chatItem.imageLocations: ${chatItem.imageLocations}")
                 binding.scrollViewImages.visibility = View.VISIBLE
                 binding.imageContainer.removeAllViews() // Clear old images
+
+                // if we have image - lets add click listener to show it in full screen
                 for (url in chatItem.imageLocations) {
+                    println("URL image: $url")
                     val imageView = ImageView(binding.root.context).apply {
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -144,6 +123,10 @@ class ChatAdapter(
                         scaleType = ImageView.ScaleType.CENTER_CROP
                         adjustViewBounds = true
                         Picasso.get().load(url.toString()).into(this)
+
+                        setOnClickListener {
+                            showFullScreenImage(url.toString())
+                        }
                     }
                     binding.imageContainer.addView(imageView)
                 }
@@ -178,6 +161,35 @@ class ChatAdapter(
             } else {
                 binding.audioPlayer.visibility = View.GONE
                 binding.transcribeButton.visibility = View.GONE
+            }
+
+            // if its message (or whole chat) for artgen - we want to allow user to create images
+            if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
+                binding.imageGenerationView.visibility = View.VISIBLE
+
+                binding.generateImageButton.setOnClickListener {
+                    mainHandler.showProgressBar("Image")
+                    val prompt = chatItem.message
+
+                    utilityTools.sendImageRequest(
+                        prompt,
+                        apiUrl,
+                        { result ->
+                            println("Image result: $result")
+                            chatItem.imageLocations += result
+                            notifyItemChanged(adapterPosition)
+                            mainHandler.hideProgressBar()
+
+                        },
+                        { error ->
+                            mainHandler.executeOnUIThread {
+                                mainHandler.hideProgressBar()
+                                println("Error image: ${error.message}")
+                                Toast.makeText(context, "Error generating image", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                }
             }
         }
 
@@ -350,6 +362,22 @@ class ChatAdapter(
             }
         }
     }
+
+    // create new view for image - when clicked on chat item images
+    private fun showFullScreenImage(url: String) {
+        val dialog = Dialog(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        dialog.setContentView(R.layout.dialog_fullscreen_image)
+
+
+        val imageView = dialog.findViewById<ImageView>(R.id.fullscreen_image)
+        val closeButton = dialog.findViewById<ImageButton>(R.id.close_button)
+
+        Picasso.get().load(url).into(imageView)
+        closeButton.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
 
     private fun Int.dpToPx(context: Context): Int {
         return (this * context.resources.displayMetrics.density).toInt()

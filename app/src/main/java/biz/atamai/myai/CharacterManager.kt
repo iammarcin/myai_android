@@ -16,7 +16,9 @@ class CharacterManager(private val context: Context) {
     data class Character(val name: String, val imageResId: Int, val nameForAPI: String)
 
     val characters = listOf(
+
         Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
+        Character("Art gen", R.drawable.tools_artgen, "artgen"),
         Character("Personal coach", R.drawable.brainstorm_gym_instructor, "PersonalCoach"),
         Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
         Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
