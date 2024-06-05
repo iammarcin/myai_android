@@ -468,6 +468,10 @@
             binding.progressContainer.visibility = View.GONE
         }
 
+        override fun getCurrentAICharacter(): String {
+            return ConfigurationManager.getTextAICharacter()
+        }
+
         // needed for chatHelperInterfaces
         override fun executeOnUIThread(action: Runnable) {
             this@MainActivity.runOnUiThread(action)

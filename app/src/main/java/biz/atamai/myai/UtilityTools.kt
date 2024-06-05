@@ -136,6 +136,39 @@ class UtilityTools(
         handler.sendRequest(fullApiUrl, apiDataModel)
     }
 
+    fun sendImageRequest(
+        prompt: String,
+        apiUrl: String,
+        onResponseReceived: (String) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        val apiEndpoint = "generate"
+        val fullApiUrl = apiUrl + apiEndpoint
+        val apiDataModel = APIDataModel(
+            category = "image",
+            action = "generate",
+            userInput = mapOf("text" to prompt),
+            userSettings = ConfigurationManager.getSettingsDict(),
+            customerId = 1
+        )
+
+        val handler = ResponseHandler(
+                handlerType = HandlerType.NonStreaming(onResponseReceived = { response ->
+                    try {
+                        val jsonResponse = JSONObject(response)
+                        val audioUrl = jsonResponse.getJSONObject("message").getString("result")
+                        onResponseReceived(audioUrl)
+                    } catch (e: JSONException) {
+                        onError(e)
+                    }
+                }),
+                onError = onError,
+                authToken = ConfigurationManager.getAuthTokenForBackend()
+            )
+
+        handler.sendRequest(fullApiUrl, apiDataModel)
+    }
+
     private fun saveChunkToFile(chunk: ByteArray) {
         try {
             val fileOutputStream = FileOutputStream(audioFile, true)

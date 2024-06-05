@@ -7,6 +7,7 @@ interface MainHandler {
     fun showProgressBar(message: String = "")
     fun hideProgressBar()
     fun executeOnUIThread(action: Runnable)
+    fun getCurrentAICharacter(): String
 
 }
 

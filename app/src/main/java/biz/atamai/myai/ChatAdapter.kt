@@ -99,6 +99,35 @@ class ChatAdapter(
                 } ?: R.drawable.ai_avatar_placeholder
             }
 
+            // if its message (or whole chat) for artgen - we want to allow user to create images
+            if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
+                binding.imageGenerationView.visibility = View.VISIBLE
+
+                binding.generateImageButton.setOnClickListener {
+                    mainHandler.showProgressBar("Image")
+                    val prompt = chatItem.message
+
+                    utilityTools.sendImageRequest(
+                        prompt,
+                        apiUrl,
+                        { result ->
+                            println("Image result: $result")
+                            chatItem.imageLocations = listOf(result)
+                            notifyItemChanged(adapterPosition)
+                            mainHandler.hideProgressBar()
+
+                        },
+                        { error ->
+                            mainHandler.executeOnUIThread {
+                                mainHandler.hideProgressBar()
+                                println("Error image: ${error.message}")
+                                Toast.makeText(context, "Error generating image", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                }
+            }
+
             binding.avatarImageView.setImageResource(avatarResId)
             // if URIs for images are set - those are images
             if (chatItem.imageLocations.isNotEmpty()) {

@@ -47,6 +47,23 @@
                 />
         </HorizontalScrollView>
 
+        <!-- Add an icon for image generation -->
+        <LinearLayout
+            android:id="@+id/imageGenerationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:padding="0dp">
+
+            <ImageButton
+                android:id="@+id/generateImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_image"
+                />
+        </LinearLayout>
+
         <!-- Add an icon for audio attachments -->
         <LinearLayout
             android:id="@+id/audio_player"
