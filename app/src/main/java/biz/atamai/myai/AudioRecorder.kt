@@ -1,6 +1,7 @@
 package biz.atamai.myai
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
 import android.bluetooth.BluetoothProfile
@@ -23,7 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.IOException
 
-class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnected: Boolean, var apiUrl: String) {
+class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConnected: Boolean, var apiUrl: String) {
 
     private var mediaRecorder: MediaRecorder? = null
     private var audioFilePath: String? = null
@@ -34,7 +35,7 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
 
     private var bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private var bluetoothHeadset: BluetoothHeadset? = null
-    private var audioManager: AudioManager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var audioManager: AudioManager = mainHandler.getMainBindingContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var isBluetoothScoOn = false
 
     // delay to ensure SCO connection is established
@@ -62,9 +63,9 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
             if (action == BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED) {
                 val state = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1)
                 if (state == BluetoothHeadset.STATE_CONNECTED) {
-                    Toast.makeText(activity, "Bluetooth headset connected", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Bluetooth headset connected")
                 } else if (state == BluetoothHeadset.STATE_DISCONNECTED) {
-                    Toast.makeText(activity, "Bluetooth headset disconnected", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Bluetooth headset disconnected")
                 }
             }
         }
@@ -72,21 +73,21 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                bluetoothAdapter?.getProfileProxy(activity, bluetoothProfileListener, BluetoothProfile.HEADSET)
+            if (ContextCompat.checkSelfPermission(mainHandler.getMainBindingContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                bluetoothAdapter?.getProfileProxy(mainHandler.getMainBindingContext(), bluetoothProfileListener, BluetoothProfile.HEADSET)
             } else {
-                ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_AUDIO_PERMISSION_CODE)
+                ActivityCompat.requestPermissions(mainHandler.getMainBindingContext() as Activity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_AUDIO_PERMISSION_CODE)
             }
         } else {
             if (useBluetoothIfConnected) {
-                bluetoothAdapter?.getProfileProxy(activity, bluetoothProfileListener, BluetoothProfile.HEADSET)
+                bluetoothAdapter?.getProfileProxy(mainHandler.getMainBindingContext(), bluetoothProfileListener, BluetoothProfile.HEADSET)
             }
         }
         if (useBluetoothIfConnected) {
-            activity.registerReceiver(bluetoothReceiver, IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED))
+            mainHandler.getMainBindingContext().registerReceiver(bluetoothReceiver, IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED))
         }
 
-        permissionsUtil = PermissionsUtil(activity)
+        permissionsUtil = PermissionsUtil(mainHandler.getMainBindingContext() as Activity)
     }
 
     fun handleRecordButtonClick() {
@@ -100,9 +101,9 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
     @Suppress("DEPRECATION")
     private fun startRecording() {
         if (permissionsUtil.checkPermissions()) {
-            activity.setRecordButtonImageResource(R.drawable.ic_stop_24)
+            mainHandler.setRecordButtonImageResource(R.drawable.ic_stop_24)
             val timestamp = System.currentTimeMillis()
-            audioFilePath = "${activity.externalCacheDir?.absolutePath}/audiorecord_${timestamp}.mp3"
+            audioFilePath = "${mainHandler.getMainBindingContext().externalCacheDir?.absolutePath}/audiorecord_${timestamp}.mp3"
 
             if (useBluetoothIfConnected && isBluetoothHeadsetConnected()) {
                 startBluetoothScoAndRecord()
@@ -135,9 +136,9 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
                 prepare()
                 start()
                 isRecording = true
-                Toast.makeText(activity, "Recording started", Toast.LENGTH_SHORT).show()
+                mainHandler.createToastMessage("Recording started")
             } catch (e: IOException) {
-                Toast.makeText(activity, "Recording failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                mainHandler.createToastMessage("Recording failed: ${e.message}")
             }
         }
     }
@@ -148,8 +149,8 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
             release()
             mediaRecorder = null
             isRecording = false
-            activity.setRecordButtonImageResource(R.drawable.ic_mic_none)
-            Toast.makeText(activity, "Recording stopped", Toast.LENGTH_SHORT).show()
+            mainHandler.setRecordButtonImageResource(R.drawable.ic_mic_none)
+            mainHandler.createToastMessage("Recording stopped")
             addRecordingToFileList(audioFilePath)
             sendAudioFileToBackend(audioFilePath)
         }
@@ -165,13 +166,13 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
         val attachedImageLocations = mutableListOf<String>()
         val attachedFilePaths = mutableListOf<Uri>()
 
-        for (i in 0 until activity.binding.imagePreviewContainer.childCount) {
-            val frameLayout = activity.binding.imagePreviewContainer.getChildAt(i) as FrameLayout
+        for (i in 0 until mainHandler.getMainBinding().imagePreviewContainer.childCount) {
+            val frameLayout = mainHandler.getMainBinding().imagePreviewContainer.getChildAt(i) as FrameLayout
             // if it's an image
             if (frameLayout.getChildAt(0) is ImageView) {
                 val imageView = frameLayout.getChildAt(0) as ImageView
                 if (imageView.tag == null) {
-                    Toast.makeText(activity, "Problems with uploading files. Try again", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Problems with uploading files. Try again")
                     continue
                 }
                 attachedImageLocations.add(imageView.tag as String)
@@ -183,15 +184,15 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
         }
 
         val utilityTools = UtilityTools(
-            context = activity,
+            context = mainHandler.getMainBindingContext(),
             onResponseReceived = { response ->
-                activity.runOnUiThread {
-                    activity.handleTextMessage(response, attachedImageLocations, attachedFilePaths)
+                mainHandler.executeOnUIThread {
+                    mainHandler.handleTextMessage(response, attachedImageLocations, attachedFilePaths)
                 }
             },
             onError = { error ->
-                activity.runOnUiThread {
-                    Toast.makeText(activity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                mainHandler.executeOnUIThread {
+                    mainHandler.createToastMessage("Error: ${error.message}")
                 }
             }
         )
@@ -201,7 +202,7 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
     private fun addRecordingToFileList(filePath: String?) {
         filePath?.let {
             val fileUri = Uri.parse(it)
-            activity.addMessageToChat("", listOf(), listOf(fileUri))
+            mainHandler.addMessageToChat("", listOf(), listOf(fileUri))
         }
     }
 
@@ -227,7 +228,7 @@ class AudioRecorder(private val activity: MainActivity, var useBluetoothIfConnec
     }
 
     fun release() {
-        activity.unregisterReceiver(bluetoothReceiver)
+        mainHandler.getMainBindingContext().unregisterReceiver(bluetoothReceiver)
         bluetoothAdapter?.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
     }
 }

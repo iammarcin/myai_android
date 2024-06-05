@@ -1,5 +1,6 @@
     package biz.atamai.myai
 
+    import android.content.Context
     import android.media.AudioManager
     import android.media.MediaPlayer
     import android.net.Uri
@@ -83,6 +84,8 @@
             topMenuHandler.setupTopMenus(binding)
 
             chatHelper = ChatHelper(this, binding, chatAdapter, chatItems, ConfigurationManager)
+            // this is needed - because chatHelper needs chatAdapter and vice versa
+            // so first we initialize chatAdapter (without chatHelper as its not yet initialized) and later we set chatHelper to chatAdapter
             chatAdapter.setChatHelperHandler(chatHelper)
 
             DatabaseHelper.initialize(this, chatHelper::getCurrentDBSessionID, chatHelper::setCurrentDBSessionID)
@@ -232,7 +235,7 @@
 
         // sending data to chat adapter
         // used from multiple places
-        fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri> = listOf()): ChatItem {
+        override fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>): ChatItem {
             val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles)
             chatItems.add(chatItem)
             chatAdapter.notifyItemInserted(chatItems.size - 1)
@@ -440,7 +443,7 @@
             }
         }
 
-        fun setRecordButtonImageResource(resourceId: Int) {
+        override fun setRecordButtonImageResource(resourceId: Int) {
             binding.btnRecord.setImageResource(resourceId)
         }
 
@@ -458,25 +461,30 @@
             )
         }
 
+        // needed for chatHelperInterfaces
         // PROGRESS BAR
         override fun showProgressBar(message: String) {
             binding.progressContainer.visibility = View.VISIBLE
             binding.progressText.text = message
         }
-
         override fun hideProgressBar() {
             binding.progressContainer.visibility = View.GONE
         }
-
         override fun getCurrentAICharacter(): String {
             return ConfigurationManager.getTextAICharacter()
         }
-
-        // needed for chatHelperInterfaces
         override fun executeOnUIThread(action: Runnable) {
             this@MainActivity.runOnUiThread(action)
         }
-
+        override fun getMainBinding(): ActivityMainBinding {
+             return binding
+        }
+        override fun getMainBindingContext(): Context {
+            return binding.root.context
+        }
+        override fun createToastMessage(message: String, duration: Int) {
+            Toast.makeText(this, message, duration).show()
+        }
 
         // permissions
         private fun setupPermissions() {
