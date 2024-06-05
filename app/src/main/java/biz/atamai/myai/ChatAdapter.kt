@@ -4,14 +4,11 @@ import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Environment
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -19,12 +16,12 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
+import biz.atamai.myai.databinding.DialogFullscreenImagesBinding
 import com.squareup.picasso.Picasso
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -125,7 +122,7 @@ class ChatAdapter(
                         Picasso.get().load(url.toString()).into(this)
 
                         setOnClickListener {
-                            showFullScreenImage(url.toString())
+                            showFullScreenImages(chatItem.imageLocations, chatItem.imageLocations.indexOf(url))
                         }
                     }
                     binding.imageContainer.addView(imageView)
@@ -364,19 +361,21 @@ class ChatAdapter(
     }
 
     // create new view for image - when clicked on chat item images
-    private fun showFullScreenImage(url: String) {
+    private fun showFullScreenImages(imageUrls: List<String>, initialPosition: Int) {
         val dialog = Dialog(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
-        dialog.setContentView(R.layout.dialog_fullscreen_image)
+        val binding: DialogFullscreenImagesBinding = DialogFullscreenImagesBinding.inflate(LayoutInflater.from(context))
+        dialog.setContentView(binding.root)
 
+        val adapter = FullScreenImageAdapter(context, imageUrls)
+        binding.viewPager.adapter = adapter
+        binding.viewPager.setCurrentItem(initialPosition, false)
 
-        val imageView = dialog.findViewById<ImageView>(R.id.fullscreen_image)
-        val closeButton = dialog.findViewById<ImageButton>(R.id.close_button)
-
-        Picasso.get().load(url).into(imageView)
-        closeButton.setOnClickListener { dialog.dismiss() }
+        binding.closeButton.setOnClickListener { dialog.dismiss() }
 
         dialog.show()
     }
+
+
 
 
     private fun Int.dpToPx(context: Context): Int {
