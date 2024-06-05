@@ -101,15 +101,11 @@ class ChatAdapter(
             binding.avatarImageView.setImageResource(avatarResId)
             // if URIs for images are set - those are images
             if (chatItem.imageLocations.isNotEmpty()) {
-                println("BIND IMAGE LOCATION")
-                println("chatItem: $chatItem")
-                println("chatItem.imageLocations: ${chatItem.imageLocations}")
                 binding.scrollViewImages.visibility = View.VISIBLE
                 binding.imageContainer.removeAllViews() // Clear old images
 
                 // if we have image - lets add click listener to show it in full screen
                 for (url in chatItem.imageLocations) {
-                    println("URL image: $url")
                     val imageView = ImageView(binding.root.context).apply {
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -187,6 +183,8 @@ class ChatAdapter(
                         }
                     )
                 }
+            } else {
+                binding.imageGenerationView.visibility = View.GONE
             }
         }
 
