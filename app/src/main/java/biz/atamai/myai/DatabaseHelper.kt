@@ -24,26 +24,24 @@ sealed class DBResponse {
 }
 
 object DatabaseHelper {
-    private lateinit var mainActivity: MainActivity
-    private lateinit var getCurrentDBSessionID: () -> String?
-    private lateinit var setCurrentDBSessionID: (String) -> Unit
+    private lateinit var mainHandler: MainHandler
+    private lateinit var chatHelperHandler: ChatHelperHandler
 
     // these 3 will be needed for pagination of session list on top left menu
     private var isLoading = false
     private var limit = 13
     private var offset = 0
 
-    fun initialize(activity: MainActivity, getSessionID: () -> String?, setSessionID: (String) -> Unit) {
-        mainActivity = activity
-        getCurrentDBSessionID = getSessionID
-        setCurrentDBSessionID = setSessionID
+    fun initialize(mainHandler: MainHandler, chatHelperHandler: ChatHelperHandler) {
+        this.mainHandler = mainHandler
+        this.chatHelperHandler = chatHelperHandler
     }
 
     // (DBResponse) - callback type (it's sealed class set above)
     suspend fun sendDBRequest(action: String, userInput: Map<String, Any> = mapOf(), callback: ((DBResponse) -> Unit)? = null) {
         CoroutineScope(Dispatchers.IO).launch {
             // serialization of data (uri -> string) explained in ChatItem
-            val serializableChatItems = mainActivity.chatItems.map { it.toSerializableMap() }
+            val serializableChatItems = mainHandler.chatItemsList.map { it.toSerializableMap() }
 
             val apiDataModel = APIDataModel(
                 category = "provider.db",
@@ -68,7 +66,7 @@ object DatabaseHelper {
                     println("!!!!!!! DB Error")
                     println(error)
                     CoroutineScope(Dispatchers.Main).launch {
-                        Toast.makeText(mainActivity, "Error with saving data in DB", Toast.LENGTH_LONG).show()
+                        mainHandler.createToastMessage("Error with saving data in DB")
                     }
                 },
                 authToken = ConfigurationManager.getAuthTokenForBackend()
@@ -85,7 +83,7 @@ object DatabaseHelper {
             "db_new_session" -> {
                 println("Db_new_session response: $response")
                 val sessionId = jsonResponse.getJSONObject("message").getString("result")
-                setCurrentDBSessionID(sessionId)
+                chatHelperHandler.setCurrentDBSessionID(sessionId)
 
                 callback?.invoke(DBResponse.SessionId(sessionId))
             }
@@ -95,7 +93,7 @@ object DatabaseHelper {
             }
             "db_get_user_session" -> {
                 val sessionData = jsonResponse.getJSONObject("message").getJSONObject("result")
-                mainActivity.chatHelper.restoreSessionData(sessionData)
+                chatHelperHandler.restoreSessionData(sessionData)
             }
             "db_new_message" -> {
                 println("Db_new_message response: $response")
@@ -105,8 +103,8 @@ object DatabaseHelper {
 
                 // if current DB session is empty it means that its new chat, so we have to set it - so messages are assigned to proper session in DB
                 // and in fact db_new_message in such case should return additional value - session_id
-                if (getCurrentDBSessionID().isNullOrEmpty())
-                    setCurrentDBSessionID(messageContent.getString("sessionId"))
+                if (chatHelperHandler.getCurrentDBSessionID().isNullOrEmpty())
+                    chatHelperHandler.setCurrentDBSessionID(messageContent.getString("sessionId"))
 
                 // this returns 2 values - userMessageId and aiMessageId
                 callback?.invoke(DBResponse.MessageIds(userMessageId, aiMessageId))
@@ -119,7 +117,7 @@ object DatabaseHelper {
             method,
             mapOf(
                 "customer_id" to 1,
-                "session_id" to (getCurrentDBSessionID() ?: ""),
+                "session_id" to (chatHelperHandler.getCurrentDBSessionID() ?: ""),
                 "userMessage" to mapOf(
                         "sender" to "User",
                         "message" to userMessage.message,
@@ -134,7 +132,7 @@ object DatabaseHelper {
                         "image_locations" to aiResponse.imageLocations,
                         "file_locations" to aiResponse.fileNames,
                     ),
-                "chat_history" to mainActivity.chatItems,
+                "chat_history" to mainHandler.chatItemsList,
             )
         ) { response ->
             // if its new message - update message id in chatItem
@@ -195,16 +193,16 @@ object DatabaseHelper {
 
     // after parsing data from DB - we display it in left top menu
     private fun displayChatSessions(sessions: List<ChatSessionForTopLeftMenu>) {
-        val drawerLayout = mainActivity.binding.topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
+        val drawerLayout = mainHandler.getMainBinding().topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
 
         //drawerLayout.removeAllViews()
 
         sessions.forEach { session ->
-            val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(mainActivity.layoutInflater, drawerLayout, false)
+            val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(mainHandler.mainLayoutInflaterInstance, drawerLayout, false)
             sessionViewBinding.sessionName.text = session.sessionName
             val aiCharacter = session.aiCharacterName
             // having name of character, lets search its image through CharacterManager
-            val character = mainActivity.characterManager.characters.find { it.nameForAPI == aiCharacter }
+            val character = mainHandler.getMainCharacterManager().characters.find { it.nameForAPI == aiCharacter }
             sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
             // last update date in format YYYY/MM/DD HH:MM
             sessionViewBinding.sessionLastUpdate.text = formatDateTime(session.lastUpdate)
@@ -215,7 +213,7 @@ object DatabaseHelper {
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest("db_get_user_session", mapOf("session_id" to session.sessionId))
                 }
-                mainActivity.binding.drawerLayout.closeDrawer(GravityCompat.START)
+                mainHandler.getMainBinding().drawerLayout.closeDrawer(GravityCompat.START)
             }
 
             // Handle long-press to rename session
@@ -230,7 +228,7 @@ object DatabaseHelper {
     }
 
     private fun showSessionRenameDialog(session: ChatSessionForTopLeftMenu) {
-        val dialog = Dialog(mainActivity)
+        val dialog = Dialog(mainHandler.getMainActivity())
         dialog.setContentView(R.layout.dialog_rename_session)
         dialog.window?.setLayout(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -254,7 +252,7 @@ object DatabaseHelper {
                 // Here you can handle the rename action (e.g., send it to the server)
                 dialog.dismiss()
             } else {
-                Toast.makeText(mainActivity, "Name cannot be empty", Toast.LENGTH_SHORT).show()
+                mainHandler.createToastMessage("Name cannot be empty")
             }
         }
 

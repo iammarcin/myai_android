@@ -87,7 +87,7 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
             mainHandler.getMainBindingContext().registerReceiver(bluetoothReceiver, IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED))
         }
 
-        permissionsUtil = PermissionsUtil(mainHandler.getMainBindingContext() as Activity)
+        permissionsUtil = PermissionsUtil(mainHandler)
     }
 
     fun handleRecordButtonClick() {

@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-class PermissionsUtil(private val activity: Activity) {
+class PermissionsUtil(private val mainHandler: MainHandler) {
     companion object {
         const val REQUEST_AUDIO_PERMISSION_CODE = 1
     }
@@ -28,20 +28,18 @@ class PermissionsUtil(private val activity: Activity) {
 
     fun checkPermissions(): Boolean {
         val neededPermissions = requiredPermissions.any {
-            ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
+            mainHandler.checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED
         }
         return !neededPermissions
     }
 
     fun requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requiredPermissions.plus(Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            requiredPermissions
         }
-        ActivityCompat.requestPermissions(
-            activity,
-            requiredPermissions,
-            REQUEST_AUDIO_PERMISSION_CODE
-        )
+        mainHandler.requestAllPermissions(permissionsToRequest, REQUEST_AUDIO_PERMISSION_CODE)
     }
 
     fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -64,22 +62,22 @@ class PermissionsUtil(private val activity: Activity) {
                 // Permissions are granted, continue with functionality that needs permissions
             } else {
                 if (isRecordAudioGranted != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(activity, "Record Audio permission denied", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Record Audio permission denied")
                 }
                 if (isWriteStorageGranted != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(activity, "Storage permission denied", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Storage permission denied")
                 }
                 if (!isCameraGranted) {
-                    Toast.makeText(activity, "Camera permission denied", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Camera permission denied")
                 }
                 if (!isBluetoothGranted) {
-                    Toast.makeText(activity, "Bluetooth permission denied", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Bluetooth permission denied")
                 }
                 if (!isBluetoothAdminGranted) {
-                    Toast.makeText(activity, "Bluetooth Admin permission denied", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Bluetooth Admin permission denied")
                 }
                 if (!isModifyAudioSettingsGranted) {
-                    Toast.makeText(activity, "Modify Audio Settings permission denied", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Modify Audio Settings permission denied")
                 }
                 // Inform the user that permissions were not granted
             }

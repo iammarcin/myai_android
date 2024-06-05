@@ -14,8 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class ChatHelper(
-    private val context: Context,
-    private val binding: ActivityMainBinding,
+    private val mainHandler: MainHandler,
     private val chatAdapter: ChatAdapter,
     private val chatItems: MutableList<ChatItem>,
     private val configurationManager: ConfigurationManager,
@@ -43,7 +42,7 @@ class ChatHelper(
     override fun getCurrentDBSessionID(): String? {
         return currentDBSessionID
     }
-    fun setCurrentDBSessionID(sessionID: String) {
+    override fun setCurrentDBSessionID(sessionID: String) {
         currentDBSessionID = sessionID
     }
 
@@ -51,25 +50,25 @@ class ChatHelper(
     fun startEditingMessage(position: Int, message: String) {
         val chatItem = chatItems[position]
         setEditingMessagePosition(position)
-        binding.editTextMessage.setText(message)
-        binding.editTextMessage.requestFocus()
-        binding.editTextMessage.setSelection(message.length)
-        binding.editTextMessage.maxLines = 10
+        mainHandler.getMainBinding().editTextMessage.setText(message)
+        mainHandler.getMainBinding().editTextMessage.requestFocus()
+        mainHandler.getMainBinding().editTextMessage.setSelection(message.length)
+        mainHandler.getMainBinding().editTextMessage.maxLines = 10
 
         // Show the keyboard
-        showKeyboard(binding.editTextMessage)
+        showKeyboard(mainHandler.getMainBinding().editTextMessage)
 
         // Show the send button and hide the record button
         manageBottomEditSection("show")
 
         // Clear existing previews
-        binding.imagePreviewContainer.removeAllViews()
+        mainHandler.getMainBinding().imagePreviewContainer.removeAllViews()
 
         // Add image previews
         if (chatItem.imageLocations.isNotEmpty()) {
-            binding.scrollViewPreview.visibility = View.VISIBLE
+            mainHandler.getMainBinding().scrollViewPreview.visibility = View.VISIBLE
             for (imageUrl in chatItem.imageLocations) {
-                val imageView = ImageView(context).apply {
+                val imageView = ImageView(mainHandler.context).apply {
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.WRAP_CONTENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
@@ -81,7 +80,7 @@ class ChatHelper(
                 }
 
                 // Wrap ImageView in FrameLayout
-                val frameLayout = FrameLayout(context).apply {
+                val frameLayout = FrameLayout(mainHandler.context).apply {
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.MATCH_PARENT
@@ -91,21 +90,21 @@ class ChatHelper(
                     addView(imageView)
                 }
 
-                binding.imagePreviewContainer.addView(frameLayout)
+                mainHandler.getMainBinding().imagePreviewContainer.addView(frameLayout)
             }
         } else {
-            binding.scrollViewPreview.visibility = View.GONE
+            mainHandler.getMainBinding().scrollViewPreview.visibility = View.GONE
         }
     }
 
     // when dealing with hasFocus etc for edit text - if we lose hasFocus - keyboard remained on the screen
     fun hideKeyboard(view: View) {
-        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager = mainHandler.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
     private fun showKeyboard(view: View) {
         if (view.requestFocus()) {
-            val inputMethodManager2 = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val inputMethodManager2 = mainHandler.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager2.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
         }
     }
@@ -125,12 +124,12 @@ class ChatHelper(
         chatItems.clear()
         chatAdapter.notifyItemRangeRemoved(0, size)
         resetInputArea()
-        binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
+        mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.VISIBLE
         chatAdapter.releaseMediaPlayers()
     }
 
     // once we have all the data regarding session - we restore it in chat
-    fun restoreSessionData(sessionData: JSONObject) {
+    override fun restoreSessionData(sessionData: JSONObject) {
         println("RESTORE SESSION DATA: $sessionData")
         val chatHistoryString = sessionData.getString("chat_history")
         val chatHistory = JSONArray(chatHistoryString)
@@ -198,7 +197,7 @@ class ChatHelper(
 
         configurationManager.setTextAICharacter(sessionData.getString("ai_character_name"))
         setCurrentDBSessionID(sessionData.getString("session_id") ?: "")
-        binding.characterHorizontalMainScrollView.visibility = View.GONE
+        mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.GONE
 
         chatAdapter.notifyItemRangeInserted(0, chatItems.size)
         scrollToEnd()
@@ -214,7 +213,7 @@ class ChatHelper(
         resetChat()
         // resetting DB session - it should create new one later in backend
         setCurrentDBSessionID("")
-        binding.characterScrollView.visibility = View.GONE
+        mainHandler.getMainBinding().characterScrollView.visibility = View.GONE
 
         // Add the selected chat items to the new session
         for (chatItem in selectedChatItems) {
@@ -228,41 +227,41 @@ class ChatHelper(
 
 
     fun scrollToEnd() {
-        binding.chatContainer.scrollToPosition(chatItems.size - 1)
+        mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
     }
 
     // reset after submission - clean input text, images preview and scroll view in general
     fun resetInputArea() {
-        binding.editTextMessage.setText("")
-        binding.imagePreviewContainer.removeAllViews()
-        binding.scrollViewPreview.visibility = View.GONE
+        mainHandler.getMainBinding().editTextMessage.setText("")
+        mainHandler.getMainBinding().imagePreviewContainer.removeAllViews()
+        mainHandler.getMainBinding().scrollViewPreview.visibility = View.GONE
         manageBottomEditSection("hide")
         // release focus of binding.editTextMessage
-        binding.editTextMessage.clearFocus()
+        mainHandler.getMainBinding().editTextMessage.clearFocus()
     }
 
     // show or hide bottom edit section (manage properly edit text and buttons)
     fun manageBottomEditSection(action: String) {
         when (action) {
             "show" -> {
-                binding.layoutRecord.visibility = View.GONE
-                binding.btnSend.visibility = View.VISIBLE
-                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
-                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
+                mainHandler.getMainBinding().layoutRecord.visibility = View.GONE
+                mainHandler.getMainBinding().btnSend.visibility = View.VISIBLE
+                (mainHandler.getMainBinding().editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
+                (mainHandler.getMainBinding().rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.3f
             }
             "hide" -> {
-                binding.layoutRecord.visibility = View.VISIBLE
-                binding.btnSend.visibility = View.GONE
-                (binding.editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
-                (binding.rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+                mainHandler.getMainBinding().layoutRecord.visibility = View.VISIBLE
+                mainHandler.getMainBinding().btnSend.visibility = View.GONE
+                (mainHandler.getMainBinding().editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+                (mainHandler.getMainBinding().rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
             }
         }
     }
 
     // used when user types @ - which opens character selection area... and then this function is triggered upon selection
     fun insertCharacterName(characterName: String) {
-        val currentText = binding.editTextMessage.text.toString()
-        val cursorPosition = binding.editTextMessage.selectionStart
+        val currentText = mainHandler.getMainBinding().editTextMessage.text.toString()
+        val cursorPosition = mainHandler.getMainBinding().editTextMessage.selectionStart
         val atIndex = currentText.lastIndexOf("@", cursorPosition - 1)
 
         if (atIndex != -1) {
@@ -271,8 +270,8 @@ class ChatHelper(
                 .delete(atIndex + 1, cursorPosition)
                 .insert(atIndex + 1, "$characterName ")
                 .toString()
-            binding.editTextMessage.setText(newText)
-            binding.editTextMessage.setSelection(atIndex + characterName.length + 2) // Position cursor after the character name
+            mainHandler.getMainBinding().editTextMessage.setText(newText)
+            mainHandler.getMainBinding().editTextMessage.setSelection(atIndex + characterName.length + 2) // Position cursor after the character name
         }
     }
 

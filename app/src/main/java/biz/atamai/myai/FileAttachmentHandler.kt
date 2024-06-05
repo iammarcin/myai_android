@@ -66,8 +66,8 @@ class FileAttachmentHandler(
         if (incrementCounter) {
             incrementUploadCounter()
         }
-        val mimeType = mainHandler.getMainActivityContext().contentResolver.getType(uri)
-        val frameLayout = FrameLayout(mainHandler.getMainActivityContext()).apply {
+        val mimeType = mainHandler.context.contentResolver.getType(uri)
+        val frameLayout = FrameLayout(mainHandler.context).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80.toPx()).apply {
                 marginStart = 8.toPx()
                 marginEnd = 8.toPx()
@@ -89,7 +89,7 @@ class FileAttachmentHandler(
             decrementUploadCounter()
             return
         } else if (mimeType?.startsWith("image/") == true) {
-            val imageView = ImageView(mainHandler.getMainActivityContext()).apply {
+            val imageView = ImageView(mainHandler.context).apply {
                 layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT)
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 adjustViewBounds = true
@@ -102,7 +102,7 @@ class FileAttachmentHandler(
 
             val filePath = getFilePathFromUri(uri)
             val utilityTools = UtilityTools(
-                context = mainHandler.getMainActivityContext(),
+                context = mainHandler.context,
                 onResponseReceived = { response ->
                     mainHandler.executeOnUIThread {
                         imageView.setImageURI(null) // Clear local URI
@@ -122,13 +122,13 @@ class FileAttachmentHandler(
             // upload to S3 - so sending request to nodejs API
             utilityTools.uploadFileToServer(filePath, apiUrl, "api/aws", "provider.s3", "s3_upload")
         } else {
-            val placeholder = View(mainHandler.getMainActivityContext()).apply {
+            val placeholder = View(mainHandler.context).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
                     gravity = Gravity.CENTER
                 }
                 setBackgroundColor(
                     ContextCompat.getColor(
-                        mainHandler.getMainActivityContext(),
+                        mainHandler.context,
                         R.color.attached_file_placeholder
                     )
                 )
@@ -138,12 +138,12 @@ class FileAttachmentHandler(
             decrementUploadCounter()
         }
 
-        val removeButton = ImageButton(mainHandler.getMainActivityContext()).apply {
+        val removeButton = ImageButton(mainHandler.context).apply {
             layoutParams = FrameLayout.LayoutParams(24.toPx(), 24.toPx()).apply {
                 gravity = Gravity.TOP or Gravity.END
             }
             setImageResource(R.drawable.ic_close)
-            background = ContextCompat.getDrawable(mainHandler.getMainActivityContext(), R.drawable.rounded_button_background)
+            background = ContextCompat.getDrawable(mainHandler.context, R.drawable.rounded_button_background)
             setOnClickListener {
                 mainHandler.getImagePreviewContainer().removeView(frameLayout)
                 if (mainHandler.getImagePreviewContainer().childCount == 0) {
@@ -160,12 +160,12 @@ class FileAttachmentHandler(
     // there was problem with getting file path from URI (when i wanted to transcribe audio file) - so we need to save it to cache and get path from there
     private fun getFilePathFromUri(uri: Uri): String? {
         var filePath: String? = null
-        val cursor: Cursor? = mainHandler.getMainActivityContext().contentResolver.query(uri, null, null, null, null)
+        val cursor: Cursor? = mainHandler.context.contentResolver.query(uri, null, null, null, null)
         cursor?.use {
             if (it.moveToFirst()) {
                 val displayName: String = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-                val inputStream = mainHandler.getMainActivityContext().contentResolver.openInputStream(uri)
-                val file = File(mainHandler.getMainActivityContext().cacheDir, displayName)
+                val inputStream = mainHandler.context.contentResolver.openInputStream(uri)
+                val file = File(mainHandler.context.cacheDir, displayName)
                 file.outputStream().use { output ->
                     inputStream?.copyTo(output)
                 }
@@ -203,5 +203,5 @@ class FileAttachmentHandler(
         mainHandler.getMainBinding().newChatButton.isEnabled = true
     }
 
-    private fun Int.toPx(): Int = (this * mainHandler.getMainActivityContext().resources.displayMetrics.density).toInt()
+    private fun Int.toPx(): Int = (this * mainHandler.context.resources.displayMetrics.density).toInt()
 }

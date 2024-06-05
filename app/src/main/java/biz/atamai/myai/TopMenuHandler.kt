@@ -22,7 +22,7 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 
 class TopMenuHandler(
-    private val context: Context,
+    private val mainHandler: MainHandler,
     private val inflater: LayoutInflater,
     private val onFetchChatSessions: () -> Unit, // function to fetch chat sessions (when menu appears)
     private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
@@ -71,7 +71,7 @@ class TopMenuHandler(
         val popupBinding = TopRightPopupMenuLayoutBinding.inflate(inflater)
 
         // set static width
-        val popupWidth = (context.resources.displayMetrics.density * 200).toInt()
+        val popupWidth = (mainHandler.context.resources.displayMetrics.density * 200).toInt()
 
         val popupWindow = PopupWindow(popupBinding.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -114,16 +114,16 @@ class TopMenuHandler(
     private fun handleModelSelection(model: String) {
         ConfigurationManager.setTextModelName(model)
         textModelName = model
-        Toast.makeText(context, "$model selected", Toast.LENGTH_SHORT).show()
+        mainHandler.createToastMessage("$model selected")
     }
 
     private fun showOptionsDialog() {
-        val dialog = Dialog(context)
+        val dialog = Dialog(mainHandler.context)
         dialog.setContentView(createDialogView(dialog))
 
         dialog.window?.setLayout(
             FrameLayout.LayoutParams.MATCH_PARENT,
-            (context.resources.displayMetrics.heightPixels * 0.7).toInt()
+            (mainHandler.context.resources.displayMetrics.heightPixels * 0.7).toInt()
         )
 
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
@@ -135,7 +135,7 @@ class TopMenuHandler(
     }
 
     private fun createDialogView(dialog: Dialog): View {
-        val container = FrameLayout(context).apply {
+        val container = FrameLayout(mainHandler.context).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
@@ -151,7 +151,7 @@ class TopMenuHandler(
             fragmentView.visibility = View.VISIBLE
         }
 
-        val tabLayout = LinearLayout(context).apply {
+        val tabLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(16, 16, 16, 16)
@@ -174,7 +174,7 @@ class TopMenuHandler(
 
         buttons.forEach { tabLayout.addView(it) }
 
-        val dialogLayout = LinearLayout(context).apply {
+        val dialogLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             addView(tabLayout)
             addView(container)
@@ -193,12 +193,12 @@ class TopMenuHandler(
             3 -> createImageFragmentView()
             4 -> createTTSFragmentView()
             5 -> createSpeechFragmentView()
-            else -> View(context)
+            else -> View(mainHandler.context)
         }
     }
 
     private fun createGeneralFragmentView(): View {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -226,7 +226,7 @@ class TopMenuHandler(
     }
 
     private fun createTextFragmentView(): View {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -243,7 +243,7 @@ class TopMenuHandler(
     }
 
     private fun createImageFragmentView(): View {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -262,7 +262,7 @@ class TopMenuHandler(
     }
 
     private fun createTTSFragmentView(): View {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -303,7 +303,7 @@ class TopMenuHandler(
     }
 
     private fun createSpeechFragmentView(): View {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -317,7 +317,7 @@ class TopMenuHandler(
     }
 
     private fun createSwitchRow(label: String, initialValue: Boolean, onValueChanged: (Boolean) -> Unit): RelativeLayout {
-        return RelativeLayout(context).apply {
+        return RelativeLayout(mainHandler.context).apply {
             val switch = SwitchCompat(context).apply {
                 id = View.generateViewId()
                 setPadding(0, 0, 16, 0)
@@ -355,7 +355,7 @@ class TopMenuHandler(
 
     // for normal text or password / token
     private fun createTextEditRow(label: String, initialValue: String, isPassword: Boolean = false, additionalText: String? = null, onValueChanged: (String) -> Unit, ): LinearLayout {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, 16, 0, 16)
 
@@ -407,7 +407,7 @@ class TopMenuHandler(
     }
 
     private fun createTextLabelRow(label: String): LinearLayout {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, 16, 0, 16)
 
@@ -425,7 +425,7 @@ class TopMenuHandler(
     }
 
     private fun createSeekBarRow(label: String, max: Int, step: Float, initialValue: Float, onValueChanged: (Float) -> Unit): LinearLayout {
-        return LinearLayout(context).apply {
+        return LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
 
             val textView = TextView(context).apply {
@@ -467,7 +467,7 @@ class TopMenuHandler(
 
     // category button on top of the dialog
     private fun createCategoryButton(name: String, layoutId: Int, onClick: (TextView) -> Unit): TextView {
-        return TextView(context).apply {
+        return TextView(mainHandler.context).apply {
             text = name
             setTextColor(ContextCompat.getColor(context, R.color.white))
             textSize = 15f

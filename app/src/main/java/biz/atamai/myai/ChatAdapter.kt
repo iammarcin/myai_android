@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
-    private val context: Context,
     private val characterManager: CharacterManager,
     private val mainHandler: MainHandler,
     private val onEditMessage: (position: Int, message: String) -> Unit,
@@ -49,7 +48,7 @@ class ChatAdapter(
 
     init {
         utilityTools = UtilityTools(
-            context = context,
+            context = mainHandler.context,
             onResponseReceived = { response ->
                 mainHandler.executeOnUIThread {
                     mainHandler.handleTextMessage(response)
@@ -59,7 +58,7 @@ class ChatAdapter(
             onError = { error ->
                 mainHandler.executeOnUIThread {
                     mainHandler.hideProgressBar()
-                    Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Error: ${error.message}")
                 }
             }
         )
@@ -178,7 +177,7 @@ class ChatAdapter(
                             mainHandler.executeOnUIThread {
                                 mainHandler.hideProgressBar()
                                 println("Error image: ${error.message}")
-                                Toast.makeText(context, "Error generating image", Toast.LENGTH_SHORT).show()
+                                mainHandler.createToastMessage("Error generating image")
                             }
                         }
                     )
@@ -291,7 +290,7 @@ class ChatAdapter(
             { error ->
                 mainHandler.executeOnUIThread {
                     mainHandler.hideProgressBar()
-                    Toast.makeText(context, "Error generating TTS: ${error.message}", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Error generating TTS: ${error.message}")
                 }
             }
         )
@@ -308,7 +307,7 @@ class ChatAdapter(
             mainHandler.hideProgressBar()
 
             val utilityToolsTTS = UtilityTools(
-                context = context,
+                context = mainHandler.context,
                 onResponseReceived = { response ->
                     mainHandler.executeOnUIThread {
                         chatItem.fileNames = listOf(Uri.parse(response))
@@ -328,7 +327,7 @@ class ChatAdapter(
                     mainHandler.executeOnUIThread {
                         mainHandler.hideProgressBar()
                         println("Error handleTTSCompletedResponse: ${error.message}")
-                        Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                        mainHandler.createToastMessage("Error: ${error.message}")
                     }
                 }
             )
@@ -360,11 +359,11 @@ class ChatAdapter(
 
     // create new view for image - when clicked on chat item images
     private fun showFullScreenImages(imageUrls: List<String>, initialPosition: Int) {
-        val dialog = Dialog(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
-        val binding: DialogFullscreenImagesBinding = DialogFullscreenImagesBinding.inflate(LayoutInflater.from(context))
+        val dialog = Dialog(mainHandler.context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        val binding: DialogFullscreenImagesBinding = DialogFullscreenImagesBinding.inflate(LayoutInflater.from(mainHandler.context))
         dialog.setContentView(binding.root)
 
-        val adapter = FullScreenImageAdapter(context, imageUrls)
+        val adapter = FullScreenImageAdapter(mainHandler.context, imageUrls)
         binding.viewPager.adapter = adapter
         binding.viewPager.setCurrentItem(initialPosition, false)
 

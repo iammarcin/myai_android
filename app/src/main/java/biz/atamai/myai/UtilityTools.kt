@@ -22,7 +22,7 @@ class UtilityTools(
     private val onError: (Exception) -> Unit
 ) {
 
-    private val storageDir = (context as MainActivity).getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+    private val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
     private val customerId = 1
 
     private var audioFile = File(storageDir, "streamed_audio.$customerId.opus")

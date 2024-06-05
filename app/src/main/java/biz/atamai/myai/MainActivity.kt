@@ -10,6 +10,7 @@
     import android.os.Bundle
     import android.text.Editable
     import android.text.TextWatcher
+    import android.view.LayoutInflater
     import android.view.View
     import android.widget.FrameLayout
     import android.widget.HorizontalScrollView
@@ -19,6 +20,7 @@
     import androidx.activity.result.ActivityResult
     import androidx.activity.result.ActivityResultLauncher
     import androidx.activity.result.contract.ActivityResultContracts
+    import androidx.core.app.ActivityCompat
     import androidx.core.content.ContextCompat
     import androidx.recyclerview.widget.RecyclerView
     import biz.atamai.myai.databinding.ActivityMainBinding
@@ -28,11 +30,16 @@
     class MainActivity : AppCompatActivity(), MainHandler {
 
         lateinit var binding: ActivityMainBinding
+        override val context: Context
+            get() = this
 
         private lateinit var fileAttachmentHandler: FileAttachmentHandler
         private lateinit var cameraHandler: CameraHandler
 
         val chatItems: MutableList<ChatItem> = mutableListOf()
+        override val chatItemsList: MutableList<ChatItem>
+            get() = this.chatItems
+
         private lateinit var chatAdapter: ChatAdapter
         private lateinit var audioRecorder: AudioRecorder
         private lateinit var permissionsUtil: PermissionsUtil
@@ -90,12 +97,12 @@
             )
             topMenuHandler.setupTopMenus(binding)
 
-            chatHelper = ChatHelper(this, binding, chatAdapter, chatItems, ConfigurationManager)
+            chatHelper = ChatHelper(this, chatAdapter, chatItems, ConfigurationManager)
             // this is needed - because chatHelper needs chatAdapter and vice versa
             // so first we initialize chatAdapter (without chatHelper as its not yet initialized) and later we set chatHelper to chatAdapter
             chatAdapter.setChatHelperHandler(chatHelper)
 
-            DatabaseHelper.initialize(this, chatHelper::getCurrentDBSessionID, chatHelper::setCurrentDBSessionID)
+            DatabaseHelper.initialize(this, chatHelper)
 
             // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
             characterManager.setupCharacterCards(binding) { characterName ->
@@ -127,9 +134,7 @@
             // this is done via onEditMessage in chat adapter - we point it to startEditingMessage
             chatAdapter = ChatAdapter(
                 chatItems,
-                ConfigurationManager.
-                getAppModeApiUrl(),
-                this,
+                ConfigurationManager.getAppModeApiUrl(),
                 characterManager,
                 this,
             )
@@ -486,15 +491,19 @@
         override fun getMainActivity(): Activity {
             return this
         }
-        override fun getMainActivityContext(): Context {
-            return this
-        }
         override fun getMainBinding(): ActivityMainBinding {
-             return binding
+            return binding
         }
         override fun getMainBindingContext(): Context {
             return binding.root.context
         }
+
+        override fun getMainCharacterManager(): CharacterManager {
+            return characterManager
+        }
+        override val mainLayoutInflaterInstance: LayoutInflater
+            get() = this.layoutInflater
+
         override fun createToastMessage(message: String, duration: Int) {
             Toast.makeText(this, message, duration).show()
         }
@@ -509,6 +518,13 @@
             return super.registerForActivityResult(contract, callback)
         }
         // permissions
+        override fun checkSelfPermission(permission: String): Int {
+            return ContextCompat.checkSelfPermission(this, permission)
+        }
+
+        override fun requestAllPermissions(permissions: Array<String>, requestCode: Int) {
+            ActivityCompat.requestPermissions(this, permissions, requestCode)
+        }
         private fun setupPermissions() {
             permissionsUtil = PermissionsUtil(this)
 
