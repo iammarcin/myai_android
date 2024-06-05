@@ -28,6 +28,7 @@ object ConfigurationManager {
     private const val IMAGE_SIZE = "image_model_size"
     private const val IMAGE_QUALITY_HD = "image_quality_id"
     private const val IMAGE_DISABLE_SAFE_PROMPT = "image_disable_safe_prompt"
+    private const val IMAGE_AUTO_GENERATE_IMAGE = "image_auto_generate_image"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -64,6 +65,7 @@ object ConfigurationManager {
         IMAGE_SIZE to 1024,
         IMAGE_QUALITY_HD to false, //hd or standard (true = hd)
         IMAGE_DISABLE_SAFE_PROMPT to false,
+        IMAGE_AUTO_GENERATE_IMAGE to false,
         AUTH_TOKEN_FOR_BACKEND to "",
 
         // Add other default values
@@ -129,6 +131,7 @@ object ConfigurationManager {
     fun getImageSize() = getInt(IMAGE_SIZE, defaultSettings[IMAGE_SIZE] as Int)
     fun getImageQualityHD() = getBoolean(IMAGE_QUALITY_HD, defaultSettings[IMAGE_QUALITY_HD] as Boolean)
     fun getImageDisableSafePrompt() = getBoolean(IMAGE_DISABLE_SAFE_PROMPT, defaultSettings[IMAGE_DISABLE_SAFE_PROMPT] as Boolean)
+    fun getImageAutoGenerateImage() = getBoolean(IMAGE_AUTO_GENERATE_IMAGE, defaultSettings[IMAGE_AUTO_GENERATE_IMAGE] as Boolean)
     fun getAuthTokenForBackend() = getString(AUTH_TOKEN_FOR_BACKEND, defaultSettings[AUTH_TOKEN_FOR_BACKEND] as String)
 
     // setter methods
@@ -155,6 +158,7 @@ object ConfigurationManager {
     fun setImageSize(value: Int) = setInt(IMAGE_SIZE, value)
     fun setImageQualityHD(value: Boolean) = setBoolean(IMAGE_QUALITY_HD, value)
     fun setImageDisableSafePrompt(value: Boolean) = setBoolean(IMAGE_DISABLE_SAFE_PROMPT, value)
+    fun setImageAutoGenerateImage(value: Boolean) = setBoolean(IMAGE_AUTO_GENERATE_IMAGE, value)
 
     fun setAuthTokenForBackend(value: String) = setString(AUTH_TOKEN_FOR_BACKEND, value)
 

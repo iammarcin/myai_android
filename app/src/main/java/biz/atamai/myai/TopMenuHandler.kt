@@ -23,7 +23,6 @@ import android.view.inputmethod.EditorInfo
 
 class TopMenuHandler(
     private val mainHandler: MainHandler,
-    private val inflater: LayoutInflater,
     private val onFetchChatSessions: () -> Unit, // function to fetch chat sessions (when menu appears)
     private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
 ) {
@@ -68,7 +67,7 @@ class TopMenuHandler(
     }
 
     private fun showTopRightPopupWindow(view: View) {
-        val popupBinding = TopRightPopupMenuLayoutBinding.inflate(inflater)
+        val popupBinding = TopRightPopupMenuLayoutBinding.inflate(mainHandler.mainLayoutInflaterInstance)
 
         // set static width
         val popupWidth = (mainHandler.context.resources.displayMetrics.density * 200).toInt()
@@ -257,6 +256,10 @@ class TopMenuHandler(
 
             addView(createSwitchRow("Disable Openai revised prompt", ConfigurationManager.getImageDisableSafePrompt()) { isChecked ->
                 ConfigurationManager.setImageDisableSafePrompt(isChecked)
+            })
+
+            addView(createSwitchRow("Don't show prompt / generate image [art gen mode]", ConfigurationManager.getImageAutoGenerateImage()) { isChecked ->
+                ConfigurationManager.setImageAutoGenerateImage(isChecked)
             })
         }
     }

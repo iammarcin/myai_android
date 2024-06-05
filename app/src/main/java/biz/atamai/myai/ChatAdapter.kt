@@ -172,6 +172,17 @@ class ChatAdapter(
                             notifyItemChanged(adapterPosition)
                             mainHandler.hideProgressBar()
 
+                            CoroutineScope(Dispatchers.Main).launch {
+                                // update DB - in order to preserve image link (if we restore session later)
+                                DatabaseHelper.sendDBRequest(
+                                    "db_update_session",
+                                    mapOf(
+                                        "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
+                                        "chat_history" to chatItems.map { it.toSerializableMap() }
+                                    )
+                                )
+                            }
+
                         },
                         { error ->
                             mainHandler.executeOnUIThread {
@@ -313,6 +324,7 @@ class ChatAdapter(
                         chatItem.fileNames = listOf(Uri.parse(response))
 
                         CoroutineScope(Dispatchers.Main).launch {
+                            // update DB - in order to preserve TTS link (if we restore session later)
                             DatabaseHelper.sendDBRequest(
                                 "db_update_session",
                                 mapOf(
@@ -345,6 +357,7 @@ class ChatAdapter(
             } else {
                 // here - we still need to update chat session with new audio file
                 CoroutineScope(Dispatchers.Main).launch {
+                    // update DB - in order to preserve TTS link (if we restore session later)
                     DatabaseHelper.sendDBRequest(
                         "db_update_session",
                         mapOf(
