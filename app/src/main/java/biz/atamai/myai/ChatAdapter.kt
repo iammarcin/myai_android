@@ -155,15 +155,17 @@ class ChatAdapter(
                 binding.transcribeButton.visibility = View.GONE
             }
 
+            // reset before setting new values (potentially in artgen)
+            binding.messageTextView.visibility = View.VISIBLE
+
+            println("ADHIASUHDIUASHDIUSA ")
+            println("before artgen")
+            println(chatItem.imageLocations)
             // if its message (or whole chat) for artgen - we want to allow user to create images
             if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
                 binding.imageGenerationView.visibility = View.VISIBLE
-
                 if (ConfigurationManager.getImageAutoGenerateImage())
                     binding.messageTextView.visibility = View.GONE
-                    // auto generate image (and make sure it's only once)
-                    if (chatItem.imageLocations.isEmpty())
-                        binding.generateImageButton.performClick()
 
                 binding.generateImageButton.setOnClickListener {
                     mainHandler.showProgressBar("Image")

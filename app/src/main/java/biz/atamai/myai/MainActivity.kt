@@ -411,9 +411,16 @@
                                 showProgressBar("TTS")
                                 chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
                             }
+
                             // save to DB
                             val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
                             val currentAIResponse = chatItems[currentResponseItemPosition!!]
+
+                            if (currentAIResponse.aiCharacterName == "artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
+
+                                /
+                                //chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
+                            }
 
                             // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
                             if (responseItemPosition == null) {
