@@ -418,7 +418,7 @@
 
                             if (currentAIResponse.aiCharacterName == "artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
 
-                                /
+                                //
                                 //chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                             }
 
