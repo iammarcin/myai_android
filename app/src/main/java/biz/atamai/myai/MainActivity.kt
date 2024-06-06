@@ -496,7 +496,6 @@
         override fun getMainBindingContext(): Context {
             return binding.root.context
         }
-
         override fun getMainCharacterManager(): CharacterManager {
             return characterManager
         }

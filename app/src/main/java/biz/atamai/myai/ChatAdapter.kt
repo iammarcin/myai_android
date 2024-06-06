@@ -277,7 +277,7 @@ class ChatAdapter(
                         val clipboard = ContextCompat.getSystemService(context, ClipboardManager::class.java)
                         val clip = ClipData.newPlainText("Copied Message", chatItem.message)
                         clipboard?.setPrimaryClip(clip)
-                        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                        mainHandler.createToastMessage("Copied to clipboard")
                         true
                     }
                     else -> false

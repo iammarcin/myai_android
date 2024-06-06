@@ -146,6 +146,9 @@ object DatabaseHelper {
                         aiResponse.messageId = aiMessageId
                 }
             }
+
+            // TODO if its not new message (so we edit) - but we dont see message_id - it will generate errors - so we need to create new message with message id
+            // MAYBE HERE maybe in backend
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import biz.atamai.myai.databinding.ActivityMainBinding
+import biz.atamai.myai.databinding.ChatItemBinding
 import org.json.JSONObject
 
 // THESE ARE USED because passing between different classes (files) became quite challenging
