@@ -214,7 +214,27 @@ class TopMenuHandler(
                     ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
                 } else {
                     //"http://192.168.23.66:8000/"
-                    ConfigurationManager.setAppModeApiUrl("http://192.168.1.110:8000/")
+                    if (ConfigurationManager.getAppModeUseSherlock()) {
+                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.101:8000/")
+                    } else {
+                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.110:8000/")
+                    }
+                }
+            })
+            addView(createSwitchRow("Use Sherlock for nonprod", ConfigurationManager.getAppModeUseSherlock()) { isChecked ->
+                ConfigurationManager.setAppModeUseSherlock(isChecked)
+                if (isChecked) {
+                    if (ConfigurationManager.getAppMode()) {
+                        ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
+                    } else {
+                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.101:8000/")
+                    }
+                } else {
+                    if (ConfigurationManager.getAppMode()) {
+                        ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
+                    } else {
+                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.110:8000/")
+                    }
                 }
             })
             // token for connecting to backend API
