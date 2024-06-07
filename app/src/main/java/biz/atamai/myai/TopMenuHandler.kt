@@ -258,7 +258,11 @@ class TopMenuHandler(
                 ConfigurationManager.setImageDisableSafePrompt(isChecked)
             })
 
-            addView(createSwitchRow("Don't show prompt / generate image [art gen mode]", ConfigurationManager.getImageAutoGenerateImage()) { isChecked ->
+            addView(createSwitchRow("Show image prompt[art gen mode]", ConfigurationManager.getImageArtgenShowPrompt()) { isChecked ->
+                ConfigurationManager.setImageArtgenShowPrompt(isChecked)
+            })
+
+            addView(createSwitchRow("Auto generate image [art gen mode]", ConfigurationManager.getImageAutoGenerateImage()) { isChecked ->
                 ConfigurationManager.setImageAutoGenerateImage(isChecked)
             })
         }

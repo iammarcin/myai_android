@@ -65,6 +65,14 @@ class ChatAdapter(
 
     }
 
+    fun triggerImageGeneration(position: Int) {
+        val chatItem = chatItems[position]
+        chatItem.imageLocations = listOf("image_placeholder_url")  // Ensure this list is not empty to prevent multiple triggers
+
+        // Notify the item changed to update the UI
+        notifyItemChanged(position)
+    }
+
     inner class ChatViewHolder(val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             // Initialize Markwon
@@ -164,8 +172,13 @@ class ChatAdapter(
             // if its message (or whole chat) for artgen - we want to allow user to create images
             if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
                 binding.imageGenerationView.visibility = View.VISIBLE
-                if (ConfigurationManager.getImageAutoGenerateImage())
+                if (!ConfigurationManager.getImageArtgenShowPrompt())
                     binding.messageTextView.visibility = View.GONE
+
+                if (ConfigurationManager.getImageAutoGenerateImage() && chatItem.imageLocations.contains("image_placeholder_url")) {
+                    binding.generateImageButton.performClick() // Trigger the image generation
+                    chatItem.imageLocations = emptyList()
+                }
 
                 binding.generateImageButton.setOnClickListener {
                     mainHandler.showProgressBar("Image")
@@ -287,6 +300,7 @@ class ChatAdapter(
             }
             popupMenu.show()
         }
+
     }
 
     fun sendTTSRequest(message: String, position: Int) {

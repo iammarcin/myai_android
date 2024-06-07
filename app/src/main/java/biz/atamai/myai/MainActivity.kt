@@ -417,9 +417,7 @@
                             val currentAIResponse = chatItems[currentResponseItemPosition!!]
 
                             if (currentAIResponse.aiCharacterName == "artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
-
-                                //
-                                //chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
+                                chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                             }
 
                             // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
