@@ -48,21 +48,8 @@ class ChatAdapter(
 
     init {
         utilityTools = UtilityTools(
-            context = mainHandler.context,
-            onResponseReceived = { response ->
-                mainHandler.executeOnUIThread {
-                    mainHandler.handleTextMessage(response)
-                    mainHandler.hideProgressBar()
-                }
-            },
-            onError = { error ->
-                mainHandler.executeOnUIThread {
-                    mainHandler.hideProgressBar()
-                    mainHandler.createToastMessage("Error: ${error.message}")
-                }
-            }
+            mainHandler = mainHandler
         )
-
     }
 
     fun triggerImageGeneration(position: Int) {
@@ -155,7 +142,25 @@ class ChatAdapter(
                     mainHandler.showProgressBar("Transcription")
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
 
-                    utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
+                    utilityTools.uploadFileToServer(
+                        audioFilePath,
+                        apiUrl,
+                        "chat_audio2text",
+                        "speech",
+                        "chat",
+                        onResponseReceived = { response ->
+                            mainHandler.executeOnUIThread {
+                                mainHandler.handleTextMessage(response)
+                                mainHandler.hideProgressBar("Transcription")
+                            }
+                        },
+                        onError = { error ->
+                            mainHandler.executeOnUIThread {
+                                mainHandler.hideProgressBar("Transcription")
+                                mainHandler.createToastMessage("Error: ${error.message}")
+                            }
+                        }
+                    )
                 }
 
             } else {
@@ -191,7 +196,7 @@ class ChatAdapter(
                             println("Image result: $result")
                             chatItem.imageLocations += result
                             notifyItemChanged(adapterPosition)
-                            mainHandler.hideProgressBar()
+                            mainHandler.hideProgressBar("Image")
 
                             CoroutineScope(Dispatchers.Main).launch {
                                 // update DB - in order to preserve image link (if we restore session later)
@@ -207,7 +212,7 @@ class ChatAdapter(
                         },
                         { error ->
                             mainHandler.executeOnUIThread {
-                                mainHandler.hideProgressBar()
+                                mainHandler.hideProgressBar("Image")
                                 println("Error image: ${error.message}")
                                 mainHandler.createToastMessage("Error generating image")
                             }
@@ -322,7 +327,7 @@ class ChatAdapter(
             { result -> handleTTSCompletedResponse(result, position, action) },
             { error ->
                 mainHandler.executeOnUIThread {
-                    mainHandler.hideProgressBar()
+                    mainHandler.hideProgressBar("TTS")
                     mainHandler.createToastMessage("Error generating TTS: ${error.message}")
                 }
             }
@@ -337,44 +342,39 @@ class ChatAdapter(
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             notifyItemChanged(position)
-            mainHandler.hideProgressBar()
-
-            val utilityToolsTTS = UtilityTools(
-                context = mainHandler.context,
-                onResponseReceived = { response ->
-                    mainHandler.executeOnUIThread {
-                        chatItem.fileNames = listOf(Uri.parse(response))
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            // update DB - in order to preserve TTS link (if we restore session later)
-                            DatabaseHelper.sendDBRequest(
-                                "db_update_session",
-                                mapOf(
-                                    "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
-                                    "chat_history" to chatItems.map { it.toSerializableMap() }
-                                )
-                            )
-                        }
-                    }
-                },
-                onError = { error ->
-                    mainHandler.executeOnUIThread {
-                        mainHandler.hideProgressBar()
-                        println("Error handleTTSCompletedResponse: ${error.message}")
-                        mainHandler.createToastMessage("Error: ${error.message}")
-                    }
-                }
-            )
+            mainHandler.hideProgressBar("TTS")
 
             // if its stream - we should upload to S3, if its not stream - its already uploaded via backend
             if (action == "tts_stream") {
                 // this already consists of chat session update
-                utilityToolsTTS.uploadFileToServer(
+                utilityTools.uploadFileToServer(
                     result,
                     apiUrl,
                     "api/aws",
                     "provider.s3",
-                    "s3_upload"
+                    "s3_upload",
+                    onResponseReceived = { response ->
+                        mainHandler.executeOnUIThread {
+                            chatItem.fileNames = listOf(Uri.parse(response))
+
+                            CoroutineScope(Dispatchers.Main).launch {
+                                // update DB - in order to preserve TTS link (if we restore session later)
+                                DatabaseHelper.sendDBRequest(
+                                    "db_update_session",
+                                    mapOf(
+                                        "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
+                                        "chat_history" to chatItems.map { it.toSerializableMap() }
+                                    )
+                                )
+                            }
+                        }
+                    },
+                    onError = { error ->
+                        mainHandler.executeOnUIThread {
+                            println("Error handleTTSCompletedResponse: ${error.message}")
+                            mainHandler.createToastMessage("Error: ${error.message}")
+                        }
+                    }
                 )
             } else {
                 // here - we still need to update chat session with new audio file

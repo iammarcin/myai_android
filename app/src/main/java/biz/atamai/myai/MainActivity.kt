@@ -406,7 +406,7 @@
                     },
                     onStreamEnd = {
                         runOnUiThread {
-                            hideProgressBar()
+                            hideProgressBar("Text generation")
                             if (ConfigurationManager.getTTSAutoExecute()) {
                                 showProgressBar("TTS")
                                 chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
@@ -436,7 +436,7 @@
                 ),
                 onError = { error ->
                     runOnUiThread {
-                        hideProgressBar()
+                        hideProgressBar("Text generation")
                         Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
                     }
                 },
@@ -481,10 +481,28 @@
         // PROGRESS BAR
         override fun showProgressBar(message: String) {
             binding.progressContainer.visibility = View.VISIBLE
-            binding.progressText.text = message
+            val currentText = binding.progressText.text.toString()
+            // append new message to existing text
+            var newText = ""
+            if (currentText.isNotEmpty()) {
+                // make sure not to duplicate the message
+                if (!currentText.contains(message)) {
+                    newText = "$currentText $message"
+                }
+            } else {
+                newText = message
+            }
+            binding.progressText.text = newText
         }
-        override fun hideProgressBar() {
-            binding.progressContainer.visibility = View.GONE
+        override fun hideProgressBar(message: String) {
+            val currentText = binding.progressText.text.toString()
+            val newText = currentText.replace(message, "").trim()  // Remove the specified message
+
+            if (newText.isEmpty()) {
+                binding.progressContainer.visibility = View.GONE
+            }
+
+            binding.progressText.text = newText
         }
         override fun getCurrentAICharacter(): String {
             return ConfigurationManager.getTextAICharacter()

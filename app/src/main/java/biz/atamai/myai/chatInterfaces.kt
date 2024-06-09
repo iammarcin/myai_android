@@ -29,7 +29,7 @@ interface MainHandler {
     fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf())
     fun addMessageToChat(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()): ChatItem
     fun showProgressBar(message: String = "")
-    fun hideProgressBar()
+    fun hideProgressBar(message: String = "")
     fun executeOnUIThread(action: Runnable)
     fun getCurrentAICharacter(): String
     fun setRecordButtonImageResource(resourceId: Int)

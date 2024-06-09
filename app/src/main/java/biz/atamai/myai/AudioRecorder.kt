@@ -161,6 +161,7 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
     }
 
     private fun sendAudioFileToBackend(audioFilePath: String?) {
+        mainHandler.showProgressBar("Audio to text")
         // collect attachments (images , etc) - so when recording is done and file is attached
         // it is taken into account when sending the message
         val attachedImageLocations = mutableListOf<String>()
@@ -184,19 +185,27 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         }
 
         val utilityTools = UtilityTools(
-            context = mainHandler.getMainBindingContext(),
+            mainHandler = mainHandler,
+        )
+        utilityTools.uploadFileToServer(
+            audioFilePath,
+            apiUrl,
+            "chat_audio2text",
+            "speech",
+            "chat",
             onResponseReceived = { response ->
                 mainHandler.executeOnUIThread {
                     mainHandler.handleTextMessage(response, attachedImageLocations, attachedFilePaths)
+                    mainHandler.hideProgressBar("Audio to text")
                 }
             },
             onError = { error ->
                 mainHandler.executeOnUIThread {
                     mainHandler.createToastMessage("Error: ${error.message}")
+                    mainHandler.hideProgressBar("Audio to text")
                 }
             }
         )
-        utilityTools.uploadFileToServer(audioFilePath, apiUrl, "chat_audio2text", "speech", "chat")
     }
 
     private fun addRecordingToFileList(filePath: String?) {

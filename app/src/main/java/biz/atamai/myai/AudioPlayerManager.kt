@@ -31,7 +31,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
 
     fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false) {
         currentUri = audioUri
-        println("!!! Setting up MediaPlayer with URI: $audioUri")
         releaseMediaPlayer() // Release any existing player
 
         mediaPlayer = MediaPlayer().apply {
@@ -86,7 +85,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
 
     private fun setupPlayButtonClickListener() {
         binding.playButton.setOnClickListener {
-            println("!!! AUDIO URI 222 : $currentUri")
             mediaPlayer?.let { mp ->
                 if (mp.isPlaying) {
                     mp.pause()
@@ -117,7 +115,6 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
 
     private fun resetAndPrepareMediaPlayer() {
         currentUri?.let { uri ->
-            println("!!! Resetting and preparing MediaPlayer with URI: $uri")
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(context, uri)
                 setOnPreparedListener { mp ->
@@ -155,15 +152,11 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
     private val updateSeekBarTask = object : Runnable {
         override fun run() {
             mediaPlayer?.let { mp ->
-                println("UPDATE SEEK BAR EXEC")
                 if (mp.isPlaying) {
-                    println("!!! Updating SeekBar. Current position: ${mp.currentPosition}")
                     binding.seekBar.progress = mp.currentPosition
                     handler.postDelayed(this, 1000)  // Schedule the next update after 1 second
-                } else {
-                    println("!!! MediaPlayer is not playing.")
                 }
-            } ?: println("!!! MediaPlayer is null.")
+            }
         }
     }
 

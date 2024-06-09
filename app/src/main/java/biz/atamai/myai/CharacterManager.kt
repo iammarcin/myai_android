@@ -18,7 +18,7 @@ class CharacterManager(private val context: Context) {
     val characters = listOf(
 
         Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
-        Character("Art gen", R.drawable.tools_artgen, "artgen"),
+        Character("Art gen", R.drawable.tools_artgen, "Artgen"),
         Character("Personal coach", R.drawable.brainstorm_gym_instructor, "PersonalCoach"),
         Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
         Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
@@ -49,8 +49,8 @@ class CharacterManager(private val context: Context) {
         Character("Shaan Puri", R.drawable.brainstorm_shaan, "Shaan"),
         Character("Sir David", R.drawable.brainstorm_david, "David"),
         Character("Rick Sanchez", R.drawable.brainstorm_rick, "Rick"),
-        Character("TLDR", R.drawable.tools_tldr, "tldr"),
-        Character("Art gen", R.drawable.tools_artgen, "artgen"),
+        Character("TLDR", R.drawable.tools_tldr, "Tldr"),
+        Character("Art gen", R.drawable.tools_artgen, "Artgen"),
     )
 
     // Function to programmatically set up character cards

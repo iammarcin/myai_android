@@ -80,7 +80,7 @@ class FileAttachmentHandler(
                 val fileUri = Uri.fromFile(File(filePath))
                 val chatItem = mainHandler.addMessageToChat("", listOf(), listOf(fileUri))
                 chatItem.isTTS = false // when uploaded we set it it to false on purpose (we treat TTS diff way)
-                mainHandler.hideProgressBar()
+                mainHandler.hideProgressBar("Uploading files")
                 decrementUploadCounter()
                 return
             }
@@ -102,7 +102,15 @@ class FileAttachmentHandler(
 
             val filePath = getFilePathFromUri(uri)
             val utilityTools = UtilityTools(
-                context = mainHandler.context,
+                mainHandler = mainHandler
+            )
+            // upload to S3 - so sending request to nodejs API
+            utilityTools.uploadFileToServer(
+                filePath,
+                apiUrl,
+                "api/aws",
+                "provider.s3",
+                "s3_upload",
                 onResponseReceived = { response ->
                     mainHandler.executeOnUIThread {
                         imageView.setImageURI(null) // Clear local URI
@@ -117,10 +125,7 @@ class FileAttachmentHandler(
                         decrementUploadCounter()
                         mainHandler.createToastMessage("Error: ${error.message}")
                     }
-                }
-            )
-            // upload to S3 - so sending request to nodejs API
-            utilityTools.uploadFileToServer(filePath, apiUrl, "api/aws", "provider.s3", "s3_upload")
+                })
         } else {
             val placeholder = View(mainHandler.context).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
@@ -185,7 +190,7 @@ class FileAttachmentHandler(
         uploadCounter--
         if (uploadCounter <= 0) {
             enableActiveButtons()
-            mainHandler.hideProgressBar()
+            mainHandler.hideProgressBar("Uploading files")
         }
     }
 

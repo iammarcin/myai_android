@@ -17,12 +17,10 @@ import java.io.IOException
 
 // Common place for common tools?!
 class UtilityTools(
-    private val context: Context,
-    private val onResponseReceived: (String) -> Unit,
-    private val onError: (Exception) -> Unit
+    private val mainHandler: MainHandler,
 ) {
 
-    private val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+    private val storageDir = mainHandler.getMainBindingContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC)
     private val customerId = 1
 
     private var audioFile = File(storageDir, "streamed_audio.$customerId.opus")
@@ -38,9 +36,11 @@ class UtilityTools(
         apiCategory: String?,
         apiAction: String?,
         userInput: Map<String, Any>? = emptyMap(),
+        onResponseReceived: (String) -> Unit,
+        onError: (Exception) -> Unit
     ) {
         if (filePath == null) {
-            Toast.makeText(context, "File path is null", Toast.LENGTH_SHORT).show()
+            mainHandler.createToastMessage("File path is null")
             return
         }
 
@@ -61,7 +61,7 @@ class UtilityTools(
                     val finalResponse = jsonResponse.getJSONObject("message").getString("result")
                     onResponseReceived(finalResponse)
                 } catch (e: JSONException) {
-                    Toast.makeText(context, "Error parsing response", Toast.LENGTH_SHORT).show()
+                    mainHandler.createToastMessage("Error parsing response")
                     // raise error
                     onError(e)
                 }
@@ -112,9 +112,7 @@ class UtilityTools(
                         onResponseReceived(audioFile.absolutePath)
                     }
                 ),
-                onError = { e ->
-                    e.printStackTrace()
-                },
+                onError = onError,
                 authToken = ConfigurationManager.getAuthTokenForBackend()
             )
         } else {
