@@ -81,8 +81,6 @@ class ChatAdapter(
             binding.imageContainer.setOnLongClickListener(longClickListener)
             binding.scrollViewImages.setOnLongClickListener(longClickListener)
             binding.messageTextView.setOnLongClickListener(longClickListener)
-
-
         }
 
         fun bind(chatItem: ChatItem) {

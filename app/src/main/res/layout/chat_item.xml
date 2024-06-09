@@ -35,17 +35,19 @@
 
         <HorizontalScrollView
             android:id="@+id/scrollViewImages"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="80dp"
             android:visibility="gone"
-            android:background="@color/ai_message_color"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             >
             <LinearLayout
                 android:id="@+id/imageContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:background="@color/white"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 />
         </HorizontalScrollView>
 
