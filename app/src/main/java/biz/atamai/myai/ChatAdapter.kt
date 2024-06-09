@@ -9,6 +9,7 @@ import android.content.Context
 import android.net.Uri
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -80,6 +81,8 @@ class ChatAdapter(
             binding.imageContainer.setOnLongClickListener(longClickListener)
             binding.scrollViewImages.setOnLongClickListener(longClickListener)
             binding.messageTextView.setOnLongClickListener(longClickListener)
+
+
         }
 
         fun bind(chatItem: ChatItem) {
