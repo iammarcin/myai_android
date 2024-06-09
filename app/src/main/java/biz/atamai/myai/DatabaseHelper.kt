@@ -95,8 +95,13 @@ object DatabaseHelper {
                 val sessionData = jsonResponse.getJSONObject("message").getJSONObject("result")
                 chatHelperHandler.restoreSessionData(sessionData)
             }
+            "db_edit_message" -> {
+                val messageContent = jsonResponse.getJSONObject("message").getJSONObject("result")
+                val aiMessageId = messageContent.getString("aiMessageId").toInt()
+
+                callback?.invoke(DBResponse.MessageId(aiMessageId))
+            }
             "db_new_message" -> {
-                println("Db_new_message response: $response")
                 val messageContent = jsonResponse.getJSONObject("message").getJSONObject("result")
                 val userMessageId = messageContent.getString("userMessageId").toInt()
                 val aiMessageId = messageContent.getString("aiMessageId").toInt()
@@ -145,10 +150,12 @@ object DatabaseHelper {
                     if (aiMessageId > 0)
                         aiResponse.messageId = aiMessageId
                 }
+            // if its not new message (so we edit) - but we don't see message_id (because there was API error etc) - we generate new message id on the backend (and here we overwrite it in ChatItem)
+            } else if (method == "db_edit_message" && response is DBResponse.MessageId) {
+                aiResponse.messageId = response.messageId
             }
 
-            // TODO if its not new message (so we edit) - but we dont see message_id - it will generate errors - so we need to create new message with message id
-            // MAYBE HERE maybe in backend
+
         }
     }
 
