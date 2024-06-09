@@ -1,3 +1,5 @@
+// ChatAdapter.kt
+
 package biz.atamai.myai
 
 import android.app.Dialog
@@ -132,7 +134,8 @@ class ChatAdapter(
                 audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
                 audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button - but only for uploaded files (non tts)
-                if (chatItem.isTTS) {
+                // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
+                if (chatItem.isTTS || !chatItem.showTranscribeButton) {
                     binding.transcribeButton.visibility = View.GONE
                 } else {
                     binding.transcribeButton.visibility = View.VISIBLE

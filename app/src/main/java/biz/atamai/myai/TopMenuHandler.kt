@@ -208,34 +208,13 @@ class TopMenuHandler(
                 ConfigurationManager.setUseTestData(isChecked)
             })
             // add production mode setting
-            addView(createSwitchRow("Production Mode", ConfigurationManager.getAppMode()) { isChecked ->
-                ConfigurationManager.setAppMode(isChecked)
-                if (isChecked) {
-                    ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
-                } else {
-                    //"http://192.168.23.66:8000/"
-                    if (ConfigurationManager.getAppModeUseSherlock()) {
-                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.101:8000/")
-                    } else {
-                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.110:8000/")
-                    }
-                }
+            addView(createSwitchRow("Production Mode", ConfigurationManager.getIsProdMode()) { isChecked ->
+                ConfigurationManager.setIsProdMode(isChecked)
+                ConfigurationManager.setURLForAPICalls()
             })
-            addView(createSwitchRow("Use Sherlock for nonprod", ConfigurationManager.getAppModeUseSherlock()) { isChecked ->
-                ConfigurationManager.setAppModeUseSherlock(isChecked)
-                if (isChecked) {
-                    if (ConfigurationManager.getAppMode()) {
-                        ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
-                    } else {
-                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.101:8000/")
-                    }
-                } else {
-                    if (ConfigurationManager.getAppMode()) {
-                        ConfigurationManager.setAppModeApiUrl("https://ai.atamai.biz/api/")
-                    } else {
-                        ConfigurationManager.setAppModeApiUrl("http://192.168.1.110:8000/")
-                    }
-                }
+            addView(createSwitchRow("Use Watson for nonprod", ConfigurationManager.getAppModeUseWatson()) { isChecked ->
+                ConfigurationManager.setAppModeUseWatson(isChecked)
+                ConfigurationManager.setURLForAPICalls()
             })
             // token for connecting to backend API
             addView(createTextEditRow("API auth Token", ConfigurationManager.getAuthTokenForBackend(), isPassword = true) { value ->
@@ -278,11 +257,14 @@ class TopMenuHandler(
                 ConfigurationManager.setImageDisableSafePrompt(isChecked)
             })
 
-            addView(createSwitchRow("Show image prompt[art gen mode]", ConfigurationManager.getImageArtgenShowPrompt()) { isChecked ->
+            addView(createTextLabelRow(""))
+            addView(createTextLabelRow("Artgen mode"))
+
+            addView(createSwitchRow("Show image prompt", ConfigurationManager.getImageArtgenShowPrompt()) { isChecked ->
                 ConfigurationManager.setImageArtgenShowPrompt(isChecked)
             })
 
-            addView(createSwitchRow("Auto generate image [art gen mode]", ConfigurationManager.getImageAutoGenerateImage()) { isChecked ->
+            addView(createSwitchRow("Auto generate image", ConfigurationManager.getImageAutoGenerateImage()) { isChecked ->
                 ConfigurationManager.setImageAutoGenerateImage(isChecked)
             })
         }

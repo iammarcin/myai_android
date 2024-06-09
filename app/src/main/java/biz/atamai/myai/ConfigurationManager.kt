@@ -5,9 +5,9 @@ import android.content.SharedPreferences
 
 object ConfigurationManager {
     private const val PREFS_NAME = "AIAppSettings"
-    private const val APP_MODE_PRODUCTION = "app_mode" // production or test - different URL will be in use
+    private const val APP_MODE_PRODUCTION = "app_mode_production" // production or test - different URL will be in use
     private const val APP_MODE_API_URL = "app_mode_api_url" // URL to be used depending on the mode
-    private const val APP_MODE_USE_SHERLOCK = "app_mode_use_sherlock"
+    private const val APP_MODE_USE_WATSON = "app_mode_use_watson" // user my internal watson server
     private const val TEXT_MODEL_NAME = "text_model_name"
     private const val TEXT_TEMPERATURE = "text_temperature"
     private const val TEXT_MEMORY_SIZE = "text_memory_size"
@@ -42,11 +42,8 @@ object ConfigurationManager {
     // Default values
     private val defaultSettings = mapOf(
         APP_MODE_PRODUCTION to false, // "production" - true or "test" - false
-        // http://192.168.1.19:8000/ - test ES
-        // http://192.168.23.66:8000/ - test PT
-        // "DOMAIN" - prod
-        APP_MODE_API_URL to "http://192.168.1.110:8000/",
-        APP_MODE_USE_SHERLOCK to false,
+        APP_MODE_API_URL to "https://ai.atamai.biz/api/",
+        APP_MODE_USE_WATSON to false,
         TEXT_MODEL_NAME to "GPT-4o",
         TEXT_AI_CHARACTER to "Assistant",
         TEXT_TEMPERATURE to 0.0f,
@@ -112,9 +109,9 @@ object ConfigurationManager {
     }
 
     // getter methods
-    fun getAppMode() = getBoolean(APP_MODE_PRODUCTION, defaultSettings[APP_MODE_PRODUCTION] as Boolean)
+    fun getIsProdMode() = getBoolean(APP_MODE_PRODUCTION, defaultSettings[APP_MODE_PRODUCTION] as Boolean)
     fun getAppModeApiUrl() = getString(APP_MODE_API_URL, defaultSettings[APP_MODE_API_URL] as String)
-    fun getAppModeUseSherlock() = getBoolean(APP_MODE_USE_SHERLOCK, defaultSettings[APP_MODE_USE_SHERLOCK] as Boolean)
+    fun getAppModeUseWatson() = getBoolean(APP_MODE_USE_WATSON, defaultSettings[APP_MODE_USE_WATSON] as Boolean)
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
     fun getTextAICharacter() = getString(TEXT_AI_CHARACTER, defaultSettings[TEXT_AI_CHARACTER] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
@@ -141,9 +138,9 @@ object ConfigurationManager {
     fun getAuthTokenForBackend() = getString(AUTH_TOKEN_FOR_BACKEND, defaultSettings[AUTH_TOKEN_FOR_BACKEND] as String)
 
     // setter methods
-    fun setAppMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
+    fun setIsProdMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
     fun setAppModeApiUrl(value: String) = setString(APP_MODE_API_URL, value)
-    fun setAppModeUseSherlock(value: Boolean) = setBoolean(APP_MODE_USE_SHERLOCK, value)
+    fun setAppModeUseWatson(value: Boolean) = setBoolean(APP_MODE_USE_WATSON, value)
     fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
     fun setTextAICharacter(value: String) = setString(TEXT_AI_CHARACTER, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)
@@ -168,6 +165,22 @@ object ConfigurationManager {
     fun setImageAutoGenerateImage(value: Boolean) = setBoolean(IMAGE_AUTO_GENERATE_IMAGE, value)
     fun setImageArtgenShowPrompt(value: Boolean) = setBoolean(IMAGE_ARTGEN_SHOW_PROMPT, value)
     fun setAuthTokenForBackend(value: String) = setString(AUTH_TOKEN_FOR_BACKEND, value)
+
+    // depending if it's production mode and also depending which internal API server is in use (sherlock, local, etc)
+    fun setURLForAPICalls() {
+        val url = if (getIsProdMode()) {
+            "https://ai.atamai.biz/api/"
+        } else {
+            if (getAppModeUseWatson()) {
+                "http://192.168.1.123:8000/"
+            } else {
+                // local
+                //"http://192.168.23.66:8000/" // PT
+                "http://192.168.1.110:8000/" // ES
+            }
+        }
+        setAppModeApiUrl(url)
+    }
 
     // used for API calls - to prepare dict with all settings
     fun getSettingsDict(): Map<String, Map<String, Any>> {

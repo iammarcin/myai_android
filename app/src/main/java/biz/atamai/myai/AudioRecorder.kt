@@ -1,3 +1,5 @@
+// AudioRecorder.kt
+
 package biz.atamai.myai
 
 import android.Manifest
@@ -151,8 +153,10 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
             isRecording = false
             mainHandler.setRecordButtonImageResource(R.drawable.ic_mic_none)
             mainHandler.createToastMessage("Recording stopped")
-            addRecordingToFileList(audioFilePath)
-            sendAudioFileToBackend(audioFilePath)
+            val chatItem = addRecordingToFileList(audioFilePath)
+            chatItem?.let {
+                sendAudioFileToBackend(audioFilePath, it)
+            }
         }
 
         if (isBluetoothScoOn) {
@@ -160,8 +164,9 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         }
     }
 
-    private fun sendAudioFileToBackend(audioFilePath: String?) {
+    private fun sendAudioFileToBackend(audioFilePath: String?, chatItem: ChatItem) {
         mainHandler.showProgressBar("Audio to text")
+
         // collect attachments (images , etc) - so when recording is done and file is attached
         // it is taken into account when sending the message
         val attachedImageLocations = mutableListOf<String>()
@@ -183,6 +188,9 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
                 attachedFilePaths.add(placeholder.tag as Uri)
             }
         }
+
+        // disable transcribe button
+        chatItem.showTranscribeButton = false
 
         val utilityTools = UtilityTools(
             mainHandler = mainHandler,
@@ -208,8 +216,8 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         )
     }
 
-    private fun addRecordingToFileList(filePath: String?) {
-        filePath?.let {
+    private fun addRecordingToFileList(filePath: String?): ChatItem? {
+        return filePath?.let {
             val fileUri = Uri.parse(it)
             mainHandler.addMessageToChat("", listOf(), listOf(fileUri))
         }
