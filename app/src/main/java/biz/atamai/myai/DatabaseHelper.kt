@@ -66,7 +66,7 @@ object DatabaseHelper {
                     println("!!!!!!! DB Error")
                     println(error)
                     CoroutineScope(Dispatchers.Main).launch {
-                        mainHandler.createToastMessage("Error with saving data in DB")
+                        mainHandler.createToastMessage("Error with DB operation")
                     }
                 },
                 authToken = ConfigurationManager.getAuthTokenForBackend()
