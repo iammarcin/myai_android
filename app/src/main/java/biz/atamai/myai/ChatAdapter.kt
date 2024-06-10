@@ -175,21 +175,20 @@ class ChatAdapter(
             // reset before setting new values (potentially in artgen)
             binding.messageTextView.visibility = View.VISIBLE
 
-            println("ADHIASUHDIUASHDIUSA ")
-            println("before artgen")
-            println(chatItem.imageLocations)
             // if its message (or whole chat) for artgen - we want to allow user to create images
-            if (chatItem.aiCharacterName == "artgen" && !chatItem.isUserMessage) {
+            if (chatItem.aiCharacterName == "Artgen" && !chatItem.isUserMessage) {
                 binding.imageGenerationView.visibility = View.VISIBLE
                 if (!ConfigurationManager.getImageArtgenShowPrompt())
                     binding.messageTextView.visibility = View.GONE
 
                 if (ConfigurationManager.getImageAutoGenerateImage() && chatItem.imageLocations.contains("image_placeholder_url")) {
-                    binding.generateImageButton.performClick() // Trigger the image generation
+                    println("chat Adapter trigger image generation")
                     chatItem.imageLocations = emptyList()
+                    binding.generateImageButton.performClick() // Trigger the image generation
                 }
 
                 binding.generateImageButton.setOnClickListener {
+                    println("TRIGGERED!!!!!!!!")
                     mainHandler.showProgressBar("Image")
                     val prompt = chatItem.message
 
@@ -218,7 +217,8 @@ class ChatAdapter(
                             mainHandler.executeOnUIThread {
                                 mainHandler.hideProgressBar("Image")
                                 println("Error image: ${error.message}")
-                                mainHandler.createToastMessage("Error generating image")
+                                mainHandler.createToastMessage("Error generating image ${error.message}")
+
                             }
                         }
                     )

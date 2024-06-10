@@ -408,6 +408,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 },
                 onStreamEnd = {
                     runOnUiThread {
+                        println("onStreamEnd")
                         hideProgressBar("Text generation")
                         if (ConfigurationManager.getTTSAutoExecute()) {
                             showProgressBar("TTS")
@@ -418,7 +419,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
                         val currentAIResponse = chatItems[currentResponseItemPosition!!]
 
-                        if (currentAIResponse.aiCharacterName == "artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
+                        if (currentAIResponse.aiCharacterName == "Artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
+                            println("TRIGGERED ARTGEN onstreamend ")
                             chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                         }
 
