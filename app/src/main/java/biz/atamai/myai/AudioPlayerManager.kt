@@ -16,7 +16,8 @@ import android.media.MediaMetadataRetriever
 
 // LIMITATIONS / KNOWN BUGS
 // duration of file cannot be taken if it's remote URL (like my S3 after tts no stream)
-// so we're setting it statically to few seconds (blah)
+// so we're setting it statically based on text length
+// it somehow works - but seekbar works only for the first play execution and we cannot move seekbar manually
 // maybe try with streaming and exo player one day
 
 class AudioPlayerManager(private val context: Context, private val binding: ChatItemBinding) {
