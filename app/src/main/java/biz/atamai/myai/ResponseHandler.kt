@@ -1,3 +1,5 @@
+// ResponseHandler.kt
+
 package biz.atamai.myai
 
 import android.webkit.MimeTypeMap
@@ -105,58 +107,84 @@ class ResponseHandler(
 
     private fun handleAudioStreamingResponse(body: ResponseBody) {
         coroutineScope.launch {
-            body.source().use { source ->
-                val buffer = Buffer()
-                while (true) {
-                    val read = source.read(buffer, 1024)
-                    if (read == -1L) break
-                    val chunk = buffer.readByteArray()
-                    coroutineScope.launch(Dispatchers.Main) {
-                        println("Chunk received: ${chunk.size} ")
-                        (handlerType as HandlerType.AudioStreaming).onAudioChunkReceived(chunk)
+            try {
+                body.source().use { source ->
+                    val buffer = Buffer()
+                    while (true) {
+                        val read = source.read(buffer, 1024)
+                        if (read == -1L) break
+                        val chunk = buffer.readByteArray()
+                        coroutineScope.launch(Dispatchers.Main) {
+                            println("Chunk received: ${chunk.size} ")
+                            (handlerType as HandlerType.AudioStreaming).onAudioChunkReceived(chunk)
+                        }
+                        buffer.clear()
                     }
-                    buffer.clear()
                 }
-            }
-            coroutineScope.launch(Dispatchers.Main) {
-                (handlerType as HandlerType.AudioStreaming).onStreamEnd()
+                coroutineScope.launch(Dispatchers.Main) {
+                    (handlerType as HandlerType.AudioStreaming).onStreamEnd()
+                }
+            } catch (e: Exception) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    onError(e)
+                    println("ERROR in handleAudioStreamingResponse: ${e.message}")
+                }
             }
         }
     }
 
     private fun handleStreamingResponse(body: ResponseBody) {
         coroutineScope.launch {
-            body.source().use { source ->
-                val buffer = Buffer()
-                while (true) {
-                    val read = source.read(buffer, 1024)
-                    if (read == -1L) break
-                    val chunk = buffer.clone().readString(Charsets.UTF_8)
-                    coroutineScope.launch(Dispatchers.Main) {
-                        (handlerType as HandlerType.Streaming).onChunkReceived(chunk)
+            try {
+                body.source().use { source ->
+                    val buffer = Buffer()
+                    while (true) {
+                        val read = source.read(buffer, 1024)
+                        if (read == -1L) break
+                        val chunk = buffer.clone().readString(Charsets.UTF_8)
+                        coroutineScope.launch(Dispatchers.Main) {
+                            (handlerType as HandlerType.Streaming).onChunkReceived(chunk)
+                        }
+                        buffer.clear()
                     }
-                    buffer.clear()
                 }
-            }
-            coroutineScope.launch(Dispatchers.Main) {
-                (handlerType as HandlerType.Streaming).onStreamEnd()
+                coroutineScope.launch(Dispatchers.Main) {
+                    (handlerType as HandlerType.Streaming).onStreamEnd()
+                }
+            } catch (e: Exception) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    onError(e)
+                    println("ERROR in handleStreamingResponse: ${e.message}")
+                }
             }
         }
     }
 
     private fun handleNonStreamingResponse(body: ResponseBody) {
         coroutineScope.launch {
-            val responseText = body.string() // Perform this operation in the IO thread
-            withContext(Dispatchers.Main) {
-                (handlerType as HandlerType.NonStreaming).onResponseReceived(responseText)
+            try {
+                val responseText = body.string() // Perform this operation in the IO thread
+                withContext(Dispatchers.Main) {
+                    (handlerType as HandlerType.NonStreaming).onResponseReceived(responseText)
+                }
+            } catch (e: Exception) {
+                onError(e)
+                println("ERROR in handleNonStreamingResponse: ${e.message}")
             }
         }
     }
 
     private fun handleAudioUploadResponse(body: ResponseBody) {
         coroutineScope.launch(Dispatchers.Main) {
-            val responseText = body.string()
-            (handlerType as HandlerType.FileUpload).onResponseReceived(responseText)
+            try {
+                val responseText = body.string()
+                (handlerType as HandlerType.FileUpload).onResponseReceived(responseText)
+            } catch (e: Exception) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    onError(e)
+                    println("ERROR in handleAudioUploadResponse: ${e.message}")
+                }
+            }
         }
     }
 

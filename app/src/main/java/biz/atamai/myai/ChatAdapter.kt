@@ -203,7 +203,6 @@ class ChatAdapter(
                         prompt,
                         apiUrl,
                         { result ->
-                            println("Image result: $result")
                             chatItem.imageLocations += result
                             notifyItemChanged(adapterPosition)
                             mainHandler.hideProgressBar("Image")
@@ -332,8 +331,14 @@ class ChatAdapter(
 
         val apiUrl = ConfigurationManager.getAppModeApiUrl()
         val action = if (ConfigurationManager.getTTSStreaming()) "tts_stream" else "tts_no_stream"
+
+        // Split the message into chunks of 4096 characters or less (this is the limit of OpenAI)
+        // TODO one day - handle chunks maybe - because here i just take first (because its super rare to be longer)
+        val message4API = message.chunked(4096)[0]
+        println("Message for TTS: $message4API")
+
         utilityTools.sendTTSRequest(
-            message,
+            message4API,
             apiUrl,
             action,
             { result -> handleTTSCompletedResponse(result, position, action) },
