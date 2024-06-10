@@ -420,7 +420,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         val currentAIResponse = chatItems[currentResponseItemPosition!!]
 
                         if (currentAIResponse.aiCharacterName == "Artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
-                            println("TRIGGERED ARTGEN onstreamend ")
                             chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                         }
 

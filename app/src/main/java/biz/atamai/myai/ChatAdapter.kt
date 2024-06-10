@@ -182,13 +182,20 @@ class ChatAdapter(
                     binding.messageTextView.visibility = View.GONE
 
                 if (ConfigurationManager.getImageAutoGenerateImage() && chatItem.imageLocations.contains("image_placeholder_url")) {
-                    println("chat Adapter trigger image generation")
                     chatItem.imageLocations = emptyList()
-                    binding.generateImageButton.performClick() // Trigger the image generation
+                    binding.generateImageButton.visibility = View.VISIBLE
+
+                    // that's bit strange - but when streaming is disabled - we have to wait for the view to be ready to perform click
+                    if (!ConfigurationManager.getIsStreamingEnabled()) {
+                        binding.root.post {
+                            binding.generateImageButton.performClick()
+                        }
+                    } else {
+                        binding.generateImageButton.performClick() // Trigger the image generation
+                    }
                 }
 
                 binding.generateImageButton.setOnClickListener {
-                    println("TRIGGERED!!!!!!!!")
                     mainHandler.showProgressBar("Image")
                     val prompt = chatItem.message
 
@@ -200,6 +207,7 @@ class ChatAdapter(
                             chatItem.imageLocations += result
                             notifyItemChanged(adapterPosition)
                             mainHandler.hideProgressBar("Image")
+
 
                             CoroutineScope(Dispatchers.Main).launch {
                                 // update DB - in order to preserve image link (if we restore session later)
