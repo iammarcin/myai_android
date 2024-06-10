@@ -227,7 +227,10 @@ class ChatHelper(
 
 
     override fun scrollToEnd() {
-        mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
+        //ensure that the scroll operation happens after the RecyclerView has completed any pending layout passes (to smooth scrolling)
+        mainHandler.getMainBinding().chatContainer.post {
+            mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
+        }
     }
 
     // reset after submission - clean input text, images preview and scroll view in general

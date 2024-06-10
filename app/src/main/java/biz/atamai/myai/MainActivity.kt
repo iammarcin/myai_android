@@ -10,6 +10,8 @@ import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -59,7 +61,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
     private var originalAICharacter: String? = null
 
     private var mediaPlayer: MediaPlayer? = null
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -400,9 +402,15 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 onChunkReceived = { chunk ->
                     runOnUiThread {
                         currentResponseItemPosition?.let { position ->
-                            chatItems[position].message += chunk
-                            chatAdapter.notifyItemChanged(position)
-                            chatHelper.scrollToEnd()
+                            // slight delay to smooth adding chunks to UI
+                            val handler = Handler(Looper.getMainLooper())
+                            handler.postDelayed({
+                                currentResponseItemPosition?.let { position ->
+                                    chatItems[position].message += chunk
+                                    chatAdapter.notifyItemChanged(position)
+                                    chatHelper.scrollToEnd()
+                                }
+                            }, 50) // Adjust the delay time as needed
                         }
                     }
                 },
