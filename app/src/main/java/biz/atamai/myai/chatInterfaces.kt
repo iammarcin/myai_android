@@ -49,4 +49,5 @@ interface ChatHelperHandler {
     fun setEditingMessagePosition(position: Int?)
     fun createNewSessionFromHere(position: Int)
     fun restoreSessionData(sessionData: JSONObject)
+    fun scrollToEnd()
 }

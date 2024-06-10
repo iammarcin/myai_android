@@ -408,7 +408,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 },
                 onStreamEnd = {
                     runOnUiThread {
-                        println("onStreamEnd")
                         hideProgressBar("Text generation")
                         if (ConfigurationManager.getTTSAutoExecute()) {
                             showProgressBar("TTS")

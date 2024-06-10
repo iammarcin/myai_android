@@ -208,7 +208,7 @@ class ChatAdapter(
                             notifyItemChanged(adapterPosition)
                             mainHandler.hideProgressBar("Image")
 
-
+                            chatHelperHandler?.scrollToEnd()
                             CoroutineScope(Dispatchers.Main).launch {
                                 // update DB - in order to preserve image link (if we restore session later)
                                 DatabaseHelper.sendDBRequest(

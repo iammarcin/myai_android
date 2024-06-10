@@ -226,7 +226,7 @@ class ChatHelper(
     }
 
 
-    fun scrollToEnd() {
+    override fun scrollToEnd() {
         mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
     }
 
