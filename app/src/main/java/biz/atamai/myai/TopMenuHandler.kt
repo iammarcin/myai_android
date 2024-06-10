@@ -64,6 +64,24 @@ class TopMenuHandler(
             }
         }
 
+        topLeftMenuSearchEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                // this has to stay here - even empty
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // this has to stay here - even empty
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s.toString()
+                // search when at least 3 characters
+                if (query.length >= 3) {
+                    onSearchMessages(query)
+                }
+            }
+        })
+
     }
 
     private fun showTopRightPopupWindow(view: View) {

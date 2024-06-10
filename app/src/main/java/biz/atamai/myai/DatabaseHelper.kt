@@ -89,7 +89,7 @@ object DatabaseHelper {
             }
             "db_all_sessions_for_user", "db_search_messages" -> {
                 val sessions = parseSessions(response)
-                displayChatSessions(sessions)
+                displayChatSessions(sessions, action)
             }
             "db_get_user_session" -> {
                 val sessionData = jsonResponse.getJSONObject("message").getJSONObject("result")
@@ -202,10 +202,13 @@ object DatabaseHelper {
     }
 
     // after parsing data from DB - we display it in left top menu
-    private fun displayChatSessions(sessions: List<ChatSessionForTopLeftMenu>) {
+    private fun displayChatSessions(sessions: List<ChatSessionForTopLeftMenu>, action: String) {
         val drawerLayout = mainHandler.getMainBinding().topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
 
-        //drawerLayout.removeAllViews()
+        // only for search - because we want to remove all and display only search results
+        // and for example for db_all_sessions_for_user - we want to keep previous as well
+        if (action == "db_search_messages")
+            drawerLayout.removeAllViews()
 
         sessions.forEach { session ->
             val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(mainHandler.mainLayoutInflaterInstance, drawerLayout, false)
