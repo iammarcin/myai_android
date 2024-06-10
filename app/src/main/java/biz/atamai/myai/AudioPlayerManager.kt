@@ -1,3 +1,5 @@
+// AudioPlayerManager.kt
+
 package biz.atamai.myai
 
 import android.content.Context
@@ -29,7 +31,7 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
         setupPlayButtonClickListener()
     }
 
-    fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false) {
+    fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false, chatItemMessage: String = "") {
         currentUri = audioUri
         releaseMediaPlayer() // Release any existing player
 
@@ -37,8 +39,12 @@ class AudioPlayerManager(private val context: Context, private val binding: Chat
             setDataSource(context, audioUri!!)
             setOnPreparedListener { mp ->
                 isPrepared = true
-                // it's very nasty ... but if i get file from S3 (for example TTS no stream) - there is no way to get duration of audio file... so we're setting it to few seconds (it's bad)
-                binding.seekBar.max = if (mp.duration > 0) mp.duration else 8000
+                // it's far from good ... but if i get file from S3 (for example TTS after restoring session or TTS no stream) - there is no way to get duration of audio file... so we're setting it based on text length
+                // Estimate duration based on the length of chatItemMessage
+                // we came up with 2.3 words per second (so just in case i take little bit less)
+                val estimatedDuration = (chatItemMessage.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
+                println("Estimated duration in seconds: ${estimatedDuration / 1000}")
+                binding.seekBar.max = if (mp.duration > 0) mp.duration else estimatedDuration
                 binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 if (autoPlay && !mp.isPlaying) {
                     binding.playButton.performClick()

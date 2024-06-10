@@ -132,7 +132,7 @@ class ChatAdapter(
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
                 val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS)
+                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS, chatItem.message)
                 audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button - but only for uploaded files (non tts)
                 // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)

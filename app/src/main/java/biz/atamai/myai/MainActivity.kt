@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
     private var originalAICharacter: String? = null
 
     private var mediaPlayer: MediaPlayer? = null
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
