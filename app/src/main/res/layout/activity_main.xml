@@ -198,7 +198,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="bottom"
                             android:padding="8dp"
-                            android:visibility="gone"
+                            android:visibility="visible"
                             android:src="@drawable/ic_location_share"
                             android:background="@color/background_primary" />
                     </LinearLayout>

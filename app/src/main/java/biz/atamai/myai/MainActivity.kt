@@ -5,6 +5,7 @@ package biz.atamai.myai
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -50,6 +52,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
     // this is for AI characters in app
     lateinit var characterManager: CharacterManager
+
+    private lateinit var gpsLocationManager: GPSLocationManager
 
     // some chat methods
     lateinit var chatHelper: ChatHelper
@@ -106,6 +110,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         chatAdapter.setChatHelperHandler(chatHelper)
 
         DatabaseHelper.initialize(this, chatHelper)
+
+        gpsLocationManager = GPSLocationManager(this)
 
         // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
         characterManager.setupCharacterCards(binding) { characterName ->
@@ -249,9 +255,21 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         // GPS button
         binding.btnShareLocation.setOnClickListener {
-            println("Share location")
-            //val intent = Intent(this, MapsActivity::class.java)
-            //startActivity(intent)
+            if (gpsLocationManager.areLocationServicesEnabled()) {
+                gpsLocationManager.getCurrentLocation { location ->
+                    location?.let {
+                        val uri = Uri.parse("geo:${it.latitude},${it.longitude}")
+                        println("GPS uri: $uri")
+                    } ?: run {
+                        Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "GPS Location services are disabled", Toast.LENGTH_SHORT).show()
+                // Optionally, you can open the location settings
+                //val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                //startActivity(intent)
+            }
         }
     }
 
