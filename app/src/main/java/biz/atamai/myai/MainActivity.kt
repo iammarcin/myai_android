@@ -5,15 +5,12 @@ package biz.atamai.myai
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.location.Location
-import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -28,9 +25,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ActivityMainBinding
-import biz.atamai.myai.databinding.ChatItemBinding
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), MainHandler {
@@ -42,7 +37,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
     private lateinit var fileAttachmentHandler: FileAttachmentHandler
     private lateinit var cameraHandler: CameraHandler
 
-    val chatItems: MutableList<ChatItem> = mutableListOf()
+    private val chatItems: MutableList<ChatItem> = mutableListOf()
     override val chatItemsList: MutableList<ChatItem>
         get() = this.chatItems
 
@@ -259,7 +254,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 gpsLocationManager.getCurrentLocation { location ->
                     location?.let {
                         val uri = Uri.parse("geo:${it.latitude},${it.longitude}")
-                        println("GPS uri: $uri")
+                        val message = "GPS location: $uri"
+                         handleTextMessage(message, emptyList(), emptyList())
                     } ?: run {
                         Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
                     }
@@ -327,10 +323,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
-            startStreaming(message, position)
+            startStreaming(position)
         } ?: run {
             addMessageToChat(message, attachedImageLocations, attachedFiles)
-            startStreaming(message)
+            startStreaming()
         }
         chatHelper.resetInputArea()
         // edit position reset
@@ -339,10 +335,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
     }
 
     // streaming request to API - text
-    // userInput - clear
     // responseItemPosition - if it's null - it's new message - otherwise it's edited message
-    // chatItemOfUserMessage - this is to store chatItem of user message - so we can save in DB (goal is to write to DB at the end of whole chat exchange - so user sees results earlier)
-    private fun startStreaming(userInput: String, responseItemPosition: Int? = null, chatItemOfUserMessage: ChatItem? = null) {
+    private fun startStreaming(responseItemPosition: Int? = null) {
         showProgressBar("Text generation")
 
         // collect chat history (needed to send it API to get whole context of chat)
@@ -368,14 +362,13 @@ class MainActivity : AppCompatActivity(), MainHandler {
         println("Start streaming")
         println("Chat history: $chatHistory")
 
-        val lastChatItem: ChatItem
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
-        if (responseItemPosition == null) {
+        val lastChatItem = if (responseItemPosition == null) {
             // get the last user message and its images (if exists)
-            lastChatItem = chatItems.last()
+            chatItems.last()
         } else {
             // if edited message its last -1 (because last is  AI response)
-            lastChatItem = chatItems[responseItemPosition]
+            chatItems[responseItemPosition]
         }
         val userPrompt = mutableListOf<Map<String, Any>>()
         userPrompt.add(mapOf("type" to "text", "text" to lastChatItem.message))
