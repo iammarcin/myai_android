@@ -15,48 +15,49 @@ class CharacterManager(private val context: Context) {
     // Data class to hold character information
     // name = what will be displayed on the card in UI
     // nameForAPI = what will be sent to the API
-    data class Character(val name: String, val imageResId: Int, val nameForAPI: String)
+    // showGPSButton = if character should have button to share GPS location enabled
+    data class Character(val name: String, val imageResId: Int, val nameForAPI: String, val showGPSButton: Boolean = false)
 
     val characters = listOf(
 
-        Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
-        Character("Art gen", R.drawable.tools_artgen, "Artgen"),
-        Character("Alergy", R.drawable.brainstorm_alergy, "Alergy"),
-        Character("Garmin", R.drawable.brainstorm_garmin_health, "Garmin"),
-        Character("Researcher", R.drawable.brainstorm_research_assistant, "Researcher"),
-        Character("Calories", R.drawable.brainstorm_calories, "Calories"),
-        Character("Personal coach", R.drawable.brainstorm_gym_instructor, "PersonalCoach"),
-        Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
-        Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
-        Character("Chef", R.drawable.brainstorm_chef, "Chef"),
-        Character("Book Worm", R.drawable.brainstorm_book_worm, "BookWorm"),
-        Character("Psychology ", R.drawable.brainstorm_psychology, "Psychology"),
-        Character("Psychology Mars", R.drawable.brainstorm_psychology_mars, "PsychologyMars"),
-        Character("Happiness Expert", R.drawable.brainstorm_psychology_expert_happiness, "PsychologyExpertHappiness"),
-        Character("Meditation Guru", R.drawable.brainstorm_meditation, "Meditation"),
-        Character("Jokester", R.drawable.brainstorm_jokester, "Jokester"),
-        Character("Teacher", R.drawable.brainstorm_teacher, "Teacher"),
-        Character("Brainstorm", R.drawable.brainstorm_brainstormer, "Brainstormer"),
-        Character("CEO", R.drawable.brainstorm_ceo, "CEO"),
-        Character("CTO", R.drawable.brainstorm_cto, "CTO"),
-        Character("Business Expert", R.drawable.brainstorm_business_expert, "BusinessExpert"),
-        Character("Sales Guru", R.drawable.brainstorm_sales, "Sales"),
-        Character("Conscious AI", R.drawable.brainstorm_conscious_ai, "ConsciousAI"),
-        Character("Rogue AI", R.drawable.brainstorm_rogue_ai, "RogueAI"),
-        Character("Story", R.drawable.story_random, "StoryUser"),
-        Character("Story AI", R.drawable.story_mode, "StoryAIConscious"),
-        Character("Story Rick", R.drawable.story_rickmorty, "RickMorty"),
-        Character("Story Rick AI", R.drawable.story_rickmorty_ai, "RickMortyAI"),
-        Character("Samantha", R.drawable.brainstorm_samantha, "Samantha"),
-        Character("Samantha v2", R.drawable.brainstorm_samantha3, "Samantha2"),
-        Character("Elon", R.drawable.brainstorm_elon, "Elon"),
-        Character("Yuval Noah Harari", R.drawable.brainstorm_yuval, "Yuval"),
-        Character("Naval", R.drawable.brainstorm_naval, "Naval"),
-        Character("Shaan Puri", R.drawable.brainstorm_shaan, "Shaan"),
-        Character("Sir David", R.drawable.brainstorm_david, "David"),
-        Character("Rick Sanchez", R.drawable.brainstorm_rick, "Rick"),
-        Character("TLDR", R.drawable.tools_tldr, "Tldr"),
-        Character("Art gen", R.drawable.tools_artgen, "Artgen"),
+        Character("Assistant", R.drawable.brainstorm_assistant, "Assistant", false),
+        Character("Art gen", R.drawable.tools_artgen, "Artgen", false),
+        Character("Alergy", R.drawable.brainstorm_alergy, "Alergy", true),
+        Character("Garmin", R.drawable.brainstorm_garmin_health, "Garmin", true),
+        Character("Researcher", R.drawable.brainstorm_research_assistant, "Researcher", true),
+        Character("Calories", R.drawable.brainstorm_calories, "Calories", false),
+        Character("Personal coach", R.drawable.brainstorm_gym_instructor, "PersonalCoach", false),
+        Character("Gardener", R.drawable.brainstorm_gardener, "Gardener", false),
+        Character("Doctor", R.drawable.brainstorm_doctor, "Doctor", false),
+        Character("Chef", R.drawable.brainstorm_chef, "Chef", false),
+        Character("Book Worm", R.drawable.brainstorm_book_worm, "BookWorm", false),
+        Character("Psychology ", R.drawable.brainstorm_psychology, "Psychology", false),
+        Character("Psychology Mars", R.drawable.brainstorm_psychology_mars, "PsychologyMars", false),
+        Character("Happiness Expert", R.drawable.brainstorm_psychology_expert_happiness, "PsychologyExpertHappiness", false),
+        Character("Meditation Guru", R.drawable.brainstorm_meditation, "Meditation", false),
+        Character("Jokester", R.drawable.brainstorm_jokester, "Jokester", false),
+        Character("Teacher", R.drawable.brainstorm_teacher, "Teacher", false),
+        Character("Brainstorm", R.drawable.brainstorm_brainstormer, "Brainstormer", false),
+        Character("CEO", R.drawable.brainstorm_ceo, "CEO", false),
+        Character("CTO", R.drawable.brainstorm_cto, "CTO", false),
+        Character("Business Expert", R.drawable.brainstorm_business_expert, "BusinessExpert", false),
+        Character("Sales Guru", R.drawable.brainstorm_sales, "Sales", false),
+        Character("Conscious AI", R.drawable.brainstorm_conscious_ai, "ConsciousAI", false),
+        Character("Rogue AI", R.drawable.brainstorm_rogue_ai, "RogueAI", false),
+        Character("Story", R.drawable.story_random, "StoryUser", false),
+        Character("Story AI", R.drawable.story_mode, "StoryAIConscious", false),
+        Character("Story Rick", R.drawable.story_rickmorty, "RickMorty", false),
+        Character("Story Rick AI", R.drawable.story_rickmorty_ai, "RickMortyAI", false),
+        Character("Samantha", R.drawable.brainstorm_samantha, "Samantha", false),
+        Character("Samantha v2", R.drawable.brainstorm_samantha3, "Samantha2", false),
+        Character("Elon", R.drawable.brainstorm_elon, "Elon", false),
+        Character("Yuval Noah Harari", R.drawable.brainstorm_yuval, "Yuval", false),
+        Character("Naval", R.drawable.brainstorm_naval, "Naval", false),
+        Character("Shaan Puri", R.drawable.brainstorm_shaan, "Shaan", false),
+        Character("Sir David", R.drawable.brainstorm_david, "David", false),
+        Character("Rick Sanchez", R.drawable.brainstorm_rick, "Rick", false),
+        Character("TLDR", R.drawable.tools_tldr, "Tldr", false),
+        Character("Art gen", R.drawable.tools_artgen, "Artgen", false),
     )
 
     // Function to programmatically set up character cards
@@ -85,7 +86,7 @@ class CharacterManager(private val context: Context) {
                 // show GPS button, but only for specific characters
                 // first reset in case other character is chosen
                 binding.btnShareLocation.visibility = View.GONE
-                if (character.nameForAPI in ConfigurationManager.getCharactersWithEnabledGPS()) {
+                if (character.showGPSButton) {
                     binding.btnShareLocation.visibility = View.VISIBLE
                 }
                 onCharacterSelected(character.name)
