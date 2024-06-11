@@ -19,6 +19,10 @@ class CharacterManager(private val context: Context) {
 
         Character("Assistant", R.drawable.brainstorm_assistant, "Assistant"),
         Character("Art gen", R.drawable.tools_artgen, "Artgen"),
+        Character("Alergy", R.drawable.tools_artgen, "Alergy"),
+        Character("Garmin", R.drawable.tools_artgen, "Garmin"),
+        Character("Researcher", R.drawable.tools_artgen, "Researcher"),
+        Character("Calories", R.drawable.tools_artgen, "Calories"),
         Character("Personal coach", R.drawable.brainstorm_gym_instructor, "PersonalCoach"),
         Character("Gardener", R.drawable.brainstorm_gardener, "Gardener"),
         Character("Doctor", R.drawable.brainstorm_doctor, "Doctor"),
