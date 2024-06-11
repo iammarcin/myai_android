@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         DatabaseHelper.initialize(this, chatHelper)
 
-        gpsLocationManager = GPSLocationManager(this)
+        gpsLocationManager = GPSLocationManager(this, ConfigurationManager.getGeneralGPSInterval())
 
         // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
         characterManager.setupCharacterCards(binding) { characterName ->
@@ -226,6 +226,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // Set up new chat button
         binding.newChatButton.setOnClickListener {
             chatHelper.resetChat()
+            binding.btnShareLocation.visibility = View.GONE
             ConfigurationManager.setTextAICharacter("Assistant")
             CoroutineScope(Dispatchers.Main).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",

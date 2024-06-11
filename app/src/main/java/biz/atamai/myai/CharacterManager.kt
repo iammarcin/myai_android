@@ -80,6 +80,12 @@ class CharacterManager(private val context: Context) {
                 Toast.makeText(context, "${character.name} selected", Toast.LENGTH_SHORT).show()
                 binding.characterHorizontalMainScrollView.visibility = View.GONE
                 ConfigurationManager.setTextAICharacter(character.nameForAPI)
+                // show GPS button, but only for specific characters
+                // first reset in case other character is chosen
+                binding.btnShareLocation.visibility = View.GONE
+                if (character.nameForAPI == "Alergy" || character.nameForAPI == "Garmin" || character.nameForAPI == "Researcher") {
+                    binding.btnShareLocation.visibility = View.VISIBLE
+                }
                 onCharacterSelected(character.name)
             }
             val layoutParams = LinearLayout.LayoutParams(

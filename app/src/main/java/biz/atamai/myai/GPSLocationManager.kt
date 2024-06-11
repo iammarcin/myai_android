@@ -1,7 +1,6 @@
 package biz.atamai.myai
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
@@ -10,27 +9,31 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
 
-class GPSLocationManager(private val context: Context) {
+class GPSLocationManager(private val mainHandler: MainHandler, private val GPSInterval: Int) {
 
     private var fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(context)
+        LocationServices.getFusedLocationProviderClient(mainHandler.context)
 
     fun getCurrentLocation(callback: (Location?) -> Unit) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(mainHandler.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(mainHandler.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             callback(null)
             return
         }
+
+        println("Waiting ${GPSInterval}s for accurate location 2")
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
                 callback(location)
             } else {
                 // Request new location if last location is null
+                println("Waiting ${GPSInterval}s for accurate location")
                 val locationRequest = LocationRequest.Builder(
-                    Priority.PRIORITY_HIGH_ACCURACY, 10000L
+                    Priority.PRIORITY_HIGH_ACCURACY, GPSInterval * 1000L
                 ).apply {
-                    setMinUpdateIntervalMillis(5000L)
+                    setWaitForAccurateLocation(true)
+                    setMinUpdateIntervalMillis(GPSInterval * 1000L)
                 }.build()
 
                 val locationCallback = object : LocationCallback() {
@@ -52,7 +55,7 @@ class GPSLocationManager(private val context: Context) {
     }
 
     fun areLocationServicesEnabled(): Boolean {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager = mainHandler.context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
