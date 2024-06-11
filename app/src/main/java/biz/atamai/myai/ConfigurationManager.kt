@@ -17,7 +17,6 @@ object ConfigurationManager {
     private const val TEXT_AI_CHARACTER = "text_ai_character"
     private const val GENERAL_USE_BLUETOOTH = "general_use_bluetooth"
     private const val GENERAL_TEST_DATA = "general_test_data"
-    private const val GENERAL_GPS_INTERVAL = "general_gps_interval"
     private const val SPEECH_LANGUAGE = "speech_language"
     private const val SPEECH_TEMPERATURE = "speech_temperature"
     private const val TTS_STABILITY = "tts_stability"
@@ -54,7 +53,6 @@ object ConfigurationManager {
         TEXT_STREAMING to false,
         GENERAL_USE_BLUETOOTH to false,
         GENERAL_TEST_DATA to false,
-        GENERAL_GPS_INTERVAL to 1,
         SPEECH_LANGUAGE to "en",
         SPEECH_TEMPERATURE to 0.0f,
         TTS_STABILITY to 0.0f,
@@ -116,7 +114,6 @@ object ConfigurationManager {
     fun getIsProdMode() = getBoolean(APP_MODE_PRODUCTION, defaultSettings[APP_MODE_PRODUCTION] as Boolean)
     fun getAppModeApiUrl() = getString(APP_MODE_API_URL, defaultSettings[APP_MODE_API_URL] as String)
     fun getAppModeUseWatson() = getBoolean(APP_MODE_USE_WATSON, defaultSettings[APP_MODE_USE_WATSON] as Boolean)
-    fun getGeneralGPSInterval() = getInt(GENERAL_GPS_INTERVAL, defaultSettings[GENERAL_GPS_INTERVAL] as Int)
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
     fun getTextAICharacter() = getString(TEXT_AI_CHARACTER, defaultSettings[TEXT_AI_CHARACTER] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
@@ -146,7 +143,6 @@ object ConfigurationManager {
     fun setIsProdMode(value: Boolean) = setBoolean(APP_MODE_PRODUCTION, value)
     fun setAppModeApiUrl(value: String) = setString(APP_MODE_API_URL, value)
     fun setAppModeUseWatson(value: Boolean) = setBoolean(APP_MODE_USE_WATSON, value)
-    fun setGeneralGPSInterval(value: Int) = setInt(GENERAL_GPS_INTERVAL, value)
     fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
     fun setTextAICharacter(value: String) = setString(TEXT_AI_CHARACTER, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)
