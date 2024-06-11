@@ -19,12 +19,10 @@ class PermissionsUtil(private val mainHandler: MainHandler) {
         Manifest.permission.CAMERA,
         Manifest.permission.BLUETOOTH,
         Manifest.permission.BLUETOOTH_ADMIN,
-        Manifest.permission.MODIFY_AUDIO_SETTINGS
+        Manifest.permission.MODIFY_AUDIO_SETTINGS,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
     )
-
-    /* maybe later
-
-    */
 
     fun checkPermissions(): Boolean {
         val neededPermissions = requiredPermissions.any {
@@ -54,7 +52,8 @@ class PermissionsUtil(private val mainHandler: MainHandler) {
             val isBluetoothGranted = permissionsMap[Manifest.permission.BLUETOOTH] == PackageManager.PERMISSION_GRANTED
             val isBluetoothAdminGranted = permissionsMap[Manifest.permission.BLUETOOTH_ADMIN] == PackageManager.PERMISSION_GRANTED
             val isModifyAudioSettingsGranted = permissionsMap[Manifest.permission.MODIFY_AUDIO_SETTINGS] == PackageManager.PERMISSION_GRANTED
-
+            val isAccessFineLocationGranted = permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
+            val isAccessCoarseLocationGranted = permissionsMap[Manifest.permission.ACCESS_COARSE_LOCATION] == PackageManager.PERMISSION_GRANTED
 
             if (isRecordAudioGranted == PackageManager.PERMISSION_GRANTED && isWriteStorageGranted == PackageManager.PERMISSION_GRANTED) {
                 //Toast.makeText(activity, "All permissions granted", Toast.LENGTH_SHORT).show()
@@ -79,7 +78,12 @@ class PermissionsUtil(private val mainHandler: MainHandler) {
                 if (!isModifyAudioSettingsGranted) {
                     mainHandler.createToastMessage("Modify Audio Settings permission denied")
                 }
-                // Inform the user that permissions were not granted
+                if (!isAccessFineLocationGranted) {
+                    mainHandler.createToastMessage("Access Fine Location permission denied")
+                }
+                if (!isAccessCoarseLocationGranted) {
+                    mainHandler.createToastMessage("Access Coarse Location permission denied")
+                }
             }
         }
     }
