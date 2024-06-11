@@ -1,3 +1,5 @@
+// ConfigurationManager.kt
+
 package biz.atamai.myai
 
 import android.content.Context
@@ -184,6 +186,11 @@ object ConfigurationManager {
             }
         }
         setAppModeApiUrl(url)
+    }
+
+    // this is list of AI characters for which we will enable GPS button (to share location) - used in CharacterManager (and probably more later)
+    fun getCharactersWithEnabledGPS(): List<String> {
+        return listOf("Alergy", "Garmin", "Researcher")
     }
 
     // used for API calls - to prepare dict with all settings

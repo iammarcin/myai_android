@@ -233,6 +233,23 @@ class ChatAdapter(
             } else {
                 binding.imageGenerationView.visibility = View.GONE
             }
+
+            // GPS STUFF
+            if (chatItem.isGPSLocationMessage) {
+                binding.gpsEnabledView.visibility = View.VISIBLE
+                binding.checkGPSLocation.setOnClickListener {
+                    val gpsLocation = chatItem.message
+                    if (gpsLocation.startsWith("GPS location: ")) {
+                        val latLong = gpsLocation.removePrefix("GPS location: ").split(",")
+                        val latitude = latLong[0].toDouble()
+                        val longitude = latLong[1].toDouble()
+                        // Show the location on the map
+                        chatHelperHandler?.shareGPSLocation(latitude, longitude)
+                    }
+                }
+            } else {
+                binding.gpsEnabledView.visibility = View.GONE
+            }
         }
 
         // little popup menu for chat items (when we can edit message etc)

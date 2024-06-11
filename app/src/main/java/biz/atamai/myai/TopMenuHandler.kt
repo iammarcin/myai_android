@@ -238,15 +238,6 @@ class TopMenuHandler(
             addView(createTextEditRow("API auth Token", ConfigurationManager.getAuthTokenForBackend(), isPassword = true) { value ->
                 ConfigurationManager.setAuthTokenForBackend(value)
             })
-
-            addView(createTextLabelRow(""))
-            addView(createTextLabelRow("GPS"))
-
-            addView(createSeekBarRow("GPS Interval (longer = more accurate)", 60, 1f, ConfigurationManager.getGeneralGPSInterval().toFloat()) { value ->
-                ConfigurationManager.setGeneralGPSInterval(
-                    if (value.toInt() == 0) 1 else value.toInt()
-                )
-            })
         }
     }
 

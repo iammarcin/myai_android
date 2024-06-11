@@ -1,6 +1,9 @@
+// ChatHelper.kt
+
 package biz.atamai.myai
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -185,6 +188,8 @@ class ChatHelper(
                 imageLocations = imageLocations,
                 fileNames = fileNames,
                 aiCharacterName = chatItemJson.optString("aiCharacterName", ""),
+                isTTS = chatItemJson.optBoolean("isTTS", false),
+                isGPSLocationMessage = chatItemJson.optBoolean("isGPSLocationMessage", false)
             )
 
             // Conditionally set messageId if it exists in chatItemJson
@@ -275,6 +280,16 @@ class ChatHelper(
                 .toString()
             mainHandler.getMainBinding().editTextMessage.setText(newText)
             mainHandler.getMainBinding().editTextMessage.setSelection(atIndex + characterName.length + 2) // Position cursor after the character name
+        }
+    }
+
+    override fun shareGPSLocation(latitude: Double, longitude: Double) {
+        val uri = Uri.parse("geo:${latitude},${longitude}")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        if (intent.resolveActivity(mainHandler.context.packageManager) != null) {
+            mainHandler.context.startActivity(intent)
+        } else {
+            mainHandler.createToastMessage("No application available to share location")
         }
     }
 

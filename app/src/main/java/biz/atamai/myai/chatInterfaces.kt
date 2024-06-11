@@ -26,8 +26,8 @@ interface MainHandler {
     fun getMainBindingContext(): Context
     val chatItemsList: MutableList<ChatItem>
     val mainLayoutInflaterInstance: LayoutInflater
-    fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf())
-    fun addMessageToChat(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf()): ChatItem
+    fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf(), gpsLocationMessage: Boolean = false)
+    fun addMessageToChat(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf(), gpsLocationMessage: Boolean = false): ChatItem
     fun showProgressBar(message: String = "")
     fun hideProgressBar(message: String = "")
     fun executeOnUIThread(action: Runnable)
@@ -50,4 +50,5 @@ interface ChatHelperHandler {
     fun createNewSessionFromHere(position: Int)
     fun restoreSessionData(sessionData: JSONObject)
     fun scrollToEnd()
+    fun shareGPSLocation(latitude: Double, longitude: Double)
 }

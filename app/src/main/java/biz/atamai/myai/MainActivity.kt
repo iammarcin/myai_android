@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         DatabaseHelper.initialize(this, chatHelper)
 
-        gpsLocationManager = GPSLocationManager(this, ConfigurationManager.getGeneralGPSInterval())
+        gpsLocationManager = GPSLocationManager(this)
 
         // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
         characterManager.setupCharacterCards(binding) { characterName ->
@@ -252,11 +252,13 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // GPS button
         binding.btnShareLocation.setOnClickListener {
             if (gpsLocationManager.areLocationServicesEnabled()) {
+                showProgressBar("GPS location")
                 gpsLocationManager.getCurrentLocation { location ->
                     location?.let {
-                        val uri = Uri.parse("geo:${it.latitude},${it.longitude}")
+                        val uri = Uri.parse("${it.latitude},${it.longitude}")
                         val message = "GPS location: $uri"
-                         handleTextMessage(message, emptyList(), emptyList())
+                        hideProgressBar("GPS location")
+                         handleTextMessage(message, emptyList(), emptyList(), true)
                     } ?: run {
                         Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
                     }
@@ -272,8 +274,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
     // sending data to chat adapter
     // used from multiple places
-    override fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>): ChatItem {
-        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles)
+    override fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean): ChatItem {
+        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles, isGPSLocationMessage = gpsLocationMessage)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         chatHelper.scrollToEnd()
@@ -310,7 +312,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
     // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
     // and here in Main - same functionality when Send button is clicked
     // also in ChatAdapter - for regenerate AI message
-    override fun handleTextMessage(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
+    // gpsLocationMessage - if true - it is GPS location message - so will be handled differently in chatAdapter (will show GPS map button and probably few other things)
+    override fun handleTextMessage(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean) {
         if (message.isEmpty()) {
             return
         }
@@ -326,7 +329,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
             startStreaming(position)
         } ?: run {
-            addMessageToChat(message, attachedImageLocations, attachedFiles)
+            addMessageToChat(message, attachedImageLocations, attachedFiles, gpsLocationMessage)
             startStreaming()
         }
         chatHelper.resetInputArea()

@@ -13,6 +13,7 @@ data class ChatItem(
     var messageId: Int? = null, // id of the chat item - from DB - its null when its new item, it is set to some value if its existing item (and we want ot f.e. edit it)
     var isTTS: Boolean = false, // this is to differentiate if audio file is coming from TTS or from user upload (if its TTS - user can set to autoplay or transcribe button is not needed so its hidden)
     var showTranscribeButton: Boolean = true, // this is to show or hide transcribe button (for example to avoid double transcribe executions)
+    var isGPSLocationMessage: Boolean = false, // this is to show or hide GPS button (when GPS location is shared by user - we can show it on the map)
 ) { // not big fan of that - but its chagpt suggestion
     // mainly fileNames must be List of uri - because we sometimes use http url, but sometimes it is really uri (for example in AudioRecorder)
     // so below function is to convert it to serializable map so later in fastapi all values are correct (without it list of filenames was empty)
@@ -26,7 +27,8 @@ data class ChatItem(
             "aiCharacterName" to aiCharacterName,
             "messageId" to messageId,
             "isTTS" to isTTS,
-            "showTranscribeButton" to showTranscribeButton
+            "showTranscribeButton" to showTranscribeButton,
+            "isGPSLocationMessage" to isGPSLocationMessage
         )
     }
 }

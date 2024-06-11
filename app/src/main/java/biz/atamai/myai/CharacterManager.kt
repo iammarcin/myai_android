@@ -1,3 +1,5 @@
+// CharacterManager.kt
+
 package biz.atamai.myai
 
 import android.content.Context
@@ -83,7 +85,7 @@ class CharacterManager(private val context: Context) {
                 // show GPS button, but only for specific characters
                 // first reset in case other character is chosen
                 binding.btnShareLocation.visibility = View.GONE
-                if (character.nameForAPI == "Alergy" || character.nameForAPI == "Garmin" || character.nameForAPI == "Researcher") {
+                if (character.nameForAPI in ConfigurationManager.getCharactersWithEnabledGPS()) {
                     binding.btnShareLocation.visibility = View.VISIBLE
                 }
                 onCharacterSelected(character.name)

@@ -9,7 +9,7 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
 
-class GPSLocationManager(private val mainHandler: MainHandler, private val GPSInterval: Int) {
+class GPSLocationManager(private val mainHandler: MainHandler) {
 
     private var fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(mainHandler.context)
@@ -21,19 +21,17 @@ class GPSLocationManager(private val mainHandler: MainHandler, private val GPSIn
             return
         }
 
-        println("Waiting ${GPSInterval}s for accurate location 2")
-
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
                 callback(location)
             } else {
                 // Request new location if last location is null
-                println("Waiting ${GPSInterval}s for accurate location")
+                val gpsInterval = 20
                 val locationRequest = LocationRequest.Builder(
-                    Priority.PRIORITY_HIGH_ACCURACY, GPSInterval * 1000L
+                    Priority.PRIORITY_HIGH_ACCURACY, gpsInterval * 1000L
                 ).apply {
                     setWaitForAccurateLocation(true)
-                    setMinUpdateIntervalMillis(GPSInterval * 1000L)
+                    //setMinUpdateIntervalMillis(gpsInterval * 1000L)
                 }.build()
 
                 val locationCallback = object : LocationCallback() {
