@@ -246,6 +246,13 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 DatabaseHelper.loadMoreChatSessions()
             }
         }
+
+        // GPS button
+        binding.btnShareLocation.setOnClickListener {
+            println("Share location")
+            //val intent = Intent(this, MapsActivity::class.java)
+            //startActivity(intent)
+        }
     }
 
     // sending data to chat adapter

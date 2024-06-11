@@ -255,8 +255,8 @@ class ChatHelper(
             "hide" -> {
                 mainHandler.getMainBinding().layoutRecord.visibility = View.VISIBLE
                 mainHandler.getMainBinding().btnSend.visibility = View.GONE
-                (mainHandler.getMainBinding().editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
-                (mainHandler.getMainBinding().rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.5f
+                (mainHandler.getMainBinding().editTextMessage.layoutParams as LinearLayout.LayoutParams).weight = 0.55f
+                (mainHandler.getMainBinding().rightAttachmentBar.layoutParams as LinearLayout.LayoutParams).weight = 0.7f
             }
         }
     }
