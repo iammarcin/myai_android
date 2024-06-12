@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         )
         topMenuHandler.setupTopMenus(binding)
 
-        chatHelper = ChatHelper(this, chatAdapter, chatItems, ConfigurationManager)
+        chatHelper = ChatHelper(this, chatAdapter, chatItems, ConfigurationManager, characterManager)
         // this is needed - because chatHelper needs chatAdapter and vice versa
         // so first we initialize chatAdapter (without chatHelper as its not yet initialized) and later we set chatHelper to chatAdapter
         chatAdapter.setChatHelperHandler(chatHelper)

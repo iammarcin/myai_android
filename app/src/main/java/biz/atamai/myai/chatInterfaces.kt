@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -15,7 +14,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import biz.atamai.myai.databinding.ActivityMainBinding
-import biz.atamai.myai.databinding.ChatItemBinding
 import org.json.JSONObject
 
 // THESE ARE USED because passing between different classes (files) became quite challenging

@@ -73,6 +73,11 @@ class CharacterManager(private val context: Context) {
         return characters.find { it.nameForAPI == characterNameForAPI }?.imageResId ?: R.drawable.ai_avatar_placeholder
     }
 
+    // return whole character (used in chatHelper)
+    fun getCharacterByName(characterName: String): Character? {
+        return characters.find { it.name == characterName }
+    }
+
     private fun displayCharacterCards(binding: ActivityMainBinding, characters: List<Character>, onCharacterSelected: (String) -> Unit) {
         binding.characterScrollView.removeAllViews()
         for (character in characters) {
