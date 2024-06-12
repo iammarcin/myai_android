@@ -407,7 +407,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         if (responseItemPosition == null) {
             // This is a new message, add a new response item
-            addMessageToChat("", emptyList(), emptyList(), false)
+            val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI)
+            chatItems.add(responseItem)
             currentResponseItemPosition = chatItems.size - 1
             chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
         } else {
@@ -426,16 +427,16 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 onChunkReceived = { chunk ->
                     runOnUiThread {
                         currentResponseItemPosition?.let { position ->
-                            // slight delay to smooth adding chunks to UI
-                            val handler = Handler(Looper.getMainLooper())
-                            handler.postDelayed({
-                                currentResponseItemPosition?.let { position ->
-                                    chatItems[position].message += chunk
-                                    chatAdapter.notifyItemChanged(position)
-                                    chatHelper.scrollToEnd()
-                                }
-                            }, 50) // Adjust the delay time as needed
+                            chatItems[position].message += chunk
+                            chatAdapter.notifyItemChanged(position)
                         }
+                        // slight delay to smooth scrolling on adding chunks to UI
+                        val handler = Handler(Looper.getMainLooper())
+                        handler.postDelayed({
+                            currentResponseItemPosition?.let { _ ->
+                                chatHelper.scrollToEnd()
+                            }
+                        }, 50) // Adjust the delay time as needed
                     }
                 },
                 onStreamEnd = {
@@ -449,6 +450,11 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         // save to DB
                         val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
                         val currentAIResponse = chatItems[currentResponseItemPosition!!]
+
+                        println("Chatitems: $chatItems")
+                        println("currentResponseItemPosition: $currentResponseItemPosition")
+                        println("Current user message: $currentUserMessage")
+                        println("Current AI response: $currentAIResponse")
 
                         if (currentAIResponse.aiCharacterName == "Artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
                             chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
