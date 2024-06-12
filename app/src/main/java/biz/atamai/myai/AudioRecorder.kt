@@ -43,6 +43,9 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
     // delay to ensure SCO connection is established
     private var bluetoothStartupDelay = 200L
 
+    // flag to check if receiver is registered - because there were problems with releasing it
+    private var isReceiverRegistered = false
+
     private val bluetoothProfileListener = object : BluetoothProfile.ServiceListener {
         override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
             if (profile == BluetoothProfile.HEADSET) {
@@ -87,6 +90,7 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         }
         if (useBluetoothIfConnected) {
             mainHandler.getMainBindingContext().registerReceiver(bluetoothReceiver, IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED))
+            isReceiverRegistered = true
         }
 
         permissionsUtil = PermissionsUtil(mainHandler)
@@ -246,7 +250,10 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
     }
 
     fun release() {
-        mainHandler.getMainBindingContext().unregisterReceiver(bluetoothReceiver)
+        if (isReceiverRegistered) {
+            mainHandler.getMainBindingContext().unregisterReceiver(bluetoothReceiver)
+            isReceiverRegistered = false
+        }
         bluetoothAdapter?.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
     }
 }
