@@ -290,7 +290,8 @@ class ChatHelper(
     }
 
     override fun shareGPSLocation(latitude: Double, longitude: Double) {
-        val uri = Uri.parse("geo:${latitude},${longitude}")
+        //val uri = Uri.parse("geo:${latitude},${longitude}")
+        val uri = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude")
         val intent = Intent(Intent.ACTION_VIEW, uri)
         if (intent.resolveActivity(mainHandler.context.packageManager) != null) {
             mainHandler.context.startActivity(intent)

@@ -259,7 +259,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         val uri = Uri.parse("${it.latitude},${it.longitude}")
                         val message = "GPS location: $uri"
                         hideProgressBar("GPS location")
-                         handleTextMessage(message, emptyList(), emptyList(), true)
+                        handleTextMessage(message, emptyList(), emptyList(), true)
                     } ?: run {
                         Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
                     }
