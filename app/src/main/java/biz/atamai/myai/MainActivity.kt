@@ -366,8 +366,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
         println("Start streaming")
         println("Chat history: $chatHistory")
 
+        // user prompt prepartion
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
-        val lastChatItem = if (responseItemPosition == null) {
+        // first lets get user message - either last one or the one that was edited
+        val userActiveChatItem = if (responseItemPosition == null) {
             // get the last user message and its images (if exists)
             chatItems.last()
         } else {
@@ -375,8 +377,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
             chatItems[responseItemPosition]
         }
         val userPrompt = mutableListOf<Map<String, Any>>()
-        userPrompt.add(mapOf("type" to "text", "text" to lastChatItem.message))
-        lastChatItem.imageLocations.forEach { imageUrl ->
+        userPrompt.add(mapOf("type" to "text", "text" to userActiveChatItem.message))
+        userActiveChatItem.imageLocations.forEach { imageUrl ->
             userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
         }
 
@@ -401,11 +403,11 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
 
+        // adding new or resetting AI response message (so we can add streaming chunks here)
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         if (responseItemPosition == null) {
             // This is a new message, add a new response item
-            val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI)
-            chatItems.add(responseItem)
+            addMessageToChat("", emptyList(), emptyList(), false)
             currentResponseItemPosition = chatItems.size - 1
             chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
         } else {
@@ -413,8 +415,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
             // we add +1 everywhere because position is in fact position of user message
             // and here we will edit next item (response) - so we have to add +1
             currentResponseItemPosition = responseItemPosition + 1
-            chatItems[responseItemPosition + 1].message = ""  // Clear previous response
-            chatAdapter.notifyItemChanged(responseItemPosition + 1)
+            chatItems[currentResponseItemPosition!!].message = ""  // Clear previous response
+            chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
         }
 
         chatHelper.scrollToEnd()
