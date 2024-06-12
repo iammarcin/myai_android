@@ -28,8 +28,11 @@ object DatabaseHelper {
 
     // these 3 will be needed for pagination of session list on top left menu
     private var isLoading = false
-    private var limit = 13
+    private var limit = 15
     private var offset = 0
+
+    // Add this flag to check if sessions have been loaded (to avoid adding them to the list multiple times)
+    private var sessionsLoaded = false
 
     fun initialize(mainHandler: MainHandler, chatHelperHandler: ChatHelperHandler) {
         this.mainHandler = mainHandler
@@ -87,6 +90,8 @@ object DatabaseHelper {
                 callback?.invoke(DBResponse.SessionId(sessionId))
             }
             "db_all_sessions_for_user", "db_search_messages" -> {
+                if (action == "db_search_messages")
+                    sessionsLoaded = false
                 val sessions = parseSessions(response)
                 displayChatSessions(sessions, action)
             }
@@ -172,15 +177,19 @@ object DatabaseHelper {
     }
 
     fun loadChatSessions() {
+        println("Load chat sessions. sessionsLoaded: $sessionsLoaded")
+        if (sessionsLoaded) return
         CoroutineScope(Dispatchers.Main).launch {
             isLoading = true
             fetchChatSessions(limit, offset)
             isLoading = false
+            sessionsLoaded = true
         }
     }
 
     fun loadMoreChatSessions() {
         offset += limit
+        sessionsLoaded = false
         loadChatSessions()
     }
 
@@ -210,8 +219,10 @@ object DatabaseHelper {
 
         // only for search - because we want to remove all and display only search results
         // and for example for db_all_sessions_for_user - we want to keep previous as well - because of loadMoreSessions - when scrolling we will keep loading more
-        if (action == "db_search_messages") // || action == "db_all_sessions_for_user")
+        if (action == "db_search_messages") {
             drawerLayout.removeAllViews()
+            sessionsLoaded = true
+        }
 
         sessions.forEach { session ->
             val sessionViewBinding = TopLeftMenuChatSessionItemBinding.inflate(mainHandler.mainLayoutInflaterInstance, drawerLayout, false)

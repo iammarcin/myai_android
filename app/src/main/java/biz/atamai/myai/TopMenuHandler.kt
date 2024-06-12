@@ -78,7 +78,7 @@ class TopMenuHandler(
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s.toString()
                 // search when at least 3 characters
-                if (query.length >= 3) {
+                if (query.isNotEmpty()) {
                     onSearchMessages(query)
                 }
             }
