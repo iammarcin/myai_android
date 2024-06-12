@@ -118,7 +118,6 @@ object DatabaseHelper {
     }
 
     suspend fun addNewOrEditDBMessage(method: String, userMessage: ChatItem, aiResponse: ChatItem?) {
-
         // there might be case (when character has autoResponse = false , so we're only collecting data)
         // that there is no aiResponse - but we still need to save user message
         val userInput = mutableMapOf<String, Any>(
@@ -133,6 +132,7 @@ object DatabaseHelper {
             ),
             "chat_history" to mainHandler.chatItemsList
         )
+
         aiResponse?.let {
             userInput["aiResponse"] = mapOf(
                 "sender" to "AI",

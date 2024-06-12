@@ -324,10 +324,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
             return
         }
 
+        // some characters have autoResponse set to false - if this is the case - we don't stream
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
+
             // some characters have autoResponse set to false - if this is the case - we don't want to get response from AI (it's just data collection)
             if (character?.autoResponse == true) {
                 startStreaming(position)
@@ -466,14 +468,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         }
 
                         // save to DB
+                        // edit is possible only on last message
                         val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
                         val currentAIResponse = chatItems[currentResponseItemPosition!!]
-
-                        println("Chatitems: $chatItems")
-                        println("currentResponseItemPosition: $currentResponseItemPosition")
-                        println("Current user message: $currentUserMessage")
-                        println("Current AI response: $currentAIResponse")
-
                         if (currentAIResponse.aiCharacterName == "Artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
                             chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                         }
