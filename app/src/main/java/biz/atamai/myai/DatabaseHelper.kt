@@ -210,8 +210,8 @@ object DatabaseHelper {
         val drawerLayout = mainHandler.getMainBinding().topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
 
         // only for search - because we want to remove all and display only search results
-        // and for example for db_all_sessions_for_user - we want to keep previous as well
-        if (action == "db_search_messages")
+        // and for example for db_all_sessions_for_user - we want to keep previous as well - because of loadMoreSessions - when scrolling we will keep loading more
+        if (action == "db_search_messages") // || action == "db_all_sessions_for_user")
             drawerLayout.removeAllViews()
 
         sessions.forEach { session ->

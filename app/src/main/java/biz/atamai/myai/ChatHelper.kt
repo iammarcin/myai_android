@@ -10,11 +10,12 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
-import biz.atamai.myai.databinding.ActivityMainBinding
 import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
+
+/// TODO LIMITATION OF createNewSessionFromHere - read below
+// but mainly it can lead to errors if we try to edit message that is just restored
 
 class ChatHelper(
     private val mainHandler: MainHandler,
@@ -221,7 +222,6 @@ class ChatHelper(
     // maybe one day we can work on it - downside is that we cannot edit properly previous messages
     override fun createNewSessionFromHere(position: Int) {
         val selectedChatItems = chatItems.subList(0, position + 1).toMutableList()
-
         resetChat()
         // resetting DB session - it should create new one later in backend
         setCurrentDBSessionID("")
@@ -233,7 +233,6 @@ class ChatHelper(
             chatItems.add(chatItem)
             chatAdapter.notifyItemInserted(chatItems.size - 1)
         }
-
         scrollToEnd()
     }
 

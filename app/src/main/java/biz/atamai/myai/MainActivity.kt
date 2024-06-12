@@ -436,6 +436,11 @@ class MainActivity : AppCompatActivity(), MainHandler {
             // we add +1 everywhere because position is in fact position of user message
             // and here we will edit next item (response) - so we have to add +1
             currentResponseItemPosition = responseItemPosition + 1
+            // if there is no response item - we add it
+            if (currentResponseItemPosition!! > chatItems.size - 1) {
+                val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI)
+                chatItems.add(responseItem)
+            }
             chatItems[currentResponseItemPosition!!].message = ""  // Clear previous response
             chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
         }
