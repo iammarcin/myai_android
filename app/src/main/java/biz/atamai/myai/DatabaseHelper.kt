@@ -1,16 +1,15 @@
+// DatabaseHelper.kt
+
 package biz.atamai.myai
 
 import android.app.Dialog
-import android.net.Uri
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.TopLeftMenuChatSessionItemBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.time.LocalDateTime
