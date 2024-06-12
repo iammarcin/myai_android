@@ -1,12 +1,10 @@
 package biz.atamai.myai
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -16,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import android.database.Cursor
 import android.provider.OpenableColumns
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
 import java.io.File
