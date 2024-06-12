@@ -118,6 +118,8 @@ object DatabaseHelper {
     }
 
     suspend fun addNewOrEditDBMessage(method: String, userMessage: ChatItem, aiResponse: ChatItem?) {
+        // there might be case (when character has autoResponse = false , so we're only collecting data)
+        // that there is no aiResponse - but we still need to save user message
         val userInput = mutableMapOf<String, Any>(
             "customer_id" to 1,
             "session_id" to (chatHelperHandler.getCurrentDBSessionID() ?: ""),
@@ -130,7 +132,7 @@ object DatabaseHelper {
             ),
             "chat_history" to mainHandler.chatItemsList
         )
-        println("aiResponse: $aiResponse")
+
         aiResponse?.let {
             userInput["aiResponse"] = mapOf(
                 "sender" to "AI",
@@ -149,13 +151,14 @@ object DatabaseHelper {
                     val (userMessageId, aiMessageId) = response
                     userMessage.messageId = userMessageId
                     // if its 0 - it means there was problem with text generation
-                    if (aiMessageId != null && aiMessageId > 0) {
+                    if (aiMessageId > 0) {
                         aiResponse?.messageId = aiMessageId
                     }
                 }
                 // if its not new message (so we edit) - but we don't see message_id (because there was API error etc) - we generate new message id on the backend (and here we overwrite it in ChatItem)
             } else if (method == "db_edit_message" && response is DBResponse.MessageId) {
-                aiResponse?.messageId = response.messageId
+                if (response.messageId > 0)
+                    aiResponse?.messageId = response.messageId
             }
         }
     }
@@ -164,7 +167,7 @@ object DatabaseHelper {
         sendDBRequest(
             action = "db_all_sessions_for_user",
             userInput = mapOf("limit" to limit, "offset" to offset)
-        ) { response ->
+        ) { _ ->
             // handle response if necessary
         }
     }

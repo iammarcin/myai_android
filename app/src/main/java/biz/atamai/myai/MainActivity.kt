@@ -227,6 +227,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         binding.newChatButton.setOnClickListener {
             chatHelper.resetChat()
             binding.btnShareLocation.visibility = View.GONE
+            binding.characterScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("Assistant")
             CoroutineScope(Dispatchers.Main).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",
@@ -328,11 +329,13 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
+
+            // some characters have autoResponse set to false - if this is the case - we don't want to get response from AI (it's just data collection)
             if (character?.autoResponse == true) {
                 startStreaming(position)
             } else {
                 val currentUserMessage = chatItems[position]
-                // if we don't stream - we still need to save to DB
+                // if we don't stream - we still need to save user message to DB
                 CoroutineScope(Dispatchers.Main).launch {
                     DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentUserMessage, null)
                 }
@@ -383,8 +386,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
         println("Start streaming")
         println("Chat history: $chatHistory")
 
+        // user prompt prepartion
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
-        val lastChatItem = if (responseItemPosition == null) {
+        // first lets get user message - either last one or the one that was edited
+        val userActiveChatItem = if (responseItemPosition == null) {
             // get the last user message and its images (if exists)
             chatItems.last()
         } else {
@@ -392,8 +397,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
             chatItems[responseItemPosition]
         }
         val userPrompt = mutableListOf<Map<String, Any>>()
-        userPrompt.add(mapOf("type" to "text", "text" to lastChatItem.message))
-        lastChatItem.imageLocations.forEach { imageUrl ->
+        userPrompt.add(mapOf("type" to "text", "text" to userActiveChatItem.message))
+        userActiveChatItem.imageLocations.forEach { imageUrl ->
             userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
         }
 
@@ -418,6 +423,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
 
+        // adding new or resetting AI response message (so we can add streaming chunks here)
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         if (responseItemPosition == null) {
             // This is a new message, add a new response item
@@ -430,8 +436,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
             // we add +1 everywhere because position is in fact position of user message
             // and here we will edit next item (response) - so we have to add +1
             currentResponseItemPosition = responseItemPosition + 1
-            chatItems[responseItemPosition + 1].message = ""  // Clear previous response
-            chatAdapter.notifyItemChanged(responseItemPosition + 1)
+            chatItems[currentResponseItemPosition!!].message = ""  // Clear previous response
+            chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
         }
 
         chatHelper.scrollToEnd()
@@ -440,12 +446,14 @@ class MainActivity : AppCompatActivity(), MainHandler {
             handlerType = HandlerType.Streaming(
                 onChunkReceived = { chunk ->
                     runOnUiThread {
-                        // slight delay to smooth adding chunks to UI
+                        currentResponseItemPosition?.let { position ->
+                            chatItems[position].message += chunk
+                            chatAdapter.notifyItemChanged(position)
+                        }
+                        // slight delay to smooth scrolling on adding chunks to UI
                         val handler = Handler(Looper.getMainLooper())
                         handler.postDelayed({
-                            currentResponseItemPosition?.let { position ->
-                                chatItems[position].message += chunk
-                                chatAdapter.notifyItemChanged(position)
+                            currentResponseItemPosition?.let { _ ->
                                 chatHelper.scrollToEnd()
                             }
                         }, 50) // Adjust the delay time as needed
@@ -463,11 +471,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         // edit is possible only on last message
                         val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
                         val currentAIResponse = chatItems[currentResponseItemPosition!!]
-
-                        println("TOTOTOTOTOT")
-                        println("Current user message: $currentUserMessage")
-                        println("Current AI response: $currentAIResponse")
-
                         if (currentAIResponse.aiCharacterName == "Artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
                             chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                         }
