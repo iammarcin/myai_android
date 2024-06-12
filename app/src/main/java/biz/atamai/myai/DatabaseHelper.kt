@@ -117,45 +117,49 @@ object DatabaseHelper {
         }
     }
 
-    suspend fun addNewOrEditDBMessage(method: String, userMessage: ChatItem, aiResponse: ChatItem) {
-        sendDBRequest(
-            method,
-            mapOf(
-                "customer_id" to 1,
-                "session_id" to (chatHelperHandler.getCurrentDBSessionID() ?: ""),
-                "userMessage" to mapOf(
-                        "sender" to "User",
-                        "message" to userMessage.message,
-                        "message_id" to userMessage.messageId,
-                        "image_locations" to userMessage.imageLocations,
-                        "file_locations" to userMessage.fileNames,
-                    ),
-                "aiResponse" to mapOf(
-                        "sender" to "AI",
-                        "message" to aiResponse.message,
-                        "message_id" to aiResponse.messageId,
-                        "image_locations" to aiResponse.imageLocations,
-                        "file_locations" to aiResponse.fileNames,
-                    ),
-                "chat_history" to mainHandler.chatItemsList,
+    suspend fun addNewOrEditDBMessage(method: String, userMessage: ChatItem, aiResponse: ChatItem?) {
+
+        // there might be case (when character has autoResponse = false , so we're only collecting data)
+        // that there is no aiResponse - but we still need to save user message
+        val userInput = mutableMapOf<String, Any>(
+            "customer_id" to 1,
+            "session_id" to (chatHelperHandler.getCurrentDBSessionID() ?: ""),
+            "userMessage" to mapOf(
+                "sender" to "User",
+                "message" to userMessage.message,
+                "message_id" to userMessage.messageId,
+                "image_locations" to userMessage.imageLocations,
+                "file_locations" to userMessage.fileNames,
+            ),
+            "chat_history" to mainHandler.chatItemsList
+        )
+        aiResponse?.let {
+            userInput["aiResponse"] = mapOf(
+                "sender" to "AI",
+                "message" to it.message,
+                "message_id" to it.messageId,
+                "image_locations" to it.imageLocations,
+                "file_locations" to it.fileNames
             )
-        ) { response ->
+        }
+
+        sendDBRequest(method, userInput) { response ->
             // if its new message - update message id in chatItem
             // if its edit - we dont need to
-            if (method == "db_new_message" ) {
+            if (method == "db_new_message") {
                 if (response is DBResponse.MessageIds) {
                     val (userMessageId, aiMessageId) = response
                     userMessage.messageId = userMessageId
                     // if its 0 - it means there was problem with text generation
-                    if (aiMessageId > 0)
-                        aiResponse.messageId = aiMessageId
+                    if (aiMessageId > 0) {
+                        aiResponse?.messageId = aiMessageId
+                    }
                 }
-            // if its not new message (so we edit) - but we don't see message_id (because there was API error etc) - we generate new message id on the backend (and here we overwrite it in ChatItem)
+                // if its not new message (so we edit) - but we don't see message_id (because there was API error etc) - we generate new message id on the backend (and here we overwrite it in ChatItem)
             } else if (method == "db_edit_message" && response is DBResponse.MessageId) {
-                aiResponse.messageId = response.messageId
+                if (response.messageId > 0)
+                    aiResponse?.messageId = response.messageId
             }
-
-
         }
     }
 
@@ -163,7 +167,7 @@ object DatabaseHelper {
         sendDBRequest(
             action = "db_all_sessions_for_user",
             userInput = mapOf("limit" to limit, "offset" to offset)
-        ) { response ->
+        ) { _ ->
             // handle response if necessary
         }
     }

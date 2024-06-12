@@ -1,3 +1,5 @@
+// chatInterfaces.kt
+
 package biz.atamai.myai
 
 import android.app.Activity
@@ -27,7 +29,7 @@ interface MainHandler {
     val chatItemsList: MutableList<ChatItem>
     val mainLayoutInflaterInstance: LayoutInflater
     fun handleTextMessage(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf(), gpsLocationMessage: Boolean = false)
-    fun addMessageToChat(message: String, attachedImageLocations: List<String> = listOf(), attachedFiles: List<Uri> = listOf(), gpsLocationMessage: Boolean = false): ChatItem
+    fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean): ChatItem
     fun showProgressBar(message: String = "")
     fun hideProgressBar(message: String = "")
     fun executeOnUIThread(action: Runnable)

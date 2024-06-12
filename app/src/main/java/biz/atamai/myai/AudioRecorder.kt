@@ -203,7 +203,7 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
             "chat",
             onResponseReceived = { response ->
                 mainHandler.executeOnUIThread {
-                    mainHandler.handleTextMessage(response, attachedImageLocations, attachedFilePaths)
+                    mainHandler.handleTextMessage(response, attachedImageLocations, attachedFilePaths, false)
                     mainHandler.hideProgressBar("Audio to text")
                 }
             },
@@ -219,7 +219,8 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
     private fun addRecordingToFileList(filePath: String?): ChatItem? {
         return filePath?.let {
             val fileUri = Uri.parse(it)
-            mainHandler.addMessageToChat("", listOf(), listOf(fileUri))
+            mainHandler.addMessageToChat("", listOf(), listOf(fileUri), false)
+
         }
     }
 

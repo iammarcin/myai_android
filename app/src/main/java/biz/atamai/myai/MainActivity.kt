@@ -227,6 +227,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         binding.newChatButton.setOnClickListener {
             chatHelper.resetChat()
             binding.btnShareLocation.visibility = View.GONE
+            binding.characterScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("Assistant")
             CoroutineScope(Dispatchers.Main).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",
@@ -273,7 +274,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
     }
 
     // sending data to chat adapter
-    // used from multiple places
+    // used from multiple places (main, audio recorder, file attachment)
     override fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean): ChatItem {
         val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles, isGPSLocationMessage = gpsLocationMessage)
         chatItems.add(chatItem)
@@ -309,9 +310,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
     }
 
     // utility method to handle sending text requests for normal UI messages and transcriptions
-    // (from ChatAdapter - when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
+    // (from ChatAdapter - for regenerate AI message or when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
     // and here in Main - same functionality when Send button is clicked
-    // also in ChatAdapter - for regenerate AI message
     // gpsLocationMessage - if true - it is GPS location message - so will be handled differently in chatAdapter (will show GPS map button and probably few other things)
     override fun handleTextMessage(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean) {
         if (message.isEmpty()) {
@@ -324,17 +324,35 @@ class MainActivity : AppCompatActivity(), MainHandler {
             return
         }
 
+        val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
-            startStreaming(position)
+            // some characters have autoResponse set to false - if this is the case - we don't want to get response from AI (it's just data collection)
+            if (character?.autoResponse == true) {
+                startStreaming(position)
+            } else {
+                val currentUserMessage = chatItems[position]
+                // if we don't stream - we still need to save user message to DB
+                CoroutineScope(Dispatchers.Main).launch {
+                    DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentUserMessage, null)
+                }
+            }
         } ?: run {
-            addMessageToChat(message, attachedImageLocations, attachedFiles, gpsLocationMessage)
-            startStreaming()
+            val currentUserMessage = addMessageToChat(message, attachedImageLocations, attachedFiles, gpsLocationMessage)
+            if (character?.autoResponse == true) {
+                startStreaming()
+            } else {
+                // if we don't stream - we still need to save to DB
+                CoroutineScope(Dispatchers.Main).launch {
+                    DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentUserMessage, null)
+                }
+            }
         }
         chatHelper.resetInputArea()
         // edit position reset
         chatHelper.setEditingMessagePosition(null)
+        // hide characters view
         binding.characterHorizontalMainScrollView.visibility = View.GONE
     }
 
