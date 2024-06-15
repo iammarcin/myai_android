@@ -22,12 +22,13 @@ class CharacterManager(private val context: Context) {
     val characters = listOf(
         Character(name = "Assistant", imageResId = R.drawable.brainstorm_assistant, nameForAPI = "Assistant", autoResponse = true, showGPSButton = false),
         Character(name = "Art gen", imageResId = R.drawable.tools_artgen, nameForAPI = "Artgen", autoResponse = true, showGPSButton = false),
-        Character(name = "Alergy", imageResId = R.drawable.brainstorm_alergy, nameForAPI = "Alergy", autoResponse = true, showGPSButton = true),
-        Character(name = "Garmin", imageResId = R.drawable.brainstorm_garmin_health, nameForAPI = "Garmin", autoResponse = true, showGPSButton = true),
-        Character(name = "Researcher", imageResId = R.drawable.brainstorm_research_assistant, nameForAPI = "Researcher", autoResponse = true, showGPSButton = true),
-        Character(name = "Calories", imageResId = R.drawable.brainstorm_calories, nameForAPI = "Calories", autoResponse = true, showGPSButton = false),
+        Character(name = "Alergy expert", imageResId = R.drawable.brainstorm_alergy, nameForAPI = "Alergy", autoResponse = true, showGPSButton = true),
+        Character(name = "Garmin", imageResId = R.drawable.brainstorm_garmin, nameForAPI = "Garmin", autoResponse = true, showGPSButton = true),
+        Character(name = "Dietetist", imageResId = R.drawable.brainstorm_dietetist, nameForAPI = "Dietetist", autoResponse = true, showGPSButton = false),
         Character(name = "Blogger", imageResId = R.drawable.brainstorm_blogger, nameForAPI = "Blogger", autoResponse = false, showGPSButton = true),
         Character(name = "Personal coach", imageResId = R.drawable.brainstorm_gym_instructor, nameForAPI = "PersonalCoach", autoResponse = true, showGPSButton = false),
+        Character(name = "Longevity expert", imageResId = R.drawable.brainstorm_longevity, nameForAPI = "Longevity", autoResponse = true, showGPSButton = false),
+        Character(name = "Sleep expert", imageResId = R.drawable.brainstorm_sleep_expert, nameForAPI = "Sleep", autoResponse = true, showGPSButton = false),
         Character(name = "Gardener", imageResId = R.drawable.brainstorm_gardener, nameForAPI = "Gardener", autoResponse = true, showGPSButton = false),
         Character(name = "Doctor", imageResId = R.drawable.brainstorm_doctor, nameForAPI = "Doctor", autoResponse = true, showGPSButton = false),
         Character(name = "Chef", imageResId = R.drawable.brainstorm_chef, nameForAPI = "Chef", autoResponse = true, showGPSButton = false),
@@ -57,7 +58,6 @@ class CharacterManager(private val context: Context) {
         Character(name = "Shaan Puri", imageResId = R.drawable.brainstorm_shaan, nameForAPI = "Shaan", autoResponse = true, showGPSButton = false),
         Character(name = "Sir David", imageResId = R.drawable.brainstorm_david, nameForAPI = "David", autoResponse = true, showGPSButton = false),
         Character(name = "Rick Sanchez", imageResId = R.drawable.brainstorm_rick, nameForAPI = "Rick", autoResponse = true, showGPSButton = false),
-        Character(name = "TLDR", imageResId = R.drawable.tools_tldr, nameForAPI = "Tldr", autoResponse = true, showGPSButton = false)
     )
 
     // Function to programmatically set up character cards
