@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import biz.atamai.myai.databinding.ActivityMainBinding
 import org.json.JSONObject
 
@@ -22,6 +23,7 @@ import org.json.JSONObject
 interface MainHandler {
     fun getMainActivity(): Activity
     val context: Context
+    val activity: AppCompatActivity
     fun getMainBinding(): ActivityMainBinding
     fun getMainBindingContext(): Context
     val chatItemsList: MutableList<ChatItem>

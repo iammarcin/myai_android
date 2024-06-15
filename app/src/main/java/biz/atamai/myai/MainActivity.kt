@@ -34,7 +34,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
     lateinit var binding: ActivityMainBinding
     override val context: Context
         get() = this
-
+    override val activity: AppCompatActivity
+        get() = this
     private lateinit var fileAttachmentHandler: FileAttachmentHandler
     private lateinit var cameraHandler: CameraHandler
 
@@ -61,10 +62,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
     private var originalAICharacter: String? = null
 
     private var mediaPlayer: MediaPlayer? = null
-
-    private var accuracyUpdateHandler: Handler? = null
-    private var accuracyUpdateRunnable: Runnable? = null
-    private var currentLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

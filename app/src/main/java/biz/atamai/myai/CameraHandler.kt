@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import java.io.File
 
-class CameraHandler(private val activity: AppCompatActivity, private val registry: ActivityResultRegistry) {
+class CameraHandler(private val mainHandler: MainHandler, private val registry: ActivityResultRegistry) {
 
 
     private var photoUri: Uri? = null
@@ -20,7 +20,7 @@ class CameraHandler(private val activity: AppCompatActivity, private val registr
     private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
 
     fun setupTakePictureLauncher(onSuccess: (Uri?) -> Unit, onFailure: () -> Unit) {
-        takePictureLauncher = registry.register("takePictureKey", activity, ActivityResultContracts.TakePicture()) { success ->
+        takePictureLauncher = registry.register("takePictureKey", mainHandler.activity, ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 onSuccess(photoUri)
             } else {
@@ -32,12 +32,12 @@ class CameraHandler(private val activity: AppCompatActivity, private val registr
     fun takePhoto() {
         // Ensure the external storage permission is granted before calling this method
         val photoFile: File = createImageFile()
-        photoUri = FileProvider.getUriForFile(activity, "${activity.packageName}.provider", photoFile)
+        photoUri = FileProvider.getUriForFile(mainHandler.activity, "${mainHandler.activity.packageName}.provider", photoFile)
         takePictureLauncher.launch(photoUri)
     }
 
     private fun createImageFile(): File {
-        val storageDir: File = activity.getExternalFilesDir("Images") ?: throw IllegalStateException("External Storage is unavailable")
+        val storageDir: File = mainHandler.activity.getExternalFilesDir("Images") ?: throw IllegalStateException("External Storage is unavailable")
         return File.createTempFile("JPEG_${System.currentTimeMillis()}_", ".jpg", storageDir)
     }
 
