@@ -117,8 +117,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         characterManager.setupCharacterCards(binding) { characterName ->
             chatHelper.insertCharacterName(characterName)
         }
-        // set default character (Assistant) - in case there is some remaining from previous app run
-        ConfigurationManager.setTextAICharacter("Assistant")
+        // set default character (assistant) - in case there is some remaining from previous app run
+        ConfigurationManager.setTextAICharacter("assistant")
 
         // start new chat session
         // i tried many many different ways not to put it here (around 26-27May - check chatgpt if you want ;) )
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             DatabaseHelper.sendDBRequest("db_new_session",
                 mapOf(
                     "session_name" to "New chat",
-                    "ai_character_name" to "Assistant",
+                    "ai_character_name" to "assistant",
                     ))
         }
 
@@ -233,12 +233,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
             chatHelper.resetChat()
             binding.btnShareLocation.visibility = View.GONE
             binding.characterScrollView.visibility = View.VISIBLE
-            ConfigurationManager.setTextAICharacter("Assistant")
+            ConfigurationManager.setTextAICharacter("assistant")
             CoroutineScope(Dispatchers.Main).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",
                     mapOf(
                         "session_name" to "New chat",
-                        "ai_character_name" to "Assistant",
+                        "ai_character_name" to "assistant",
                     ))
             }
         }
@@ -471,7 +471,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         // edit is possible only on last message
                         val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
                         val currentAIResponse = chatItems[currentResponseItemPosition!!]
-                        if (currentAIResponse.aiCharacterName == "Artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
+                        if (currentAIResponse.aiCharacterName == "tools_artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
                             chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
                         }
 

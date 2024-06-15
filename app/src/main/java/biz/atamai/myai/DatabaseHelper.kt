@@ -204,7 +204,7 @@ object DatabaseHelper {
             val session = ChatSessionForTopLeftMenu(
                 sessionId = sessionObject.getString("session_id"),
                 sessionName = sessionObject.getString("session_name") ?: "New chat",
-                aiCharacterName = sessionObject.getString("ai_character_name") ?: "Assistant",
+                aiCharacterName = sessionObject.getString("ai_character_name") ?: "assistant",
                 createdAt = sessionObject.getString("created_at") ?: "",
                 lastUpdate = sessionObject.getString("last_update") ?: ""
             )

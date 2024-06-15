@@ -9,13 +9,11 @@ import android.content.Context
 import android.net.Uri
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
@@ -176,7 +174,7 @@ class ChatAdapter(
             binding.messageTextView.visibility = View.VISIBLE
 
             // if its message (or whole chat) for artgen - we want to allow user to create images
-            if (chatItem.aiCharacterName == "Artgen" && !chatItem.isUserMessage) {
+            if (chatItem.aiCharacterName == "tools_artgen" && !chatItem.isUserMessage) {
                 binding.imageGenerationView.visibility = View.VISIBLE
                 if (!ConfigurationManager.getImageArtgenShowPrompt())
                     binding.messageTextView.visibility = View.GONE

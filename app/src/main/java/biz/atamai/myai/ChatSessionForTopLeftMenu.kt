@@ -4,7 +4,7 @@ package biz.atamai.myai
 data class ChatSessionForTopLeftMenu(
     val sessionId: String,
     val sessionName: String = "",
-    val aiCharacterName: String = "Assistant",
+    val aiCharacterName: String = "assistant",
     val createdAt: String = "",
     val lastUpdate: String = "",
 )

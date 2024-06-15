@@ -47,7 +47,7 @@ object ConfigurationManager {
         APP_MODE_API_URL to "https://ai.atamai.biz/api/",
         APP_MODE_USE_WATSON to false,
         TEXT_MODEL_NAME to "GPT-4o",
-        TEXT_AI_CHARACTER to "Assistant",
+        TEXT_AI_CHARACTER to "assistant",
         TEXT_TEMPERATURE to 0.0f,
         TEXT_MEMORY_SIZE to 2000,
         TEXT_STREAMING to false,

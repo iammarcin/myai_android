@@ -63,7 +63,7 @@ class CharacterManager(private val context: Context) {
     // Function to programmatically set up character cards
     fun setupCharacterCards(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
         // default setting before user selection
-        ConfigurationManager.setTextAICharacter("Assistant")
+        ConfigurationManager.setTextAICharacter("assistant")
         displayCharacterCards(binding, characters, onCharacterSelected)
     }
 
