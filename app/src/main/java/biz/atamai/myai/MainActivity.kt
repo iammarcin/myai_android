@@ -5,7 +5,6 @@ package biz.atamai.myai
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +27,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
+import java.io.File
 
 class MainActivity : AppCompatActivity(), MainHandler {
 
@@ -589,6 +589,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
     }
     override fun registerForActivityResult(contract: ActivityResultContracts.StartActivityForResult, callback: (ActivityResult) -> Unit): ActivityResultLauncher<Intent> {
         return super.registerForActivityResult(contract, callback)
+    }
+    override fun resizeImage(filePath: String, maxDimension: Int): File? {
+        return ImageUtils.resizeImage(filePath, maxDimension)
     }
     // permissions
     override fun checkSelfPermission(permission: String): Int {

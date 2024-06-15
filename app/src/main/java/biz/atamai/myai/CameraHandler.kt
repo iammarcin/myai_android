@@ -1,19 +1,13 @@
 package biz.atamai.myai
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import java.io.File
 
 class CameraHandler(private val mainHandler: MainHandler, private val registry: ActivityResultRegistry) {
-
-
     private var photoUri: Uri? = null
 
     // This launcher is initialized in the activity where CameraHandler is used

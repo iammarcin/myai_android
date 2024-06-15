@@ -97,7 +97,14 @@ class FileAttachmentHandler(
             imageView.setImageResource(R.drawable.image_temp_before_s3_upload)
             frameLayout.addView(imageView)
 
-            val filePath = getFilePathFromUri(uri)
+            var filePath = getFilePathFromUri(uri)
+            if (filePath != null) {
+                val resizedFile = mainHandler.resizeImage(filePath, 1024)
+                if (resizedFile != null) {
+                    filePath = resizedFile.absolutePath
+                }
+            }
+
             val utilityTools = UtilityTools(
                 mainHandler = mainHandler
             )

@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import biz.atamai.myai.databinding.ActivityMainBinding
 import org.json.JSONObject
+import java.io.File
 
 // THESE ARE USED because passing between different classes (files) became quite challenging
 // we have multiple rounded dependencies and we need to pass data between them
@@ -42,6 +43,7 @@ interface MainHandler {
     fun checkSelfPermission(permission: String): Int
     fun requestAllPermissions(permissions: Array<String>, requestCode: Int)
     fun getMainCharacterManager(): CharacterManager
+    fun resizeImage(filePath: String, maxDimension: Int): File?
     //fun getMainLayoutInflater(): LayoutInflater
 }
 
