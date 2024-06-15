@@ -7,6 +7,7 @@
 
     <TextView
         android:id="@+id/accuracy_text"
+        android:textColor="@color/text_color"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Checking GPS accuracy..."
@@ -35,17 +36,24 @@
         android:gravity="end">
 
         <Button
-            android:id="@+id/cancel_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cancel" />
-
-        <Button
             android:id="@+id/share_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Share"
+            android:textColor="@color/text_color"
+            android:backgroundTint="@color/background_primary"
+             />
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_color"
+            android:backgroundTint="@color/background_primary"
+            android:text="Cancel"
             android:layout_marginStart="16dp" />
+
+
     </LinearLayout>
 
 
