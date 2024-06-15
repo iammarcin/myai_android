@@ -113,6 +113,7 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
                 progressBar.visibility = View.VISIBLE
                 getCurrentLocation { location ->
                     if (location != null) {
+                        println("Accuracy: ${location.accuracy}")
                         currentLocation = location
                         val accuracy = location.accuracy
                         accuracyText.text = "GPS Accuracy: $accuracy meters"
