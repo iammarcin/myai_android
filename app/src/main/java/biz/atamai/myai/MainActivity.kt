@@ -5,6 +5,7 @@ package biz.atamai.myai
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -60,6 +61,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
     private var originalAICharacter: String? = null
 
     private var mediaPlayer: MediaPlayer? = null
+
+    private var accuracyUpdateHandler: Handler? = null
+    private var accuracyUpdateRunnable: Runnable? = null
+    private var currentLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -253,17 +258,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // GPS button
         binding.btnShareLocation.setOnClickListener {
             if (gpsLocationManager.areLocationServicesEnabled()) {
-                showProgressBar("GPS location")
-                gpsLocationManager.getCurrentLocation { location ->
-                    location?.let {
-                        val uri = Uri.parse("${it.latitude},${it.longitude}")
-                        val message = "GPS location: $uri"
-                        hideProgressBar("GPS location")
-                        handleTextMessage(message, emptyList(), emptyList(), true)
-                    } ?: run {
-                        Toast.makeText(this, "Unable to get location", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                gpsLocationManager.showGPSAccuracyDialog()
             } else {
                 Toast.makeText(this, "GPS Location services are disabled", Toast.LENGTH_SHORT).show()
                 // Optionally, you can open the location settings
