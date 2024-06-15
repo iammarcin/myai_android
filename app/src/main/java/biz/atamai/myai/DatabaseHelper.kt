@@ -230,7 +230,7 @@ object DatabaseHelper {
             val aiCharacter = session.aiCharacterName
             // having name of character, lets search its image through CharacterManager
             val character = mainHandler.getMainCharacterManager().characters.find { it.nameForAPI == aiCharacter }
-            sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.brainstorm_assistant)
+            sessionViewBinding.sessionAiCharacterImageView.setImageResource(character?.imageResId ?: R.drawable.assistant)
             // last update date in format YYYY/MM/DD HH:MM
             sessionViewBinding.sessionLastUpdate.text = formatDateTime(session.lastUpdate)
 
