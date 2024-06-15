@@ -23,48 +23,46 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
     private var fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(mainHandler.context)
 
-    private val handler = Handler(Looper.getMainLooper())
-    private var accuracyUpdateHandler: Handler? = null
-    private var accuracyUpdateRunnable: Runnable? = null
+    private var locationCallback: LocationCallback? = null
     private var currentLocation: Location? = null
 
-    fun getCurrentLocation(callback: (Location?) -> Unit) {
+    private fun getCurrentLocation(callback: (Location?) -> Unit) {
         if (ActivityCompat.checkSelfPermission(mainHandler.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(mainHandler.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             callback(null)
             return
         }
 
-        handler.postDelayed({
-            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                if (location != null) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                callback(location)
+            } else {
+                // Request new location if last location is null
+                startLocationUpdates(callback)
+            }
+        }
+    }
+
+    private fun startLocationUpdates(callback: (Location?) -> Unit) {
+        val gpsInterval = 10
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, gpsInterval * 1000L)
+            .setMinUpdateIntervalMillis(1000L)
+            .setWaitForAccurateLocation(true)
+            .build()
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult.locations.firstOrNull()?.let { location ->
                     callback(location)
-                } else {
-                    // Request new location if last location is null
-                    val gpsInterval = 20
-                    val locationRequest = LocationRequest.Builder(
-                        Priority.PRIORITY_HIGH_ACCURACY, gpsInterval * 1000L
-                    ).apply {
-                        setWaitForAccurateLocation(true)
-                    }.build()
-
-                    val locationCallback = object : LocationCallback() {
-                        override fun onLocationResult(locationResult: LocationResult) {
-                            locationResult.locations.firstOrNull()?.let { location ->
-                                callback(location)
-                                fusedLocationClient.removeLocationUpdates(this)
-                            }
-                        }
-                    }
-
-                    fusedLocationClient.requestLocationUpdates(
-                        locationRequest,
-                        locationCallback,
-                        Looper.getMainLooper()
-                    )
                 }
             }
-        }, 1500)
+        }
+
+        if (ActivityCompat.checkSelfPermission(mainHandler.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(mainHandler.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback!!, Looper.getMainLooper())
     }
 
     fun areLocationServicesEnabled(): Boolean {
@@ -107,30 +105,38 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
     }
 
     private fun startAccuracyUpdates(accuracyText: TextView, progressBar: ProgressBar) {
-        accuracyUpdateHandler = Handler(Looper.getMainLooper())
-        accuracyUpdateRunnable = object : Runnable {
-            override fun run() {
-                progressBar.visibility = View.VISIBLE
-                getCurrentLocation { location ->
-                    if (location != null) {
-                        println("Accuracy: ${location.accuracy}")
-                        currentLocation = location
-                        val accuracy = location.accuracy
-                        accuracyText.text = "GPS Accuracy: $accuracy meters"
-                        progressBar.visibility = View.GONE
-                    } else {
-                        accuracyText.text = "Unable to get location accuracy"
+        getCurrentLocation { location ->
+            if (location != null) {
+                println("Accuracy: ${location.accuracy}")
+                currentLocation = location
+                val accuracy = location.accuracy
+                accuracyText.text = "GPS Accuracy: $accuracy meters"
+                progressBar.visibility = View.GONE
+                if (accuracy > DESIRED_ACCURACY) {
+                    startLocationUpdates { newLocation ->
+                        progressBar.visibility = View.VISIBLE
+                        if (newLocation != null) {
+                            println("Updated Accuracy: ${newLocation.accuracy}")
+                            currentLocation = newLocation
+                            val newAccuracy = newLocation.accuracy
+                            accuracyText.text = "GPS Accuracy: $newAccuracy meters"
+                        }
                     }
-                    accuracyUpdateHandler?.postDelayed(this, 1500)
+                } else {
+                    progressBar.visibility = View.GONE
                 }
+            } else {
+                accuracyText.text = "Unable to get location accuracy"
             }
         }
-        accuracyUpdateHandler?.post(accuracyUpdateRunnable!!)
     }
 
     private fun stopAccuracyUpdates() {
-        accuracyUpdateHandler?.removeCallbacks(accuracyUpdateRunnable!!)
-        accuracyUpdateHandler = null
-        accuracyUpdateRunnable = null
+        locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
+        locationCallback = null
+    }
+
+    companion object {
+        private const val DESIRED_ACCURACY = 5.0f // Desired accuracy in meters
     }
 }
