@@ -24,6 +24,8 @@ import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.os.Handler
+import android.os.Looper
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -37,6 +39,9 @@ class ChatAdapter(
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
     private var chatHelperHandler: ChatHelperHandler? = null
+
+    // important! leave it here - when auto play is executed there was crash because chat notify was executed too soon
+    private val handler = Handler(Looper.getMainLooper())
 
     // to track which chat item is playing (to handle proper icon - play/pause changes)
     private var currentPlayingPosition: Int = -1
@@ -149,7 +154,9 @@ class ChatAdapter(
 
                         // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
                         if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                            notifyItemChanged(previousPlayingPosition)
+                            handler.post {
+                                notifyItemChanged(previousPlayingPosition)
+                            }
                         }
                         currentPlayingPosition = adapterPosition
                         currentPlayingSeekBar = binding.seekBar
@@ -205,16 +212,7 @@ class ChatAdapter(
                 } else {
                     binding.seekBar.progress = 0
                 }
-
-                //val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                /*if (!audioPlayerManager.isPlaying()) {
-                    audioPlayerManager.setupMediaPlayer(
-                        chatItem.fileNames[0],
-                        chatItem.isTTS,
-                        chatItem.message
-                    )
-                }*/
-
+                
                 // set transcribe button - but only for uploaded files (non tts)
                 // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
                 if (chatItem.isTTS || !chatItem.showTranscribeButton) {
