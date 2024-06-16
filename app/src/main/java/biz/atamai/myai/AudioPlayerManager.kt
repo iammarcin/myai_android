@@ -1,5 +1,3 @@
-// AudioPlayerManager.kt
-
 package biz.atamai.myai
 
 import android.content.Context
@@ -9,182 +7,89 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.SeekBar
 import android.widget.Toast
-import biz.atamai.myai.databinding.ChatItemBinding
-import android.media.MediaMetadataRetriever
 
+class AudioPlayerManager(private val mainHandler: MainHandler) {
 
+    var mediaPlayer: MediaPlayer? = null
+    private var handler: Handler = Handler(Looper.getMainLooper())
+    private var isPlaying = false
+    var currentUri: Uri? = null
+    private var onCompletion: (() -> Unit)? = null
 
-// LIMITATIONS / KNOWN BUGS
-// duration of file cannot be taken if it's remote URL (like my S3 after tts no stream)
-// so we're setting it statically based on text length
-// it somehow works - but seekbar works only for the first play execution and we cannot move seekbar manually
-// maybe try with streaming and exo player one day
-
-class AudioPlayerManager(private val context: Context, private val binding: ChatItemBinding) {
-
-    private var mediaPlayer: MediaPlayer? = null
-    private val handler = Handler(Looper.getMainLooper())
-    private var currentUri: Uri? = null
-    private var isPrepared = false
-
-    init {
-        setupSeekBarChangeListener()
-        setupPlayButtonClickListener()
-    }
-
-    fun setupMediaPlayer(audioUri: Uri?, autoPlay: Boolean = false, chatItemMessage: String = "") {
-        currentUri = audioUri
-        releaseMediaPlayer() // Release any existing player
-
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(context, audioUri!!)
-            setOnPreparedListener { mp ->
-                isPrepared = true
-                // it's far from good ... but if i get file from S3 (for example TTS after restoring session or TTS no stream) - there is no way to get duration of audio file... so we're setting it based on text length
-                // Estimate duration based on the length of chatItemMessage
-                // we came up with 2.3 words per second (so just in case i take little bit less)
-                val estimatedDuration = (chatItemMessage.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
-                println("Estimated duration in seconds: ${estimatedDuration / 1000}")
-                binding.seekBar.max = if (mp.duration > 0) mp.duration else estimatedDuration
-                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                if (autoPlay && !mp.isPlaying) {
-                    binding.playButton.performClick()
-                }
-                handler.post(updateSeekBarTask)
-            }
-
-            setOnCompletionListener {
-                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                binding.seekBar.progress = 0
-                isPrepared = false
-                handler.removeCallbacks(updateSeekBarTask)
-            }
-
-            setOnErrorListener { _, what, extra ->
-                println("MediaPlayer Error - what: $what, extra: $extra")
-                Toast.makeText(context, "Error playing audio 0", Toast.LENGTH_SHORT).show()
-                releaseMediaPlayer()
-                true
-            }
-
-            prepareAsync()
+    fun playAudio(audioUri: Uri, seekBar: SeekBar, message: String, onCompletion: () -> Unit) {
+        if (currentUri != audioUri) {
+            stopAudio()
+            currentUri = audioUri
         }
+        if (mediaPlayer == null) {
+            mediaPlayer = MediaPlayer.create(mainHandler.context, audioUri)
+            mediaPlayer?.setOnCompletionListener {
+                stopAudio()
+                onCompletion()
+            }
+        }
+        mediaPlayer?.start()
+        isPlaying = true
+        // it's far from good ... but if i get file from S3 (for example TTS after restoring session or TTS no stream) - there is no way to get duration of audio file... so we're setting it based on text length
+        // we estimate duration based on the length of chatItemMessage
+        // we came up with 2.3 words per second (so just in case i take little bit less)
+        val estimatedDuration =
+            (message.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
 
+        seekBar.max = if (mediaPlayer?.duration!! > 0) mediaPlayer?.duration!! else estimatedDuration
+        handler.post(object : Runnable {
+            override fun run() {
+                seekBar.progress = mediaPlayer?.currentPosition ?: 0
+                if (isPlaying) {
+                    handler.postDelayed(this, 1000)
+                }
+            }
+        })
+        this.onCompletion = onCompletion
+        setSeekBar(seekBar)
     }
 
-    private fun setupSeekBarChangeListener() {
-        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    private fun stopAudio() {
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+        isPlaying = false
+        handler.removeCallbacksAndMessages(null)
+        currentUri = null
+    }
+
+    fun pauseAudio() {
+        mediaPlayer?.pause()
+        isPlaying = false
+        handler.removeCallbacksAndMessages(null)
+    }
+
+    fun isPlaying(): Boolean {
+        return isPlaying
+    }
+
+    fun releaseMediaPlayer() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
+    fun setSeekBar(seekBar: SeekBar) {
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     mediaPlayer?.seekTo(progress)
                 }
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                mediaPlayer?.pause()
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                mediaPlayer?.start()
-            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
 
-    private fun setupPlayButtonClickListener() {
-        binding.playButton.setOnClickListener {
-            mediaPlayer?.let { mp ->
-                if (mp.isPlaying) {
-                    mp.pause()
-                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                } else {
-                    try {
-                        if (isPrepared) {
-                            if (!mp.isPlaying) {
-                                mp.start()
-                                binding.playButton.setImageResource(R.drawable.ic_pause_24)
-                                handler.post(updateSeekBarTask)  // Start updating the seek bar
-                            }
-                        } else {
-                            resetAndPrepareMediaPlayer()
-                        }
-                    } catch (e: IllegalStateException) {
-                        // Handle the situation when the media player is in an invalid state
-                        Toast.makeText(context, "Error playing audio 1", Toast.LENGTH_SHORT).show()
-                        resetAndPrepareMediaPlayer()
-                    }
-                }
-            } ?: run {
-                // If mediaPlayer is null, reinitialize it and start playing
-                resetAndPrepareMediaPlayer()
-            }
+    fun createToastMessage(message: String, duration: Int = Toast.LENGTH_SHORT) {
+        mainHandler.executeOnUIThread {
+            mainHandler.createToastMessage(message)
         }
-    }
-
-    private fun resetAndPrepareMediaPlayer() {
-        currentUri?.let { uri ->
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(context, uri)
-                setOnPreparedListener { mp ->
-                    if (!mp.isPlaying) {
-                        isPrepared = true
-                        binding.seekBar.max = mp.duration
-                        mp.start()
-                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
-                        handler.post(updateSeekBarTask)
-                    }
-                }
-                setOnCompletionListener {
-                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                    binding.seekBar.progress = 0
-                    isPrepared = false
-                    handler.removeCallbacks(updateSeekBarTask)
-                }
-                setOnErrorListener { _, _, _ ->
-                    Toast.makeText(context, "Error playing audio 2", Toast.LENGTH_SHORT).show()
-                    releaseMediaPlayer()
-                    true
-                }
-                prepareAsync()
-            }
-        }
-    }
-
-    fun releaseMediaPlayer() {
-        mediaPlayer?.release()
-        mediaPlayer = null
-        isPrepared = false
-        handler.removeCallbacks(updateSeekBarTask)  // Stop updating the seek bar
-    }
-
-    private val updateSeekBarTask = object : Runnable {
-        override fun run() {
-            mediaPlayer?.let { mp ->
-                if (mp.isPlaying) {
-                    binding.seekBar.progress = mp.currentPosition
-                    handler.postDelayed(this, 1000)  // Schedule the next update after 1 second
-                }
-            }
-        }
-    }
-
-    // as we cannot get duration from remote file - we're using :
-    private fun getAudioDuration(audioUri: Uri): Long {
-        val retriever = MediaMetadataRetriever()
-        return try {
-            retriever.setDataSource(context, audioUri)
-            val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            durationStr?.toLongOrNull() ?: -1
-        } catch (e: Exception) {
-            e.printStackTrace()
-            -1
-        } finally {
-            retriever.release()
-        }
-    }
-
-
-    // Check if the media player is playing (used in ChatAdapter in handleTTSCompletedResponse)
-    fun isPlaying(): Boolean {
-        return mediaPlayer?.isPlaying == true
     }
 }

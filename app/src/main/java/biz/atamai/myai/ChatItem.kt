@@ -12,6 +12,7 @@ data class ChatItem(
     var aiCharacterName: String?, // character name - used for API (f.e. to store data in DB)
     var messageId: Int? = null, // id of the chat item - from DB - its null when its new item, it is set to some value if its existing item (and we want ot f.e. edit it)
     var isTTS: Boolean = false, // this is to differentiate if audio file is coming from TTS or from user upload (if its TTS - user can set to autoplay or transcribe button is not needed so its hidden)
+    var isAutoPlay: Boolean = false, // this is to set if audio file should be played automatically (for example TTS)
     var showTranscribeButton: Boolean = true, // this is to show or hide transcribe button (for example to avoid double transcribe executions)
     var isGPSLocationMessage: Boolean = false, // this is to show or hide GPS button (when GPS location is shared by user - we can show it on the map)
 ) { // not big fan of that - but its chagpt suggestion
@@ -27,6 +28,7 @@ data class ChatItem(
             "aiCharacterName" to aiCharacterName,
             "messageId" to messageId,
             "isTTS" to isTTS,
+            "isAutoPlay" to isAutoPlay,
             "showTranscribeButton" to showTranscribeButton,
             "isGPSLocationMessage" to isGPSLocationMessage
         )

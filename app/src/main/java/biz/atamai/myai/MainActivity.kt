@@ -5,7 +5,6 @@ package biz.atamai.myai
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -61,7 +60,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
     // this will be used when mentioning (via @) AI characters for single message
     private var originalAICharacter: String? = null
 
-    private var mediaPlayer: MediaPlayer? = null
+    private lateinit var audioPlayerManager: AudioPlayerManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +76,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         // has to BEFORE chat adapter
         characterManager = CharacterManager(this)
+        audioPlayerManager = AudioPlayerManager(this)
 
         setupListeners()
         setupChatAdapter()
@@ -143,6 +143,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             ConfigurationManager.getAppModeApiUrl(),
             characterManager,
             this,
+            audioPlayerManager,
         )
             { position, message -> chatHelper.startEditingMessage(position, message) }
             //this,
@@ -479,7 +480,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
                     runOnUiThread {
                         hideProgressBar("Text generation")
                         if (ConfigurationManager.getTTSAutoExecute()) {
-                            showProgressBar("TTS")
                             chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
                         }
 
@@ -612,6 +612,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
     override fun resizeImage(filePath: String, maxDimension: Int): File? {
         return ImageUtils.resizeImage(filePath, maxDimension)
     }
+    override fun releaseMediaPlayer() {
+        audioPlayerManager.releaseMediaPlayer()
+    }
     // permissions
     override fun checkSelfPermission(permission: String): Int {
         return ContextCompat.checkSelfPermission(this, permission)
@@ -636,15 +639,13 @@ class MainActivity : AppCompatActivity(), MainHandler {
     override fun onPause() {
         super.onPause()
         if (isFinishing) {
-            chatAdapter.releaseMediaPlayers()
+            releaseMediaPlayer()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        chatAdapter.releaseMediaPlayers()  // Ensure all media players are released when the activity is destroyed
+        releaseMediaPlayer()  // Ensure all media players are released when the activity is destroyed
         audioRecorder.release()  // Release resources held by AudioRecorder
-        mediaPlayer?.release()
-        mediaPlayer = null
     }
 }
