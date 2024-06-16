@@ -2,17 +2,14 @@
 
 package biz.atamai.myai
 
-import android.content.Context
-import android.net.Uri
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
-import android.widget.Toast
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
+import java.net.URL
 
 // LIMITATIONS / BUGS
 // no really streaming (see comments in sendTTSRequest)
@@ -29,6 +26,51 @@ class UtilityTools(
 
     //private var audioFile = File.createTempFile("audio", ".opus", context.cacheDir)
     //private var audioUri = Uri.fromFile(audioFile).toString()
+
+    // Helper function to get the downloaded file URI - used here in downloadFile, but also in chat adapter to get the location of downloaded file
+    fun getDownloadedFileUri(url: String): File {
+        val fileName = url.substring(url.lastIndexOf('/') + 1)
+        val file = File(mainHandler.context.cacheDir, fileName)
+        return file
+    }
+
+    // used for example when playing audio via audio player
+    fun downloadFile(fileUrl: String, callback: (File?) -> Unit) {
+        Thread {
+            try {
+                val url = URL(fileUrl)
+
+                // Extract the file name from the URL
+                val file = getDownloadedFileUri(fileUrl)
+
+                // Check if the file already exists
+                if (file.exists()) {
+                    callback(file)
+                    return@Thread
+                }
+
+                val connection = url.openConnection()
+                connection.connect()
+
+                val inputStream: InputStream = url.openStream()
+                val outputStream = FileOutputStream(file)
+                val buffer = ByteArray(1024)
+                var len: Int
+
+                while (inputStream.read(buffer).also { len = it } != -1) {
+                    outputStream.write(buffer, 0, len)
+                }
+
+                outputStream.close()
+                inputStream.close()
+
+                callback(file)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                callback(null)
+            }
+        }.start()
+    }
 
     // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
     fun uploadFileToServer(

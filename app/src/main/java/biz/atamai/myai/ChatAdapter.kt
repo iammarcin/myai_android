@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
+import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
@@ -23,28 +24,34 @@ import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.os.Handler
+import android.os.Looper
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
     private val characterManager: CharacterManager,
     private val mainHandler: MainHandler,
+    private val audioPlayerManager: AudioPlayerManager,
     private val onEditMessage: (position: Int, message: String) -> Unit,
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
-    private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
+    //private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
     private var chatHelperHandler: ChatHelperHandler? = null
 
+    // important! leave it here - when auto play is executed there was crash because chat notify was executed too soon
+    private val handler = Handler(Looper.getMainLooper())
+
+    // to track which chat item is playing (to handle proper icon - play/pause changes)
+    private var currentPlayingPosition: Int = -1
+    // and proper seekbar to be updated
+    private var currentPlayingSeekBar: SeekBar? = null
+    // and to track previous playing item (to reset it when new item is played)
+    private var previousPlayingPosition: Int = -1
+
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
-    }
-
-    fun releaseMediaPlayers() {
-        for (audioPlayerManager in audioPlayerManagers) {
-            audioPlayerManager.releaseMediaPlayer()
-        }
-        audioPlayerManagers.clear() // Clear the list after releasing
     }
 
     init {
@@ -71,6 +78,7 @@ class ChatAdapter(
                 true // Return true to indicate the callback consumed the long click
             }
 
+
             // trying multiple ways to set long click listener (multiple items)
             // goal is to have popup menu when click everywhere on the message
             // first one for sure works (of course)
@@ -79,6 +87,25 @@ class ChatAdapter(
             binding.imageContainer.setOnLongClickListener(longClickListener)
             binding.scrollViewImages.setOnLongClickListener(longClickListener)
             binding.messageTextView.setOnLongClickListener(longClickListener)
+        }
+
+        // helper internal function - as it will be used in two different conditions below
+        // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
+        private fun playAudio(uri: Uri, message: String) {
+            audioPlayerManager.playAudio(uri, binding.seekBar, message,) {
+                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+            }
+
+            binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+            // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
+            if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                handler.post {
+                    notifyItemChanged(previousPlayingPosition)
+                }
+            }
+            currentPlayingPosition = adapterPosition
+            currentPlayingSeekBar = binding.seekBar
         }
 
         fun bind(chatItem: ChatItem) {
@@ -129,9 +156,68 @@ class ChatAdapter(
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
-                val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS, chatItem.message)
-                audioPlayerManagers.add(audioPlayerManager)
+
+                binding.playButton.setOnClickListener {
+                    println("PLAY BUTTON CLICKED")
+                    previousPlayingPosition = currentPlayingPosition
+                    var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+
+                    // this is bit complex but hey - it is what it is
+                    // we're checking if:
+                    // 1. audio is playing
+                    // 2. if we DON"T download files from remote URL - if the file current being played is the same file as in chat item
+                    // 3. if we DO download files from remote URL - if the file current being played is the same file as downloaded file from chat item
+                    // if any of this is true - it means that we want to pause currently playing audio
+                    if (audioPlayerManager.isPlaying()
+                        && ((!ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull())
+                                || (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == Uri.fromFile(utilityTools.getDownloadedFileUri(chatItem.fileNames.firstOrNull().toString()))))
+                    ) {
+                        audioPlayerManager.pauseAudio()
+                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                    } else {
+                        // here we check if we want to download audio files - and if the file is remote URL
+                        // then we try to download file (if it exists already we won't)
+                        if (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && fileToPlay.toString().startsWith("http")) {
+                            mainHandler.showProgressBar("Downloading audio")
+                            utilityTools.downloadFile(fileToPlay.toString()) { file ->
+                                mainHandler.executeOnUIThread {
+                                    mainHandler.hideProgressBar("Downloading audio")
+                                    if (file != null) {
+                                        fileToPlay = Uri.fromFile(file)
+                                        playAudio(fileToPlay!!, chatItem.message)
+                                    } else {
+                                        mainHandler.createToastMessage("Error downloading audio")
+                                    }
+                                }
+                            }
+                        } else {
+                            fileToPlay?.let {
+                                playAudio(it, chatItem.message)
+                            }
+                        }
+                    }
+                }
+
+                // below we handle icons and seekbar - making sure that we do it for proper chat item (as we have multiple chat items with individual audio files)
+                // Update play button icon based on current playing item
+                if (adapterPosition == currentPlayingPosition && audioPlayerManager.isPlaying()) {
+                    binding.playButton.setImageResource(R.drawable.ic_pause_24)
+                } else {
+                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                }
+                // Update seek bar if this is the current playing item
+                if (adapterPosition == currentPlayingPosition) {
+                    currentPlayingSeekBar = binding.seekBar
+                    audioPlayerManager.setSeekBar(binding.seekBar)
+                } else {
+                    binding.seekBar.progress = 0
+                }
+
+                if (chatItem.isTTS && chatItem.isAutoPlay) {
+                    chatItem.isAutoPlay = false // Reset the flag
+                    chatItem.fileNames.firstOrNull()?.let { playAudio(it, chatItem.message) }
+                }
+
                 // set transcribe button - but only for uploaded files (non tts)
                 // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
                 if (chatItem.isTTS || !chatItem.showTranscribeButton) {
@@ -335,7 +421,6 @@ class ChatAdapter(
     }
 
     fun sendTTSRequest(message: String, position: Int) {
-        println("Sending TTS request - EXECUTED")
         val chatItem = chatItems[position]
 
         // Check if the chatItem already has a TTS file
@@ -350,7 +435,6 @@ class ChatAdapter(
         // Split the message into chunks of 4096 characters or less (this is the limit of OpenAI)
         // TODO one day - handle chunks maybe - because here i just take first (because its super rare to be longer)
         val message4API = message.chunked(4096)[0]
-        println("Message for TTS: $message4API")
 
         utilityTools.sendTTSRequest(
             message4API,
@@ -373,6 +457,7 @@ class ChatAdapter(
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
+            chatItem.isAutoPlay = true
             notifyItemChanged(position)
             mainHandler.hideProgressBar("TTS")
 
@@ -440,7 +525,11 @@ class ChatAdapter(
     }
 
 
-
+    // used in chatHelper
+    fun resetChatAdapter() {
+        currentPlayingPosition = -1
+        currentPlayingSeekBar = null
+    }
 
     private fun Int.dpToPx(context: Context): Int {
         return (this * context.resources.displayMetrics.density).toInt()

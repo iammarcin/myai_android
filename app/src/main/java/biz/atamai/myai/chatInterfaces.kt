@@ -44,6 +44,7 @@ interface MainHandler {
     fun requestAllPermissions(permissions: Array<String>, requestCode: Int)
     fun getMainCharacterManager(): CharacterManager
     fun resizeImage(filePath: String, maxDimension: Int): File?
+    fun releaseMediaPlayer()
     //fun getMainLayoutInflater(): LayoutInflater
 }
 
