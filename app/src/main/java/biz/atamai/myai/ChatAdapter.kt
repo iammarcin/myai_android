@@ -7,6 +7,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -24,8 +26,6 @@ import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.os.Handler
-import android.os.Looper
 
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
@@ -89,25 +89,6 @@ class ChatAdapter(
             binding.messageTextView.setOnLongClickListener(longClickListener)
         }
 
-        // helper internal function - as it will be used in two different conditions below
-        // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
-        private fun playAudio(uri: Uri, message: String) {
-            audioPlayerManager.playAudio(uri, binding.seekBar, message,) {
-                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-            }
-
-            binding.playButton.setImageResource(R.drawable.ic_pause_24)
-
-            // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
-            if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                handler.post {
-                    notifyItemChanged(previousPlayingPosition)
-                }
-            }
-            currentPlayingPosition = adapterPosition
-            currentPlayingSeekBar = binding.seekBar
-        }
-
         fun bind(chatItem: ChatItem) {
             // Render message using Markwon
             markwon.setMarkdown(binding.messageTextView, chatItem.message)
@@ -161,6 +142,23 @@ class ChatAdapter(
                     println("PLAY BUTTON CLICKED")
                     previousPlayingPosition = currentPlayingPosition
                     var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+
+                    // helper internal function - as it will be used in two different conditions below
+                    // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
+                    val playAudio = { uri: Uri ->
+                        audioPlayerManager.playAudio(uri, binding.seekBar, chatItem.message,) {
+                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                        }
+
+                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+                        // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
+                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                            notifyItemChanged(previousPlayingPosition)
+                        }
+                        currentPlayingPosition = adapterPosition
+                        currentPlayingSeekBar = binding.seekBar
+                    }
 
                     // this is bit complex but hey - it is what it is
                     // we're checking if:
@@ -416,6 +414,25 @@ class ChatAdapter(
                 }
             }
             popupMenu.show()
+        }
+
+        // helper internal function - as it will be used in two different conditions below
+        // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
+        private fun playAudio(uri: Uri, message: String) {
+            audioPlayerManager.playAudio(uri, binding.seekBar, message,) {
+                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+            }
+
+            binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+            // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
+            if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                handler.post {
+                    notifyItemChanged(previousPlayingPosition)
+                }
+            }
+            currentPlayingPosition = adapterPosition
+            currentPlayingSeekBar = binding.seekBar
         }
 
     }
