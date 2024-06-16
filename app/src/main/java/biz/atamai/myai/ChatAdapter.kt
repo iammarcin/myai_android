@@ -528,7 +528,7 @@ class ChatAdapter(
         currentPlayingPosition = -1
         currentPlayingSeekBar = null
     }
-    
+
     private fun Int.dpToPx(context: Context): Int {
         return (this * context.resources.displayMetrics.density).toInt()
     }
