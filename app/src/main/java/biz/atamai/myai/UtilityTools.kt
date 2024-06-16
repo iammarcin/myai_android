@@ -2,12 +2,7 @@
 
 package biz.atamai.myai
 
-import android.content.Context
-import android.net.Uri
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
-import android.widget.Toast
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -32,15 +27,32 @@ class UtilityTools(
     //private var audioFile = File.createTempFile("audio", ".opus", context.cacheDir)
     //private var audioUri = Uri.fromFile(audioFile).toString()
 
+    // Helper function to get the downloaded file URI - used here in downloadFile, but also in chat adapter to get the location of downloaded file
+    fun getDownloadedFileUri(url: String): File {
+        val fileName = url.substring(url.lastIndexOf('/') + 1)
+        val file = File(mainHandler.context.cacheDir, fileName)
+        return file
+    }
+
+    // used for example when playing audio via audio player
     fun downloadFile(fileUrl: String, callback: (File?) -> Unit) {
         Thread {
             try {
                 val url = URL(fileUrl)
+
+                // Extract the file name from the URL
+                val file = getDownloadedFileUri(fileUrl)
+
+                // Check if the file already exists
+                if (file.exists()) {
+                    callback(file)
+                    return@Thread
+                }
+
                 val connection = url.openConnection()
                 connection.connect()
 
                 val inputStream: InputStream = url.openStream()
-                val file = File(mainHandler.context.cacheDir, "audio_${System.currentTimeMillis()}.opus")
                 val outputStream = FileOutputStream(file)
                 val buffer = ByteArray(1024)
                 var len: Int

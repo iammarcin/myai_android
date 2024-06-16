@@ -15,9 +15,9 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     private var isPlaying = false
     var currentUri: Uri? = null
     private var onCompletion: (() -> Unit)? = null
-    private var currentSeekBar: SeekBar? = null
 
     fun playAudio(audioUri: Uri, onCompletion: () -> Unit, seekBar: SeekBar, message: String) {
+        println("AudioPlayerManager: playAudio: $audioUri")
         if (currentUri != audioUri) {
             stopAudio()
             currentUri = audioUri
@@ -31,8 +31,13 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
         }
         mediaPlayer?.start()
         isPlaying = true
-        currentSeekBar = seekBar
-        seekBar.max = mediaPlayer?.duration ?: 0
+        // it's far from good ... but if i get file from S3 (for example TTS after restoring session or TTS no stream) - there is no way to get duration of audio file... so we're setting it based on text length
+        // we estimate duration based on the length of chatItemMessage
+        // we came up with 2.3 words per second (so just in case i take little bit less)
+        val estimatedDuration =
+            (message.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
+
+        seekBar.max = if (mediaPlayer?.duration!! > 0) mediaPlayer?.duration!! else estimatedDuration
         handler.post(object : Runnable {
             override fun run() {
                 seekBar.progress = mediaPlayer?.currentPosition ?: 0
@@ -52,8 +57,6 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
         isPlaying = false
         handler.removeCallbacksAndMessages(null)
         currentUri = null
-        currentSeekBar?.progress = 0
-        currentSeekBar = null
     }
 
     fun pauseAudio() {
@@ -86,6 +89,8 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     }
 
     fun createToastMessage(message: String, duration: Int = Toast.LENGTH_SHORT) {
-        mainHandler.createToastMessage(message)
+        mainHandler.executeOnUIThread {
+            mainHandler.createToastMessage(message)
+        }
     }
 }

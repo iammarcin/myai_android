@@ -40,8 +40,8 @@ class ChatAdapter(
 
     // to track which chat item is playing (to handle proper icon - play/pause changes)
     private var currentPlayingPosition: Int = -1
+    // and proper seekbar to be updated
     private var currentPlayingSeekBar: SeekBar? = null
-    private val downloadFile: Boolean = false
 
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
@@ -135,32 +135,60 @@ class ChatAdapter(
                 binding.playButton.setOnClickListener {
                     println("PLAY BUTTON CLICKED")
                     val previousPlayingPosition = currentPlayingPosition
-                    if (audioPlayerManager.isPlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull()) {
+
+                    // this is bit complex but hey - it is what it is
+                    // we're checking if:
+                    // 1. audio is playing
+                    // 2. if we DON"T download files from remote URL - if the file current being played is the same file as in chat item
+                    // 3. if we DO download files from remote URL - if the file current being played is the same file as downloaded file from chat item
+                    // if any of this is true - it means that we want to pause currently playing audio
+                    if (audioPlayerManager.isPlaying()
+                        && ((!ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull())
+                                || (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == Uri.fromFile(utilityTools.getDownloadedFileUri(chatItem.fileNames.firstOrNull().toString()))))
+                    ) {
                         audioPlayerManager.pauseAudio()
                         binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     } else {
-                        utilityTools.downloadFile(chatItem.fileNames.firstOrNull().toString()) { file ->
-                            if (file == null) {
+                        var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+                        if (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && fileToPlay.toString().startsWith("http")) {
+                            mainHandler.showProgressBar("Downloading audio")
+                            utilityTools.downloadFile(fileToPlay.toString()) { file ->
                                 mainHandler.executeOnUIThread {
-                                    mainHandler.createToastMessage("Error downloading audio file")
+                                    mainHandler.hideProgressBar("Downloading audio")
+                                    if (file != null) {
+                                        fileToPlay = Uri.fromFile(file)
+
+                                        audioPlayerManager.playAudio(fileToPlay!!, {
+                                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                                        }, binding.seekBar, chatItem.message)
+
+                                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+                                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                                            notifyItemChanged(previousPlayingPosition)
+                                        }
+                                        currentPlayingPosition = adapterPosition
+                                    } else {
+                                        mainHandler.createToastMessage("Error downloading audio")
+                                    }
                                 }
-                                return@downloadFile
                             }
-                            val fileToBePlayed = if (downloadFile) Uri.fromFile(file) else chatItem.fileNames.firstOrNull()
-                            if (fileToBePlayed != null) {
-                                audioPlayerManager.playAudio(
-                                    fileToBePlayed, {
-                                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                                    }, binding.seekBar, chatItem.message
-                                )
+                        } else {
+                            // Update the previously playing item's UI
+                            fileToPlay?.let { it1 ->
+                                audioPlayerManager.playAudio(it1, {
+                                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                                }, binding.seekBar, chatItem.message)
                             }
+
                             binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
-                            // Update the previously playing item's UI
                             if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
                                 notifyItemChanged(previousPlayingPosition)
                             }
                             currentPlayingPosition = adapterPosition
+
+                            currentPlayingSeekBar = binding.seekBar
                         }
                     }
                 }
@@ -174,60 +202,11 @@ class ChatAdapter(
 
                 // Update seek bar if this is the current playing item
                 if (adapterPosition == currentPlayingPosition) {
+                    currentPlayingSeekBar = binding.seekBar
                     audioPlayerManager.setSeekBar(binding.seekBar)
                 } else {
                     binding.seekBar.progress = 0
                 }
-
-
-
-                /*binding.playButton.setOnClickListener {
-                    println("PLAY BUTTON CLICKED")
-                    if (audioPlayerManager.isPlaying()) {
-                        audioPlayerManager.pauseAudio()
-                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-
-                    } else {
-                        audioPlayerManager.playAudio(chatItem.fileNames.firstOrNull() ?: Uri.EMPTY)
-                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
-
-                    }
-                } */
-                    /*println("PLAY BUTTON CLICKED")
-                    binding.playButton.setOnClickListener {
-                        println("PLAY BUTTON CLICKED")
-                        audioPlayerManager.setupMediaPlayer(
-                            chatItem.fileNames.firstOrNull(),
-                            { duration, isPlaying ->
-                                println("Updating UI: duration=$duration, isPlaying=$isPlaying")
-                                binding.seekBar.max = duration
-                                binding.seekBar.progress = audioPlayerManager.getCurrentPosition()
-                                binding.playButton.setImageResource(if (isPlaying) R.drawable.ic_pause_24 else R.drawable.ic_play_arrow_24)
-                            },
-                            autoPlay = true
-                        )
-                    }
-                    audioPlayerManager.playOrPause() */
-
-
-
-
-
-                    /*
-                    audioPlayerManager.setupMediaPlayer(chatItem.fileNames.firstOrNull()) { duration, isPlaying ->
-                        //println("Duration: $duration, isPlaying: $isPlaying")
-                        // it's far from good ... but if i get file from S3 (for example TTS after restoring session or TTS no stream) - there is no way to get duration of audio file... so we're setting it based on text length
-                        // Estimate duration based on the length of chatItemMessage
-                        // we came up with 2.3 words per second (so just in case i take little bit less)
-                        val estimatedDuration =
-                            (chatItem.message.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
-                        //println("Estimated duration in seconds: ${estimatedDuration / 1000}")
-                        binding.seekBar.max = if (duration > 0) duration else estimatedDuration
-                        binding.seekBar.progress = audioPlayerManager.getCurrentPosition()
-                        binding.playButton.setImageResource(if (isPlaying) R.drawable.ic_pause_24 else R.drawable.ic_play_arrow_24)
-                    }
-                    audioPlayerManager.playOrPause()
-                    */
 
                 //val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
                 /*if (!audioPlayerManager.isPlaying()) {
@@ -237,7 +216,7 @@ class ChatAdapter(
                         chatItem.message
                     )
                 }*/
-                //audioPlayerManagers.add(audioPlayerManager)
+
                 // set transcribe button - but only for uploaded files (non tts)
                 // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
                 if (chatItem.isTTS || !chatItem.showTranscribeButton) {
