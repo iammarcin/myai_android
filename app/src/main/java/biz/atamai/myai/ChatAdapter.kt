@@ -40,6 +40,7 @@ class ChatAdapter(
 
     // to track which chat item is playing (to handle proper icon - play/pause changes)
     private var currentPlayingPosition: Int = -1
+    private var currentPlayingSeekBar: SeekBar? = null
 
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
@@ -137,9 +138,9 @@ class ChatAdapter(
                         audioPlayerManager.pauseAudio()
                         binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     } else {
-                        audioPlayerManager.playAudio(chatItem.fileNames.firstOrNull() ?: Uri.EMPTY) {
+                        audioPlayerManager.playAudio(chatItem.fileNames.firstOrNull() ?: Uri.EMPTY, {
                             binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                        }
+                        }, binding.seekBar, chatItem.message)
                         binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
                         // Update the previously playing item's UI
@@ -147,6 +148,7 @@ class ChatAdapter(
                             notifyItemChanged(previousPlayingPosition)
                         }
                         currentPlayingPosition = adapterPosition
+                        currentPlayingSeekBar = binding.seekBar
                     }
                 }
 
@@ -156,6 +158,16 @@ class ChatAdapter(
                 } else {
                     binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 }
+
+                // Update seek bar if this is the current playing item
+                if (adapterPosition == currentPlayingPosition) {
+                    currentPlayingSeekBar = binding.seekBar
+                    audioPlayerManager.setSeekBar(binding.seekBar)
+                } else {
+                    binding.seekBar.progress = 0
+                }
+
+
 
                 /*binding.playButton.setOnClickListener {
                     println("PLAY BUTTON CLICKED")
