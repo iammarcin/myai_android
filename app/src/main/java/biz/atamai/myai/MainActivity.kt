@@ -461,7 +461,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
                     runOnUiThread {
                         hideProgressBar("Text generation")
                         if (ConfigurationManager.getTTSAutoExecute()) {
-                            showProgressBar("TTS")
                             chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
                         }
 

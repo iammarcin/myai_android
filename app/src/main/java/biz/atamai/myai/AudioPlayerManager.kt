@@ -17,7 +17,6 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     private var onCompletion: (() -> Unit)? = null
 
     fun playAudio(audioUri: Uri, seekBar: SeekBar, message: String, onCompletion: () -> Unit) {
-        println("AudioPlayerManager: playAudio: $audioUri")
         if (currentUri != audioUri) {
             stopAudio()
             currentUri = audioUri

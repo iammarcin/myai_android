@@ -108,20 +108,7 @@ class ChatAdapter(
             currentPlayingSeekBar = binding.seekBar
         }
 
-        private fun playTTSAudio(audioUri: Uri?) {
-            audioUri?.let {
-                audioPlayerManager.playAudio(it, binding.seekBar, "Generated Audio") {
-                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                }
-                binding.playButton.setImageResource(R.drawable.ic_pause_24)
-                currentPlayingPosition = adapterPosition
-                currentPlayingSeekBar = binding.seekBar
-            }
-        }
-
         fun bind(chatItem: ChatItem) {
-            println("EXECUTED BIND")
-
             // Render message using Markwon
             markwon.setMarkdown(binding.messageTextView, chatItem.message)
 
@@ -434,7 +421,6 @@ class ChatAdapter(
     }
 
     fun sendTTSRequest(message: String, position: Int) {
-        println("Sending TTS request - EXECUTED")
         val chatItem = chatItems[position]
 
         // Check if the chatItem already has a TTS file
@@ -449,7 +435,6 @@ class ChatAdapter(
         // Split the message into chunks of 4096 characters or less (this is the limit of OpenAI)
         // TODO one day - handle chunks maybe - because here i just take first (because its super rare to be longer)
         val message4API = message.chunked(4096)[0]
-        println("Message for TTS: $message4API")
 
         utilityTools.sendTTSRequest(
             message4API,
