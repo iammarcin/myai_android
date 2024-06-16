@@ -150,6 +150,8 @@ class ChatAdapter(
                         binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     } else {
                         var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+                        // here we check if we want to download audio files - and if the file is remote URL
+                        // then we try to download file (if it exists already we won't)
                         if (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && fileToPlay.toString().startsWith("http")) {
                             mainHandler.showProgressBar("Downloading audio")
                             utilityTools.downloadFile(fileToPlay.toString()) { file ->
@@ -164,6 +166,7 @@ class ChatAdapter(
 
                                         binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
+                                        // Update the previously playing item's UI (for example change icon)
                                         if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
                                             notifyItemChanged(previousPlayingPosition)
                                         }
@@ -174,6 +177,7 @@ class ChatAdapter(
                                 }
                             }
                         } else {
+                            // if we don't download files - we just play it
                             // Update the previously playing item's UI
                             fileToPlay?.let { it1 ->
                                 audioPlayerManager.playAudio(it1, {
@@ -183,6 +187,7 @@ class ChatAdapter(
 
                             binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
+                            // Update the previously playing item's UI (for example change icon)
                             if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
                                 notifyItemChanged(previousPlayingPosition)
                             }
@@ -193,13 +198,13 @@ class ChatAdapter(
                     }
                 }
 
+                // below we handle icons and seekbar - making sure that we do it for proper chat item (as we have multiple chat items with individual audio files)
                 // Update play button icon based on current playing item
                 if (adapterPosition == currentPlayingPosition && audioPlayerManager.isPlaying()) {
                     binding.playButton.setImageResource(R.drawable.ic_pause_24)
                 } else {
                     binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                 }
-
                 // Update seek bar if this is the current playing item
                 if (adapterPosition == currentPlayingPosition) {
                     currentPlayingSeekBar = binding.seekBar

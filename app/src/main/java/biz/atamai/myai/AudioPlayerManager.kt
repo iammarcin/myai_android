@@ -50,7 +50,7 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
         setSeekBar(seekBar)
     }
 
-    fun stopAudio() {
+    private fun stopAudio() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
