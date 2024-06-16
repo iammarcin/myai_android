@@ -236,6 +236,9 @@ class TopMenuHandler(
                 ConfigurationManager.setAppModeUseWatson(isChecked)
                 ConfigurationManager.setURLForAPICalls()
             })
+            addView(createSwitchRow("Download audio files before playing", ConfigurationManager.getDownloadAudioFilesBeforePlaying()) { isChecked ->
+                ConfigurationManager.setDownloadAudioFilesBeforePlaying(isChecked)
+            })
             // token for connecting to backend API
             addView(createTextEditRow("API auth Token", ConfigurationManager.getAuthTokenForBackend(), isPassword = true) { value ->
                 ConfigurationManager.setAuthTokenForBackend(value)
