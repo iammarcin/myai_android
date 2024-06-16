@@ -128,6 +128,7 @@ class ChatHelper(
         val size = chatItems.size
         chatItems.clear()
         chatAdapter.notifyItemRangeRemoved(0, size)
+        chatAdapter.resetChatAdapter()
         resetInputArea()
         mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.VISIBLE
         mainHandler.releaseMediaPlayer()

@@ -47,6 +47,11 @@ class ChatAdapter(
         this.chatHelperHandler = chatHelperHandler
     }
 
+    fun resetChatAdapter() {
+        currentPlayingPosition = -1
+        currentPlayingSeekBar = null
+    }
+
     init {
         utilityTools = UtilityTools(
             mainHandler = mainHandler
