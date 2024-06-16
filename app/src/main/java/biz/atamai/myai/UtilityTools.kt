@@ -18,14 +18,10 @@ import java.net.URL
 class UtilityTools(
     private val mainHandler: MainHandler,
 ) {
-
     private val storageDir = mainHandler.getMainBindingContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC)
     private val customerId = 1
 
-    private var audioFile = File(storageDir, "streamed_audio.$customerId.opus")
-
-    //private var audioFile = File.createTempFile("audio", ".opus", context.cacheDir)
-    //private var audioUri = Uri.fromFile(audioFile).toString()
+    private var audioFile = File(storageDir, "streamed_audio.${customerId}.opus")
 
     // Helper function to get the downloaded file URI - used here in downloadFile, but also in chat adapter to get the location of downloaded file
     fun getDownloadedFileUri(url: String): File {

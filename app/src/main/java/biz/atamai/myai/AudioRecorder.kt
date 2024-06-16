@@ -109,7 +109,8 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         if (permissionsUtil.checkPermissions()) {
             mainHandler.setRecordButtonImageResource(R.drawable.ic_stop_24)
             val timestamp = System.currentTimeMillis()
-            audioFilePath = "${mainHandler.getMainBindingContext().externalCacheDir?.absolutePath}/audiorecord_${timestamp}.mp3"
+            val customerId = 1
+            audioFilePath = "${mainHandler.getMainBindingContext().externalCacheDir?.absolutePath}/audiorecord_${customerId}_${timestamp}.mp3"
 
             if (useBluetoothIfConnected && isBluetoothHeadsetConnected()) {
                 startBluetoothScoAndRecord()
