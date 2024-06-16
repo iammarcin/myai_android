@@ -47,6 +47,8 @@ class ChatAdapter(
     private var currentPlayingPosition: Int = -1
     // and proper seekbar to be updated
     private var currentPlayingSeekBar: SeekBar? = null
+    // and to track previous playing item (to reset it when new item is played)
+    private var previousPlayingPosition: Int = -1
 
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
@@ -85,6 +87,36 @@ class ChatAdapter(
             binding.imageContainer.setOnLongClickListener(longClickListener)
             binding.scrollViewImages.setOnLongClickListener(longClickListener)
             binding.messageTextView.setOnLongClickListener(longClickListener)
+        }
+
+        // helper internal function - as it will be used in two different conditions below
+        // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
+        private fun playAudio(uri: Uri, message: String) {
+            audioPlayerManager.playAudio(uri, binding.seekBar, message,) {
+                binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+            }
+
+            binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+            // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
+            if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                handler.post {
+                    notifyItemChanged(previousPlayingPosition)
+                }
+            }
+            currentPlayingPosition = adapterPosition
+            currentPlayingSeekBar = binding.seekBar
+        }
+
+        private fun playTTSAudio(audioUri: Uri?) {
+            audioUri?.let {
+                audioPlayerManager.playAudio(it, binding.seekBar, "Generated Audio") {
+                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                }
+                binding.playButton.setImageResource(R.drawable.ic_pause_24)
+                currentPlayingPosition = adapterPosition
+                currentPlayingSeekBar = binding.seekBar
+            }
         }
 
         fun bind(chatItem: ChatItem) {
@@ -140,27 +172,8 @@ class ChatAdapter(
 
                 binding.playButton.setOnClickListener {
                     println("PLAY BUTTON CLICKED")
-                    val previousPlayingPosition = currentPlayingPosition
+                    previousPlayingPosition = currentPlayingPosition
                     var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
-
-                    // helper internal function - as it will be used in two different conditions below
-                    // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
-                    val playAudio = { uri: Uri ->
-                        audioPlayerManager.playAudio(uri, binding.seekBar, chatItem.message,) {
-                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                        }
-
-                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
-
-                        // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
-                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                            handler.post {
-                                notifyItemChanged(previousPlayingPosition)
-                            }
-                        }
-                        currentPlayingPosition = adapterPosition
-                        currentPlayingSeekBar = binding.seekBar
-                    }
 
                     // this is bit complex but hey - it is what it is
                     // we're checking if:
@@ -184,7 +197,7 @@ class ChatAdapter(
                                     mainHandler.hideProgressBar("Downloading audio")
                                     if (file != null) {
                                         fileToPlay = Uri.fromFile(file)
-                                        playAudio(fileToPlay!!)
+                                        playAudio(fileToPlay!!, chatItem.message)
                                     } else {
                                         mainHandler.createToastMessage("Error downloading audio")
                                     }
@@ -192,7 +205,7 @@ class ChatAdapter(
                             }
                         } else {
                             fileToPlay?.let {
-                                playAudio(it)
+                                playAudio(it, chatItem.message)
                             }
                         }
                     }
@@ -212,7 +225,12 @@ class ChatAdapter(
                 } else {
                     binding.seekBar.progress = 0
                 }
-                
+
+                if (chatItem.isTTS && chatItem.isAutoPlay) {
+                    chatItem.isAutoPlay = false // Reset the flag
+                    chatItem.fileNames.firstOrNull()?.let { playAudio(it, chatItem.message) }
+                }
+
                 // set transcribe button - but only for uploaded files (non tts)
                 // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
                 if (chatItem.isTTS || !chatItem.showTranscribeButton) {
@@ -454,6 +472,7 @@ class ChatAdapter(
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
+            chatItem.isAutoPlay = true
             notifyItemChanged(position)
             mainHandler.hideProgressBar("TTS")
 
