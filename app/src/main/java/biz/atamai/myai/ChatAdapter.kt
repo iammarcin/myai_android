@@ -141,9 +141,9 @@ class ChatAdapter(
                     // helper internal function - as it will be used in two different conditions below
                     // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
                     val playAudio = { uri: Uri ->
-                        audioPlayerManager.playAudio(uri, {
+                        audioPlayerManager.playAudio(uri, binding.seekBar, chatItem.message,) {
                             binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                        }, binding.seekBar, chatItem.message)
+                        }
 
                         binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
