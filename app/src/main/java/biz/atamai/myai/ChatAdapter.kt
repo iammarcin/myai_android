@@ -47,11 +47,6 @@ class ChatAdapter(
         this.chatHelperHandler = chatHelperHandler
     }
 
-    fun resetChatAdapter() {
-        currentPlayingPosition = -1
-        currentPlayingSeekBar = null
-    }
-
     init {
         utilityTools = UtilityTools(
             mainHandler = mainHandler
@@ -528,8 +523,12 @@ class ChatAdapter(
     }
 
 
-
-
+    // used in chatHelper
+    fun resetChatAdapter() {
+        currentPlayingPosition = -1
+        currentPlayingSeekBar = null
+    }
+    
     private fun Int.dpToPx(context: Context): Int {
         return (this * context.resources.displayMetrics.density).toInt()
     }
