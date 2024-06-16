@@ -8,13 +8,14 @@ import android.os.Looper
 import android.widget.SeekBar
 import android.widget.Toast
 
-class AudioPlayerManager(private val context: Context) {
+class AudioPlayerManager(private val mainHandler: MainHandler) {
 
     var mediaPlayer: MediaPlayer? = null
     private var handler: Handler = Handler(Looper.getMainLooper())
     private var isPlaying = false
     var currentUri: Uri? = null
     private var onCompletion: (() -> Unit)? = null
+    private var currentSeekBar: SeekBar? = null
 
     fun playAudio(audioUri: Uri, onCompletion: () -> Unit, seekBar: SeekBar, message: String) {
         if (currentUri != audioUri) {
@@ -22,7 +23,7 @@ class AudioPlayerManager(private val context: Context) {
             currentUri = audioUri
         }
         if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(context, audioUri)
+            mediaPlayer = MediaPlayer.create(mainHandler.context, audioUri)
             mediaPlayer?.setOnCompletionListener {
                 stopAudio()
                 onCompletion()
@@ -30,11 +31,8 @@ class AudioPlayerManager(private val context: Context) {
         }
         mediaPlayer?.start()
         isPlaying = true
-        val estimatedDuration =
-            (message.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
-        //println("Estimated duration in seconds: ${estimatedDuration / 1000}")
-
-        seekBar.max = estimatedDuration
+        currentSeekBar = seekBar
+        seekBar.max = mediaPlayer?.duration ?: 0
         handler.post(object : Runnable {
             override fun run() {
                 seekBar.progress = mediaPlayer?.currentPosition ?: 0
@@ -54,6 +52,8 @@ class AudioPlayerManager(private val context: Context) {
         isPlaying = false
         handler.removeCallbacksAndMessages(null)
         currentUri = null
+        currentSeekBar?.progress = 0
+        currentSeekBar = null
     }
 
     fun pauseAudio() {
@@ -86,6 +86,6 @@ class AudioPlayerManager(private val context: Context) {
     }
 
     fun createToastMessage(message: String, duration: Int = Toast.LENGTH_SHORT) {
-        Toast.makeText(context, message, duration).show()
+        mainHandler.createToastMessage(message)
     }
 }

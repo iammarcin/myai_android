@@ -13,6 +13,8 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
+import java.net.URL
 
 // LIMITATIONS / BUGS
 // no really streaming (see comments in sendTTSRequest)
@@ -29,6 +31,34 @@ class UtilityTools(
 
     //private var audioFile = File.createTempFile("audio", ".opus", context.cacheDir)
     //private var audioUri = Uri.fromFile(audioFile).toString()
+
+    fun downloadFile(fileUrl: String, callback: (File?) -> Unit) {
+        Thread {
+            try {
+                val url = URL(fileUrl)
+                val connection = url.openConnection()
+                connection.connect()
+
+                val inputStream: InputStream = url.openStream()
+                val file = File(mainHandler.context.cacheDir, "audio_${System.currentTimeMillis()}.opus")
+                val outputStream = FileOutputStream(file)
+                val buffer = ByteArray(1024)
+                var len: Int
+
+                while (inputStream.read(buffer).also { len = it } != -1) {
+                    outputStream.write(buffer, 0, len)
+                }
+
+                outputStream.close()
+                inputStream.close()
+
+                callback(file)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                callback(null)
+            }
+        }.start()
+    }
 
     // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
     fun uploadFileToServer(

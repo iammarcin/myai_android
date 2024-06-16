@@ -41,6 +41,7 @@ class ChatAdapter(
     // to track which chat item is playing (to handle proper icon - play/pause changes)
     private var currentPlayingPosition: Int = -1
     private var currentPlayingSeekBar: SeekBar? = null
+    private val downloadFile: Boolean = false
 
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
@@ -138,17 +139,29 @@ class ChatAdapter(
                         audioPlayerManager.pauseAudio()
                         binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     } else {
-                        audioPlayerManager.playAudio(chatItem.fileNames.firstOrNull() ?: Uri.EMPTY, {
-                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                        }, binding.seekBar, chatItem.message)
-                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+                        utilityTools.downloadFile(chatItem.fileNames.firstOrNull().toString()) { file ->
+                            if (file == null) {
+                                mainHandler.executeOnUIThread {
+                                    mainHandler.createToastMessage("Error downloading audio file")
+                                }
+                                return@downloadFile
+                            }
+                            val fileToBePlayed = if (downloadFile) Uri.fromFile(file) else chatItem.fileNames.firstOrNull()
+                            if (fileToBePlayed != null) {
+                                audioPlayerManager.playAudio(
+                                    fileToBePlayed, {
+                                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                                    }, binding.seekBar, chatItem.message
+                                )
+                            }
+                            binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
-                        // Update the previously playing item's UI
-                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                            notifyItemChanged(previousPlayingPosition)
+                            // Update the previously playing item's UI
+                            if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                                notifyItemChanged(previousPlayingPosition)
+                            }
+                            currentPlayingPosition = adapterPosition
                         }
-                        currentPlayingPosition = adapterPosition
-                        currentPlayingSeekBar = binding.seekBar
                     }
                 }
 
@@ -161,7 +174,6 @@ class ChatAdapter(
 
                 // Update seek bar if this is the current playing item
                 if (adapterPosition == currentPlayingPosition) {
-                    currentPlayingSeekBar = binding.seekBar
                     audioPlayerManager.setSeekBar(binding.seekBar)
                 } else {
                     binding.seekBar.progress = 0
