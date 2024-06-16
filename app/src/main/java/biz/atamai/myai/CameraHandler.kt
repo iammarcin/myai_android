@@ -31,7 +31,7 @@ class CameraHandler(private val mainHandler: MainHandler, private val registry: 
     }
 
     private fun createImageFile(): File {
-        val storageDir: File = mainHandler.activity.getExternalFilesDir("Images") ?: throw IllegalStateException("External Storage is unavailable")
+        val storageDir: File = mainHandler.activity.getExternalFilesDir("Files") ?: throw IllegalStateException("External Storage is unavailable")
         return File.createTempFile("JPEG_${System.currentTimeMillis()}_", ".jpg", storageDir)
     }
 

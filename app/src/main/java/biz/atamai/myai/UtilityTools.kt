@@ -18,7 +18,7 @@ import java.net.URL
 class UtilityTools(
     private val mainHandler: MainHandler,
 ) {
-    private val storageDir = mainHandler.getMainBindingContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+    private val storageDir = mainHandler.getMainBindingContext().getExternalFilesDir("Files")
     private val customerId = 1
 
     private var audioFile = File(storageDir, "streamed_audio.${customerId}.opus")

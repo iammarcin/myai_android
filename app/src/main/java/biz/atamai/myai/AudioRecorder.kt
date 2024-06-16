@@ -18,12 +18,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.OpenableColumns
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.File
 import java.io.IOException
 
 class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConnected: Boolean, var apiUrl: String) {
@@ -110,7 +112,11 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
             mainHandler.setRecordButtonImageResource(R.drawable.ic_stop_24)
             val timestamp = System.currentTimeMillis()
             val customerId = 1
-            audioFilePath = "${mainHandler.getMainBindingContext().externalCacheDir?.absolutePath}/audiorecord_${customerId}_${timestamp}.mp3"
+            //audioFilePath = "${mainHandler.getMainBindingContext().externalCacheDir?.absolutePath}/audiorecord_${customerId}_${timestamp}.mp3"
+            audioFilePath = "${mainHandler.activity.getExternalFilesDir("Files")?.absolutePath}/audiorecord_${customerId}_${timestamp}.mp3"
+            //val displayName: String = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+            //val inputStream = mainHandler.context.contentResolver.openInputStream(uri)
+            //val file = File(mainHandler.activity.getExternalFilesDir("Files"), displayName)
 
             if (useBluetoothIfConnected && isBluetoothHeadsetConnected()) {
                 startBluetoothScoAndRecord()
