@@ -132,9 +132,28 @@ class ChatAdapter(
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
+
                 binding.playButton.setOnClickListener {
                     println("PLAY BUTTON CLICKED")
                     val previousPlayingPosition = currentPlayingPosition
+                    var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+
+                    // helper internal function - as it will be used in two different conditions below
+                    // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
+                    val playAudio = { uri: Uri ->
+                        audioPlayerManager.playAudio(uri, {
+                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                        }, binding.seekBar, chatItem.message)
+
+                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+                        // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
+                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                            notifyItemChanged(previousPlayingPosition)
+                        }
+                        currentPlayingPosition = adapterPosition
+                        currentPlayingSeekBar = binding.seekBar
+                    }
 
                     // this is bit complex but hey - it is what it is
                     // we're checking if:
@@ -149,7 +168,6 @@ class ChatAdapter(
                         audioPlayerManager.pauseAudio()
                         binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
                     } else {
-                        var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
                         // here we check if we want to download audio files - and if the file is remote URL
                         // then we try to download file (if it exists already we won't)
                         if (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && fileToPlay.toString().startsWith("http")) {
@@ -159,41 +177,16 @@ class ChatAdapter(
                                     mainHandler.hideProgressBar("Downloading audio")
                                     if (file != null) {
                                         fileToPlay = Uri.fromFile(file)
-
-                                        audioPlayerManager.playAudio(fileToPlay!!, {
-                                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                                        }, binding.seekBar, chatItem.message)
-
-                                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
-
-                                        // Update the previously playing item's UI (for example change icon)
-                                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                                            notifyItemChanged(previousPlayingPosition)
-                                        }
-                                        currentPlayingPosition = adapterPosition
+                                        playAudio(fileToPlay!!)
                                     } else {
                                         mainHandler.createToastMessage("Error downloading audio")
                                     }
                                 }
                             }
                         } else {
-                            // if we don't download files - we just play it
-                            // Update the previously playing item's UI
-                            fileToPlay?.let { it1 ->
-                                audioPlayerManager.playAudio(it1, {
-                                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                                }, binding.seekBar, chatItem.message)
+                            fileToPlay?.let {
+                                playAudio(it)
                             }
-
-                            binding.playButton.setImageResource(R.drawable.ic_pause_24)
-
-                            // Update the previously playing item's UI (for example change icon)
-                            if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                                notifyItemChanged(previousPlayingPosition)
-                            }
-                            currentPlayingPosition = adapterPosition
-
-                            currentPlayingSeekBar = binding.seekBar
                         }
                     }
                 }
