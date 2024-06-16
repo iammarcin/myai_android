@@ -71,7 +71,7 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    fun showGPSAccuracyDialog() {
+    fun showGPSAccuracyDialog(attachedImageLocations: List<String>, attachedFiles: List<Uri>) {
         val bindingGPSDialog = DialogGpsAccuracyBinding.inflate(mainHandler.mainLayoutInflaterInstance)
 
         val accuracyText = bindingGPSDialog.accuracyText
@@ -94,7 +94,7 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
             currentLocation?.let {
                 val uri = Uri.parse("${it.latitude},${it.longitude}")
                 val message = "GPS location: $uri"
-                mainHandler.handleTextMessage(message, emptyList(), emptyList(), true)
+                mainHandler.handleTextMessage(message, attachedImageLocations, attachedFiles, true)
             }
             alertDialog.dismiss()
             stopAccuracyUpdates()
