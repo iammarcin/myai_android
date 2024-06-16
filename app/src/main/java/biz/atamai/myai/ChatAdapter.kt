@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
+import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
@@ -29,22 +30,19 @@ class ChatAdapter(
     private val apiUrl: String,
     private val characterManager: CharacterManager,
     private val mainHandler: MainHandler,
+    private val audioPlayerManager: AudioPlayerManager,
     private val onEditMessage: (position: Int, message: String) -> Unit,
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
-    private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
+    //private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
     private var chatHelperHandler: ChatHelperHandler? = null
 
+    // to track which chat item is playing (to handle proper icon - play/pause changes)
+    private var currentPlayingPosition: Int = -1
+
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
-    }
-
-    fun releaseMediaPlayers() {
-        for (audioPlayerManager in audioPlayerManagers) {
-            audioPlayerManager.releaseMediaPlayer()
-        }
-        audioPlayerManagers.clear() // Clear the list after releasing
     }
 
     init {
@@ -71,6 +69,7 @@ class ChatAdapter(
                 true // Return true to indicate the callback consumed the long click
             }
 
+
             // trying multiple ways to set long click listener (multiple items)
             // goal is to have popup menu when click everywhere on the message
             // first one for sure works (of course)
@@ -82,6 +81,8 @@ class ChatAdapter(
         }
 
         fun bind(chatItem: ChatItem) {
+            println("EXECUTED BIND")
+
             // Render message using Markwon
             markwon.setMarkdown(binding.messageTextView, chatItem.message)
 
@@ -129,9 +130,90 @@ class ChatAdapter(
                 // here we assume this is audio file - as we did not implement anything else
                 // if its audio - there will be only single filename in the list
                 // and we can process it - either play audio or transcribe
-                val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
-                audioPlayerManager.setupMediaPlayer(chatItem.fileNames[0], chatItem.isTTS, chatItem.message)
-                audioPlayerManagers.add(audioPlayerManager)
+                binding.playButton.setOnClickListener {
+                    println("PLAY BUTTON CLICKED")
+                    val previousPlayingPosition = currentPlayingPosition
+                    if (audioPlayerManager.isPlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull()) {
+                        audioPlayerManager.pauseAudio()
+                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                    } else {
+                        audioPlayerManager.playAudio(chatItem.fileNames.firstOrNull() ?: Uri.EMPTY) {
+                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                        }
+                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+                        // Update the previously playing item's UI
+                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
+                            notifyItemChanged(previousPlayingPosition)
+                        }
+                        currentPlayingPosition = adapterPosition
+                    }
+                }
+
+                // Update play button icon based on current playing item
+                if (adapterPosition == currentPlayingPosition && audioPlayerManager.isPlaying()) {
+                    binding.playButton.setImageResource(R.drawable.ic_pause_24)
+                } else {
+                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                }
+
+                /*binding.playButton.setOnClickListener {
+                    println("PLAY BUTTON CLICKED")
+                    if (audioPlayerManager.isPlaying()) {
+                        audioPlayerManager.pauseAudio()
+                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+
+                    } else {
+                        audioPlayerManager.playAudio(chatItem.fileNames.firstOrNull() ?: Uri.EMPTY)
+                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+
+                    }
+                } */
+                    /*println("PLAY BUTTON CLICKED")
+                    binding.playButton.setOnClickListener {
+                        println("PLAY BUTTON CLICKED")
+                        audioPlayerManager.setupMediaPlayer(
+                            chatItem.fileNames.firstOrNull(),
+                            { duration, isPlaying ->
+                                println("Updating UI: duration=$duration, isPlaying=$isPlaying")
+                                binding.seekBar.max = duration
+                                binding.seekBar.progress = audioPlayerManager.getCurrentPosition()
+                                binding.playButton.setImageResource(if (isPlaying) R.drawable.ic_pause_24 else R.drawable.ic_play_arrow_24)
+                            },
+                            autoPlay = true
+                        )
+                    }
+                    audioPlayerManager.playOrPause() */
+
+
+
+
+
+                    /*
+                    audioPlayerManager.setupMediaPlayer(chatItem.fileNames.firstOrNull()) { duration, isPlaying ->
+                        //println("Duration: $duration, isPlaying: $isPlaying")
+                        // it's far from good ... but if i get file from S3 (for example TTS after restoring session or TTS no stream) - there is no way to get duration of audio file... so we're setting it based on text length
+                        // Estimate duration based on the length of chatItemMessage
+                        // we came up with 2.3 words per second (so just in case i take little bit less)
+                        val estimatedDuration =
+                            (chatItem.message.split("\\s+".toRegex()).size / 2 * 1000).toInt() // duration in milliseconds
+                        //println("Estimated duration in seconds: ${estimatedDuration / 1000}")
+                        binding.seekBar.max = if (duration > 0) duration else estimatedDuration
+                        binding.seekBar.progress = audioPlayerManager.getCurrentPosition()
+                        binding.playButton.setImageResource(if (isPlaying) R.drawable.ic_pause_24 else R.drawable.ic_play_arrow_24)
+                    }
+                    audioPlayerManager.playOrPause()
+                    */
+
+                //val audioPlayerManager = AudioPlayerManager(binding.root.context, binding)
+                /*if (!audioPlayerManager.isPlaying()) {
+                    audioPlayerManager.setupMediaPlayer(
+                        chatItem.fileNames[0],
+                        chatItem.isTTS,
+                        chatItem.message
+                    )
+                }*/
+                //audioPlayerManagers.add(audioPlayerManager)
                 // set transcribe button - but only for uploaded files (non tts)
                 // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
                 if (chatItem.isTTS || !chatItem.showTranscribeButton) {
