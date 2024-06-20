@@ -74,8 +74,8 @@ class CharacterManager(private val context: Context) {
     }
 
     // return whole character (used in chatHelper)
-    fun getCharacterByName(characterName: String): Character? {
-        return characters.find { it.name == characterName }
+    fun getCharacterByNameForAPI(characterName: String): Character? {
+        return characters.find { it.nameForAPI == characterName }
     }
 
     private fun displayCharacterCards(binding: ActivityMainBinding, characters: List<Character>, onCharacterSelected: (String) -> Unit) {

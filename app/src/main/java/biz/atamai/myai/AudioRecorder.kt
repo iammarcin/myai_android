@@ -222,6 +222,8 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
                 mainHandler.executeOnUIThread {
                     mainHandler.createToastMessage("Error: ${error.message}")
                     mainHandler.hideProgressBar("Audio to text")
+                    // as probably something didn't work out - we can allow transcribe action
+                    chatItem.showTranscribeButton = true
                 }
             }
         )

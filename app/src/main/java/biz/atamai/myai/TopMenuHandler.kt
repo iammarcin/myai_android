@@ -53,9 +53,8 @@ class TopMenuHandler(
             true
         }
 
-
+        // search messages when user submits query
         topLeftMenuSearchEditText.setOnEditorActionListener { v, actionId, event ->
-
             if (actionId == EditorInfo.IME_ACTION_SEARCH ||
                 (actionId == EditorInfo.IME_NULL && event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                 val query = topLeftMenuSearchEditText.text.toString()

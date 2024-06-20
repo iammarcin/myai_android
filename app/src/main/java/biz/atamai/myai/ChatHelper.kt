@@ -203,13 +203,14 @@ class ChatHelper(
             chatItems.add(chatItem)
         }
 
-        configurationManager.setTextAICharacter(sessionData.getString("ai_character_name"))
+        val sessionCharacter = sessionData.getString("ai_character_name")
+        configurationManager.setTextAICharacter(sessionCharacter)
 
         setCurrentDBSessionID(sessionData.getString("session_id") ?: "")
         mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.GONE
 
         mainHandler.getMainBinding().btnShareLocation.visibility = View.GONE
-        if (characterManager.getCharacterByName(configurationManager.getTextAICharacter())?.showGPSButton == true) {
+        if (characterManager.getCharacterByNameForAPI(sessionCharacter)?.showGPSButton == true) {
             mainHandler.getMainBinding().btnShareLocation.visibility = View.VISIBLE
         }
 
