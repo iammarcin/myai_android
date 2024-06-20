@@ -3,6 +3,7 @@
 package biz.atamai.myai
 
 import android.app.Dialog
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -234,6 +235,9 @@ object DatabaseHelper {
             // last update date in format YYYY/MM/DD HH:MM
             sessionViewBinding.sessionLastUpdate.text = formatDateTime(session.lastUpdate)
 
+            // we tag it with sessionId - because it's clear identifier (will be used for example for rename_session)
+            sessionViewBinding.root.tag = session.sessionId
+
             //handle click on session
             sessionViewBinding.root.setOnClickListener {
                 // get data for this specific session
@@ -267,9 +271,17 @@ object DatabaseHelper {
 
         editText.setText(session.sessionName)
 
+        // Request focus and show the keyboard
+        editText.requestFocus()
+        editText.selectAll()
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+
         buttonSubmit.setOnClickListener {
             val newName = editText.text.toString().trim()
             if (newName.isNotEmpty()) {
+                // update UI
+                updateSessionNameInUI(session, newName)
+
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest(
                         "db_update_session",
@@ -284,6 +296,19 @@ object DatabaseHelper {
         }
 
         dialog.show()
+    }
+
+    // Helper function to update the session name in the UI
+    private fun updateSessionNameInUI(updatedSession: ChatSessionForTopLeftMenu, newName: String) {
+        val drawerLayout = mainHandler.getMainBinding().topLeftMenuNavigationView.findViewById<LinearLayout>(R.id.topLeftMenuChatSessionList)
+        for (i in 0 until drawerLayout.childCount) {
+            val sessionViewBinding = TopLeftMenuChatSessionItemBinding.bind(drawerLayout.getChildAt(i))
+            // Check by session ID to ensure the correct session is updated
+            if (sessionViewBinding.root.tag == updatedSession.sessionId) {
+                sessionViewBinding.sessionName.text = newName
+                break
+            }
+        }
     }
 
     private fun formatDateTime(input: String): String {
