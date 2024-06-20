@@ -226,6 +226,7 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
                     chatItem.showTranscribeButton = true
                     // notify changes (to show transcribe button)
                     val position = mainHandler.chatItemsList.indexOf(chatItem)
+                    // probably better to create some interface for that but it works
                     mainHandler.getMainBinding().chatContainer.adapter?.notifyItemChanged(position)
                 }
             }
