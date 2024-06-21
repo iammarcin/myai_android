@@ -27,11 +27,7 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
             return
         }
 
-        // Check if URI is in file scheme format
-        if (audioUri.scheme != "file") {
-            createToastMessage("Unsupported URI format")
-            return
-        }
+        println("audioUri.scheme: ${audioUri.scheme}")
 
         if (currentUri != audioUri) {
             stopAudio()
