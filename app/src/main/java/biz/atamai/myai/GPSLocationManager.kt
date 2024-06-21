@@ -137,6 +137,7 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
     }
 
     companion object {
-        private const val DESIRED_ACCURACY = 5.0f // Desired accuracy in meters
+        // set on purpose really low - because it was causing some problems
+        private const val DESIRED_ACCURACY = 0.1f // Desired accuracy in meters
     }
 }
