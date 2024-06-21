@@ -181,9 +181,17 @@ class FileAttachmentHandler(
             if (it.moveToFirst()) {
                 val displayName: String = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
                 val inputStream = mainHandler.context.contentResolver.openInputStream(uri)
-                // oh man - i was overwriting recorded files! - so lets upload to separate directory
+                // oh man - i was overwriting recorded files under the same name! - so use different name and just in case diff location
                 val subDir = "AttachedFiles"
-                val file = File(mainHandler.activity.getExternalFilesDir("Files/$subDir"), displayName)
+                val timestamp = System.currentTimeMillis()
+                val extension = displayName.substringAfterLast(".", "")
+                val newFileName = if (extension.isNotEmpty()) {
+                    "$displayName-$timestamp.$extension"
+                } else {
+                    "$displayName-$timestamp"
+                }
+                val file = File(mainHandler.activity.getExternalFilesDir("Files/$subDir"), newFileName)
+
                 file.outputStream().use { output ->
                     inputStream?.copyTo(output)
                 }

@@ -82,12 +82,15 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     }
 
     fun pauseAudio() {
+        println("Pausing file!")
         mediaPlayer?.pause()
+        println(mediaPlayer?.isPlaying)
         isPlaying = false
         handler.removeCallbacksAndMessages(null)
     }
 
     fun isPlaying(): Boolean {
+        println("isPlaying: $isPlaying")
         return isPlaying
     }
 
