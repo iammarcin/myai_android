@@ -142,58 +142,58 @@ class ChatAdapter(
                     println("PLAY BUTTON CLICKED")
                     previousPlayingPosition = currentPlayingPosition
                     var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+                    println("LISTENER! fileToPlay: $fileToPlay")
 
-                    // helper internal function - as it will be used in two different conditions below
-                    // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
-                    val playAudio = { uri: Uri ->
-                        audioPlayerManager.playAudio(uri, binding.seekBar, chatItem.message,) {
-                            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                        }
 
-                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
 
-                        // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
-                        if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
-                            notifyItemChanged(previousPlayingPosition)
-                        }
-                        currentPlayingPosition = adapterPosition
-                        currentPlayingSeekBar = binding.seekBar
-                    }
 
-                    // this is bit complex but hey - it is what it is
+
+                    // it was in one long line with conditions - but it got too complex
+                    // so i split for my readability - idc if its best practices
                     // we're checking if:
                     // 1. audio is playing
-                    // 2. if we DON"T download files from remote URL - if the file current being played is the same file as in chat item
+                    // 2. if we DONT download files from remote URL - if the file current being played is the same file as in chat item
                     // 3. if we DO download files from remote URL - if the file current being played is the same file as downloaded file from chat item
                     // if any of this is true - it means that we want to pause currently playing audio
-                    if (audioPlayerManager.isPlaying()
-                        && ((!ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull())
-                                || (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == Uri.fromFile(utilityTools.getDownloadedFileUri(chatItem.fileNames.firstOrNull().toString()))))
-                    ) {
-                        audioPlayerManager.pauseAudio()
-                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                    } else {
-                        // here we check if we want to download audio files - and if the file is remote URL
-                        // then we try to download file (if it exists already we won't)
-                        if (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && fileToPlay.toString().startsWith("http")) {
-                            mainHandler.showProgressBar("Downloading audio")
-                            utilityTools.downloadFile(fileToPlay.toString()) { file ->
-                                mainHandler.executeOnUIThread {
-                                    mainHandler.hideProgressBar("Downloading audio")
-                                    if (file != null) {
-                                        fileToPlay = Uri.fromFile(file)
-                                        playAudio(fileToPlay!!, chatItem.message)
-                                    } else {
-                                        mainHandler.createToastMessage("Error downloading audio")
-                                    }
-                                }
-                            }
+                    val shouldDownloadFile = ConfigurationManager.getDownloadAudioFilesBeforePlaying()
+                    val isRemoteFile = fileToPlay.toString().startsWith("http")
+                    val isPlaying = audioPlayerManager.isPlaying()
+                    val currentFile = audioPlayerManager.currentUri
+                    
+                    if (!isPlaying){
+                        if (shouldDownloadFile && isRemoteFile) {
+                            println("Not playing. Downloading!")
+                            downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
                         } else {
+                            println("Not playing. Not downloading")
                             fileToPlay?.let {
                                 playAudio(it, chatItem.message)
                             }
                         }
+                    } else { // if audio player is playing
+                        if (shouldDownloadFile) {
+                            println("Playing. Downloading")
+                            if (!isRemoteFile && fileToPlay == currentFile) {
+                                pauseAudio()
+                            } else if (isRemoteFile && currentFile == Uri.fromFile(utilityTools.getDownloadedFileUri(fileToPlay.toString()))) {
+                                pauseAudio()
+                            } else if (isRemoteFile && currentFile != Uri.fromFile(utilityTools.getDownloadedFileUri(fileToPlay.toString()))) {
+                                downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
+                            } else {
+                                playAudio(fileToPlay!!, chatItem.message)
+                            }
+                        } else {
+                            println("Playing. Not downloading")
+                            if (fileToPlay == currentFile) {
+                                pauseAudio()
+                            } else {
+                                playAudio(fileToPlay!!, chatItem.message)
+                            }
+                        }
                     }
+                    //    && ((!ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull())
+                    //            || (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && chatItem.fileNames.firstOrNull().toString().startsWith("http") && audioPlayerManager.currentUri == Uri.fromFile(utilityTools.getDownloadedFileUri(chatItem.fileNames.firstOrNull().toString())))
+
                 }
 
                 // below we handle icons and seekbar - making sure that we do it for proper chat item (as we have multiple chat items with individual audio files)
@@ -213,7 +213,14 @@ class ChatAdapter(
 
                 if (chatItem.isTTS && chatItem.isAutoPlay) {
                     chatItem.isAutoPlay = false // Reset the flag
-                    chatItem.fileNames.firstOrNull()?.let { playAudio(it, chatItem.message) }
+
+                    chatItem.fileNames.firstOrNull()?.let {
+                        if (ConfigurationManager.getDownloadAudioFilesBeforePlaying()) {
+                            downloadAndOptionallyPlayAudio(chatItem.fileNames.first(), chatItem.message, true)
+                        } else {
+                            playAudio(chatItem.fileNames.first(), chatItem.message)
+                        }
+                    }
                 }
 
                 // set transcribe button - but only for uploaded files (non tts)
@@ -416,7 +423,7 @@ class ChatAdapter(
             popupMenu.show()
         }
 
-        // helper internal function - as it will be used in two different conditions below
+        // helper internal function - as it will be used in few different places
         // but mainly this is to play audio (downloaded or not) and handle all the stuff like icons etc
         private fun playAudio(uri: Uri, message: String) {
             audioPlayerManager.playAudio(uri, binding.seekBar, message,) {
@@ -434,6 +441,29 @@ class ChatAdapter(
             currentPlayingPosition = adapterPosition
             currentPlayingSeekBar = binding.seekBar
         }
+
+        // Function to download file and then (optionally) play it
+        private fun downloadAndOptionallyPlayAudio(fileUri: Uri, message: String, shouldPlayFile: Boolean) {
+            mainHandler.showProgressBar("Downloading audio")
+            utilityTools.downloadFile(fileUri.toString()) { file ->
+                mainHandler.executeOnUIThread {
+                    mainHandler.hideProgressBar("Downloading audio")
+                    if (file != null && shouldPlayFile) {
+                        playAudio(Uri.fromFile(file), message)
+                    } else {
+                        mainHandler.createToastMessage("Error downloading audio")
+                    }
+                }
+            }
+        }
+
+        // Function to pause audio
+        private fun pauseAudio() {
+            audioPlayerManager.pauseAudio()
+            binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+        }
+
+
 
     }
 

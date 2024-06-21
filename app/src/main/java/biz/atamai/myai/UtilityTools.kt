@@ -25,8 +25,12 @@ class UtilityTools(
 
     // Helper function to get the downloaded file URI - used here in downloadFile, but also in chat adapter to get the location of downloaded file
     fun getDownloadedFileUri(url: String): File {
+        if (url.isEmpty()) {
+            throw IllegalArgumentException("URL is empty")
+        }
         val fileName = url.substring(url.lastIndexOf('/') + 1)
         val file = File(mainHandler.context.cacheDir, fileName)
+        // check if file exists
         return file
     }
 

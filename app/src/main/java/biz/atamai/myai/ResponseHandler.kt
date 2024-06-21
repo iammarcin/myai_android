@@ -52,8 +52,6 @@ class ResponseHandler(
     private val gson = GsonBuilder().create()
 
     fun sendRequest(url: String, apiDataModel: APIDataModel) {
-        println("!!!!")
-        println("url: $url")
         coroutineScope.launch {
             try {
                 val requestBody = RequestBody.create("application/json".toMediaType(), gson.toJson(apiDataModel).toByteArray())
