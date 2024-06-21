@@ -181,7 +181,9 @@ class FileAttachmentHandler(
             if (it.moveToFirst()) {
                 val displayName: String = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
                 val inputStream = mainHandler.context.contentResolver.openInputStream(uri)
-                val file = File(mainHandler.activity.getExternalFilesDir("Files"), displayName)
+                // oh man - i was overwriting recorded files! - so lets upload to separate directory
+                val subDir = "AttachedFiles"
+                val file = File(mainHandler.activity.getExternalFilesDir("Files/$subDir"), displayName)
                 file.outputStream().use { output ->
                     inputStream?.copyTo(output)
                 }

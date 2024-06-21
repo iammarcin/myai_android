@@ -28,14 +28,6 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
             return
         }
 
-        val file = File(audioUri.path)
-        val fileSizeInBytes = file.length()
-        val fileSizeInKB = fileSizeInBytes / 1024
-        val fileSizeInMB = fileSizeInKB / 1024
-        println("File size: $fileSizeInBytes bytes, $fileSizeInKB KB, $fileSizeInMB MB")
-
-        println("audioUri.scheme: ${audioUri.scheme}")
-
         if (currentUri != audioUri) {
             stopAudio()
             currentUri = audioUri
