@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.SeekBar
 import android.widget.Toast
+import java.io.File
 import java.io.IOException
 
 class AudioPlayerManager(private val mainHandler: MainHandler) {
@@ -26,6 +27,12 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
             createToastMessage("Invalid audio file")
             return
         }
+
+        val file = File(audioUri.path)
+        val fileSizeInBytes = file.length()
+        val fileSizeInKB = fileSizeInBytes / 1024
+        val fileSizeInMB = fileSizeInKB / 1024
+        println("File size: $fileSizeInBytes bytes, $fileSizeInKB KB, $fileSizeInMB MB")
 
         println("audioUri.scheme: ${audioUri.scheme}")
 
