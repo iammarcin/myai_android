@@ -62,6 +62,13 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
     private lateinit var audioPlayerManager: AudioPlayerManager
 
+    // to control toolbar sessions
+    private val maxSessions = 5
+    private val chatSessions = mutableListOf<View>()
+    //private lateinit var chatSessionsContainer: LinearLayout
+    private lateinit var chatSessionsContainer: LinearLayout
+    private lateinit var addNewSessionButton: ImageView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -117,6 +124,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // set default character (assistant) - in case there is some remaining from previous app run
         ConfigurationManager.setTextAICharacter("assistant")
 
+        chatSessionsContainer = binding.chatSessionsContainer
+        setupInitialChatSessions()
         // start new chat session
         // i tried many many different ways not to put it here (around 26-27May - check chatgpt if you want ;) )
         // mainly wanted to put it when new message is sent - but there was problem with order of execution (for user request and AI response)
@@ -296,6 +305,58 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 //startActivity(intent)
             }
         }
+    }
+
+    private fun setupInitialChatSessions() {
+        addChatSessionButton(isCurrentSession = true)
+        addChatSessionButton(isCurrentSession = false)
+    }
+
+
+    private fun addChatSessionButton(isCurrentSession: Boolean) {
+        val chatSessionsContainer = binding.chatSessionsContainer
+
+        if (chatSessions.size >= maxSessions) return
+
+        val button = LayoutInflater.from(this).inflate(R.layout.chat_session_button, chatSessionsContainer, false) as ImageView
+        button.setImageResource(if (isCurrentSession) R.drawable.current_session_icon else R.drawable.new_session_icon)
+
+        button.setOnClickListener {
+            // Switch to this chat session
+            switchToChatSession(chatSessions.indexOf(button))
+        }
+
+        chatSessions.add(chatSessions.size - 1, button)
+        chatSessionsContainer.addView(button, chatSessionsContainer.childCount - 1)
+
+        updateNewSessionButtonVisibility()
+    }
+
+    private fun addNewSessionButton() {
+        addNewSessionButton = LayoutInflater.from(this).inflate(R.layout.chat_session_button, chatSessionsContainer, false) as ImageView
+        addNewSessionButton.setImageResource(R.drawable.new_session_icon)
+
+        addNewSessionButton.setOnClickListener {
+            createNewChatSession()
+        }
+
+        chatSessions.add(addNewSessionButton)
+        chatSessionsContainer.addView(addNewSessionButton)
+    }
+
+    private fun switchToChatSession(index: Int) {
+        // Logic to switch to an existing chat session
+        // This will involve updating the chat UI with the selected session's messages
+    }
+
+    private fun createNewChatSession() {
+        if (chatSessions.size < maxSessions + 1) { // +1 because of the new session button
+            addChatSessionButton(isCurrentSession = false)
+        }
+    }
+
+    private fun updateNewSessionButtonVisibility() {
+        addNewSessionButton.visibility = if (chatSessions.size - 1 >= maxSessions) View.GONE else View.VISIBLE
     }
 
     // sending data to chat adapter

@@ -36,6 +36,20 @@
                         android:src="@drawable/ic_menu" />
 
                     <!-- here to add sessions buttons -->
+                    <HorizontalScrollView
+                        android:id="@+id/chatSessionsScrollView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/chatSessionsContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" />
+                    </HorizontalScrollView>
+
                     <ImageButton
                         android:id="@+id/menuRight"
                         android:layout_width="wrap_content"

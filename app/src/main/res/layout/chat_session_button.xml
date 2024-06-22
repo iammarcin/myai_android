@@ -1,0 +1,6 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="18dp"
+    android:layout_height="18dp"
+    android:layout_margin="4dp"
+    android:background="@drawable/circle_button_background"
+    android:contentDescription="a" />
