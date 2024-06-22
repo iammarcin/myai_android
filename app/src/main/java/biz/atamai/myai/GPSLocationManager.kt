@@ -44,7 +44,7 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
     }
 
     private fun startLocationUpdates(callback: (Location?) -> Unit) {
-        val gpsInterval = 10
+        val gpsInterval = 5
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, gpsInterval * 1000L)
             .setMinUpdateIntervalMillis(1000L)
             .setWaitForAccurateLocation(true)

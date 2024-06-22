@@ -21,8 +21,7 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     private var onCompletion: (() -> Unit)? = null
 
     fun playAudio(audioUri: Uri?, seekBar: SeekBar, message: String, onCompletion: () -> Unit) {
-        println("AudioPlayerManager.playAudio")
-        println("audioUri: $audioUri")
+        println("AudioPlayerManager.playAudio audioUri: $audioUri")
         if (audioUri == null) {
             createToastMessage("Invalid audio file")
             return
@@ -82,15 +81,12 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     }
 
     fun pauseAudio() {
-        println("Pausing file!")
         mediaPlayer?.pause()
-        println(mediaPlayer?.isPlaying)
         isPlaying = false
         handler.removeCallbacksAndMessages(null)
     }
 
     fun isPlaying(): Boolean {
-        println("isPlaying: $isPlaying")
         return isPlaying
     }
 

@@ -139,40 +139,28 @@ class ChatAdapter(
                 // and we can process it - either play audio or transcribe
 
                 binding.playButton.setOnClickListener {
-                    println("PLAY BUTTON CLICKED")
                     previousPlayingPosition = currentPlayingPosition
                     var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
-                    println("LISTENER! fileToPlay: $fileToPlay")
-
-
-
-
 
                     // it was in one long line with conditions - but it got too complex
                     // so i split for my readability - idc if its best practices
                     // we're checking if:
-                    // 1. audio is playing
-                    // 2. if we DONT download files from remote URL - if the file current being played is the same file as in chat item
-                    // 3. if we DO download files from remote URL - if the file current being played is the same file as downloaded file from chat item
-                    // if any of this is true - it means that we want to pause currently playing audio
+                    // audio is playing, is file remote, should we download it, which item is playing
                     val shouldDownloadFile = ConfigurationManager.getDownloadAudioFilesBeforePlaying()
                     val isRemoteFile = fileToPlay.toString().startsWith("http")
                     val isPlaying = audioPlayerManager.isPlaying()
                     val currentFile = audioPlayerManager.currentUri
-                    
+
                     if (!isPlaying){
                         if (shouldDownloadFile && isRemoteFile) {
-                            println("Not playing. Downloading!")
                             downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
                         } else {
-                            println("Not playing. Not downloading")
                             fileToPlay?.let {
                                 playAudio(it, chatItem.message)
                             }
                         }
                     } else { // if audio player is playing
                         if (shouldDownloadFile) {
-                            println("Playing. Downloading")
                             if (!isRemoteFile && fileToPlay == currentFile) {
                                 pauseAudio()
                             } else if (isRemoteFile && currentFile == Uri.fromFile(utilityTools.getDownloadedFileUri(fileToPlay.toString()))) {
@@ -183,7 +171,6 @@ class ChatAdapter(
                                 playAudio(fileToPlay!!, chatItem.message)
                             }
                         } else {
-                            println("Playing. Not downloading")
                             if (fileToPlay == currentFile) {
                                 pauseAudio()
                             } else {
@@ -191,9 +178,6 @@ class ChatAdapter(
                             }
                         }
                     }
-                    //    && ((!ConfigurationManager.getDownloadAudioFilesBeforePlaying() && audioPlayerManager.currentUri == chatItem.fileNames.firstOrNull())
-                    //            || (ConfigurationManager.getDownloadAudioFilesBeforePlaying() && chatItem.fileNames.firstOrNull().toString().startsWith("http") && audioPlayerManager.currentUri == Uri.fromFile(utilityTools.getDownloadedFileUri(chatItem.fileNames.firstOrNull().toString())))
-
                 }
 
                 // below we handle icons and seekbar - making sure that we do it for proper chat item (as we have multiple chat items with individual audio files)
@@ -211,14 +195,16 @@ class ChatAdapter(
                     binding.seekBar.progress = 0
                 }
 
+                // if file is TTS generated and auto play is ON
                 if (chatItem.isTTS && chatItem.isAutoPlay) {
                     chatItem.isAutoPlay = false // Reset the flag
 
                     chatItem.fileNames.firstOrNull()?.let {
-                        if (ConfigurationManager.getDownloadAudioFilesBeforePlaying()) {
-                            downloadAndOptionallyPlayAudio(chatItem.fileNames.first(), chatItem.message, true)
+                        // if its stream file or not - we might need to download it
+                        if (it.toString().startsWith("http") && ConfigurationManager.getDownloadAudioFilesBeforePlaying()) {
+                            downloadAndOptionallyPlayAudio(it, chatItem.message, true)
                         } else {
-                            playAudio(chatItem.fileNames.first(), chatItem.message)
+                            playAudio(it, chatItem.message)
                         }
                     }
                 }
@@ -462,9 +448,6 @@ class ChatAdapter(
             audioPlayerManager.pauseAudio()
             binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
         }
-
-
-
     }
 
     fun sendTTSRequest(message: String, position: Int) {
@@ -500,12 +483,14 @@ class ChatAdapter(
     // upon receiving TTS response - we have to update chat item with audio file
     private fun handleTTSCompletedResponse(result: String, position: Int, action: String) {
         mainHandler.executeOnUIThread {
-            println("handleTTSCompletedResponse result: $result")
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             chatItem.isAutoPlay = true
-            notifyItemChanged(position)
+            // if its stream mode - we will notify item changed after uploading to S3 (because other way there is problem with audio player pausing/unpausing)
+            if (action != "tts_stream") {
+                notifyItemChanged(position)
+            }
             mainHandler.hideProgressBar("TTS")
 
             // if its stream - we should upload to S3, if its not stream - its already uploaded via backend
@@ -520,7 +505,7 @@ class ChatAdapter(
                     onResponseReceived = { response ->
                         mainHandler.executeOnUIThread {
                             chatItem.fileNames = listOf(Uri.parse(response))
-
+                            notifyItemChanged(position)
                             CoroutineScope(Dispatchers.Main).launch {
                                 // update DB - in order to preserve TTS link (if we restore session later)
                                 DatabaseHelper.sendDBRequest(

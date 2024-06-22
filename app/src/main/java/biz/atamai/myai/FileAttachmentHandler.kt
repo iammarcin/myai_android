@@ -74,16 +74,13 @@ class FileAttachmentHandler(
         }
 
         if (mimeType?.startsWith("audio/") == true) {
-            println("TOTOT")
             val filePath = getFilePathFromUri(uri)
-            println("filePath: $filePath")
-            println("uri: $uri")
+
             if (filePath != null) {
                 val fileUri = Uri.fromFile(File(filePath))
                 val chatItem = mainHandler.addMessageToChat("", listOf(), listOf(fileUri), false)
                 chatItem.isTTS = false // when uploaded we set it it to false on purpose (we treat TTS diff way)
 
-                println("chatItem: $chatItem")
                 mainHandler.hideProgressBar("Uploading files")
                 decrementUploadCounter()
                 return
