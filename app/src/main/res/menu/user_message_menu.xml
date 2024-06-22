@@ -15,4 +15,7 @@
     <item
         android:id="@+id/newSessionFromHere"
         android:title="New session from here"/>
+    <item
+        android:id="@+id/forceDBSync"
+        android:title="Force DB sync"/>
 </menu>

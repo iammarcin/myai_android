@@ -181,7 +181,12 @@ class ChatHelper(
 
             // if message is empty, but files are present - it means that it is attached audio file or recording that was transcribed... so we don't need it
             if (message.isEmpty() && fileNames.isNotEmpty()) {
-                continue
+                // the only case is when showTranscribeButton is true - because it means it was failed transcription and forced DB sync on purpose (so we wanted this message)
+                if (chatItemJson.getBoolean("isUserMessage") && chatItemJson.optBoolean("showTranscribeButton", true)) {
+                    println("Restore it")
+                } else {
+                    continue
+                }
             }
 
             // Create and add ChatItem if it passes the check

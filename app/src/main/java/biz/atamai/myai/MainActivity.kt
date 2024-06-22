@@ -311,6 +311,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
     private fun handleSendButtonClick() {
         val message = binding.editTextMessage.text.toString()
+        if (message.isEmpty()) {
+            return
+        }
         val attachedImageLocations = mutableListOf<String>()
         val attachedFilePaths = mutableListOf<Uri>()
 
@@ -339,7 +342,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
     // and here in Main - same functionality when Send button is clicked
     // gpsLocationMessage - if true - it is GPS location message - so will be handled differently in chatAdapter (will show GPS map button and probably few other things)
     override fun handleTextMessage(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean) {
-        if (message.isEmpty()) {
+        if (message.isEmpty() ) {
             return
         }
 

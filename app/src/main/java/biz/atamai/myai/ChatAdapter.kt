@@ -348,6 +348,7 @@ class ChatAdapter(
                     popupMenu.menu.add(0, R.id.selectText, 1, "Select Text")
                     popupMenu.menu.add(0, R.id.remove, 2, "Remove")
                     popupMenu.menu.add(0, R.id.newSessionFromHere, 3, "New session from here")
+                    popupMenu.menu.add(0, R.id.forceDBSync, 4, "Force DB sync")
                 }
             } else {
                 if (isLastTwoMessages) {
@@ -409,6 +410,19 @@ class ChatAdapter(
                         mainHandler.createToastMessage("Copied to clipboard")
                         true
                     }
+                    R.id.forceDBSync -> {
+                        // Force DB sync - this might be useful in few cases (for example when poor internet and functions - like transcription - fail)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            DatabaseHelper.sendDBRequest(
+                                "db_update_session",
+                                mapOf(
+                                    "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
+                                    "chat_history" to chatItems.map { it.toSerializableMap() }
+                                )
+                            )
+                        }
+                        true
+                    }
                     R.id.selectText -> {
                         // Select text
                         showSelectTextDialog(chatItem.message)
@@ -430,7 +444,7 @@ class ChatAdapter(
                         } else {
                             "db_update_session"
                         }
-                        
+
                         CoroutineScope(Dispatchers.Main).launch {
                             // update DB - in order to preserve TTS link (if we restore session later)
                             DatabaseHelper.sendDBRequest(

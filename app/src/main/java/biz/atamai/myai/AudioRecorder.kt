@@ -3,6 +3,7 @@
 package biz.atamai.myai
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
@@ -241,6 +242,8 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         }
     }
 
+    // permission is set via PermissionsUtil
+    @SuppressLint("MissingPermission")
     private fun isBluetoothHeadsetConnected(): Boolean {
         bluetoothHeadset?.connectedDevices?.let { devices ->
             return devices.isNotEmpty()
