@@ -4,12 +4,15 @@
         android:id="@+id/regenerate"
         android:title="Regenerate"/>
     <item
-        android:id="@+id/newSessionFromHere"
-        android:title="New session from here"/>
+        android:id="@+id/copy"
+        android:title="Copy"/>
+    <item
+        android:id="@+id/selectText"
+        android:title="Select Text"/>
     <item
         android:id="@+id/tts"
         android:title="Speak"/>
     <item
-        android:id="@+id/copy"
-        android:title="Copy"/>
+        android:id="@+id/newSessionFromHere"
+        android:title="New session from here"/>
 </menu>

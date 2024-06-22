@@ -4,12 +4,15 @@
         android:id="@+id/edit"
         android:title="Edit"/>
     <item
-        android:id="@+id/newSessionFromHere"
-        android:title="New session from here"/>
-    <item
         android:id="@+id/copy"
         android:title="Copy"/>
     <item
+        android:id="@+id/selectText"
+        android:title="Select Text"/>
+    <item
         android:id="@+id/remove"
-        android:title="Copy"/>
+        android:title="Remove"/>
+    <item
+        android:id="@+id/newSessionFromHere"
+        android:title="New session from here"/>
 </menu>

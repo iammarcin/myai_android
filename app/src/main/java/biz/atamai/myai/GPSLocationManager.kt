@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.ProgressBar

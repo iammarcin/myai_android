@@ -16,11 +16,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
+import android.widget.PopupWindow
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import biz.atamai.myai.databinding.DialogFullscreenImagesBinding
+import biz.atamai.myai.databinding.DialogSelectChatTextBinding
 import com.squareup.picasso.Picasso
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
@@ -341,16 +344,19 @@ class ChatAdapter(
                 if (isLastTwoMessages) {
                     popupMenu.inflate(R.menu.user_message_menu)
                 } else {
-                    popupMenu.menu.add(0, R.id.newSessionFromHere, 0, "New session from here")
-                    popupMenu.menu.add(0, R.id.copy, 1, "Copy")
+                    popupMenu.menu.add(0, R.id.copy, 0, "Copy")
+                    popupMenu.menu.add(0, R.id.selectText, 1, "Select Text")
+                    popupMenu.menu.add(0, R.id.remove, 2, "Remove")
+                    popupMenu.menu.add(0, R.id.newSessionFromHere, 3, "New session from here")
                 }
             } else {
                 if (isLastTwoMessages) {
                     popupMenu.inflate(R.menu.ai_message_menu)
                 } else {
-                    popupMenu.menu.add(0, R.id.newSessionFromHere, 0, "New session from here")
-                    popupMenu.menu.add(0, R.id.tts, 1, "Speak")
-                    popupMenu.menu.add(0, R.id.copy, 2, "Copy")
+                    popupMenu.menu.add(0, R.id.copy, 0, "Copy")
+                    popupMenu.menu.add(0, R.id.selectText, 1, "Select Text")
+                    popupMenu.menu.add(0, R.id.tts, 2, "Speak")
+                    popupMenu.menu.add(0, R.id.newSessionFromHere, 3, "New session from here")
                 }
             }
 
@@ -403,10 +409,57 @@ class ChatAdapter(
                         mainHandler.createToastMessage("Copied to clipboard")
                         true
                     }
+                    R.id.selectText -> {
+                        // Select text
+                        showSelectTextDialog(chatItem.message)
+                        true
+                    }
+                    R.id.remove -> {
+                        // Remove the chat item
+                        chatItems.removeAt(position)
+                        notifyItemRemoved(position)
+                        // if next message is AI message - we should remove it too
+                        if (position < chatItems.size && !chatItems[position].isUserMessage) {
+                            chatItems.removeAt(position)
+                            notifyItemRemoved(position)
+                        }
+
+                        // if session is empty
+                        val dbMethodToExecute = if (chatItems.isEmpty()) {
+                            "db_remove_session"
+                        } else {
+                            "db_update_session"
+                        }
+                        
+                        CoroutineScope(Dispatchers.Main).launch {
+                            // update DB - in order to preserve TTS link (if we restore session later)
+                            DatabaseHelper.sendDBRequest(
+                                dbMethodToExecute,
+                                mapOf(
+                                    "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
+                                    "chat_history" to chatItems.map { it.toSerializableMap() }
+                                )
+                            )
+                        }
+                        true
+                    }
                     else -> false
                 }
             }
             popupMenu.show()
+        }
+
+        // show dialog to be able to select specific text
+        private fun showSelectTextDialog(text: String) {
+            val dialog = Dialog(mainHandler.context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+            val binding: DialogSelectChatTextBinding = DialogSelectChatTextBinding.inflate(LayoutInflater.from(mainHandler.context))
+            dialog.setContentView(binding.root)
+
+            markwon.setMarkdown(binding.selectableTextView, text)
+
+            binding.btnBack.setOnClickListener { dialog.dismiss() }
+
+            dialog.show()
         }
 
         // helper internal function - as it will be used in few different places
