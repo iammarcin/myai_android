@@ -176,7 +176,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
             if (hasFocus) {
                 chatHelper.manageBottomEditSection("show")
             } else {
-                chatHelper.manageBottomEditSection("hide")
+                // but if there is text already - lets leave it
+                if (binding.editTextMessage.text.isEmpty()) {
+                    chatHelper.manageBottomEditSection("hide")
+                }
                 chatHelper.hideKeyboard(view)
             }
         }

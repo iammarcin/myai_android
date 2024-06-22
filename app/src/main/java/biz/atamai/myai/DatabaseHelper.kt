@@ -90,6 +90,7 @@ object DatabaseHelper {
 
                 callback?.invoke(DBResponse.SessionId(sessionId))
             }
+            // important - db_search_messages - used obviously for search but also for resetting list of sessions (like when user swipes up on top of the list)
             "db_all_sessions_for_user", "db_search_messages" -> {
                 if (action == "db_search_messages")
                     sessionsLoaded = false
