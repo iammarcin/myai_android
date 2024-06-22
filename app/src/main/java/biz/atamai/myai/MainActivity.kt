@@ -243,6 +243,16 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         // scrollview with sessions list on top left menu
         val scrollView = binding.topLeftMenuChatSessionListScrollView
+        val swipeRefreshLayout = binding.swipeRefreshLayout
+        // Check if user has scrolled to the top and requested refresh
+        swipeRefreshLayout.setOnRefreshListener {
+            // db_search_messages - it is not exactly search of course - but we trigger it with empty search text - so it searches for everything
+            // + it has everything we need here - reset chat, load chat sessions etc
+            CoroutineScope(Dispatchers.Main).launch {
+                DatabaseHelper.sendDBRequest("db_search_messages", mapOf("search_text" to ""))
+            }
+            swipeRefreshLayout.isRefreshing = false
+        }
         scrollView.viewTreeObserver.addOnScrollChangedListener {
             val view = scrollView.getChildAt(scrollView.childCount - 1) as View
             val diff = (view.bottom - (scrollView.height + scrollView.scrollY))
