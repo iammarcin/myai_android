@@ -43,6 +43,7 @@ class ResponseHandler(
     private val authToken: String
 ) {
     private val timeoutInSecs = 60L
+    private val maxRetries = 3
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val client = OkHttpClient.Builder()
         .connectTimeout(timeoutInSecs, TimeUnit.SECONDS)
@@ -189,7 +190,7 @@ class ResponseHandler(
     }
 
     // request to upload the file to my API
-    fun sendFileRequest(url: String, apiDataModel: APIDataModel, filePath: String) {
+    fun sendFileRequest(url: String, apiDataModel: APIDataModel, filePath: String, retryCount: Int = 0) {
         coroutineScope.launch {
             try {
                 val file = File(filePath)
@@ -216,11 +217,19 @@ class ResponseHandler(
 
                     override fun onFailure(call: Call, e: IOException) {
                         e.printStackTrace()
-                        coroutineScope.launch(Dispatchers.Main) {
-                            if (e is SocketTimeoutException) {
-                                onError(Exception("Request timed out: ${e.message}"))
-                            } else {
-                                onError(Exception("Network error: ${e.message}"))
+                        if (retryCount < maxRetries) {
+                            val backoffDelay = 1000L
+                            coroutineScope.launch {
+                                delay(backoffDelay)
+                                sendFileRequest(url, apiDataModel, filePath, retryCount + 1)
+                            }
+                        } else {
+                            coroutineScope.launch(Dispatchers.Main) {
+                                if (e is SocketTimeoutException) {
+                                    onError(Exception("Request timed out: ${e.message}"))
+                                } else {
+                                    onError(Exception("Network error: ${e.message}"))
+                                }
                             }
                         }
                     }

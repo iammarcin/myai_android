@@ -73,6 +73,7 @@ class UtilityTools(
     }
 
     // audio files (sent for transcriptions) used in stopRecording in AudioRecorder and binding.transcribeButton.setOnClickListener in ChatAdapter
+    // in s3 upload in FileAttachmentHandler
     fun uploadFileToServer(
         filePath: String?,
         apiUrl: String?,
