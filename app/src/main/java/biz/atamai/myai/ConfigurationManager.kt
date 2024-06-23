@@ -4,6 +4,8 @@ package biz.atamai.myai
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 object ConfigurationManager {
     private const val PREFS_NAME = "AIAppSettings"
@@ -35,6 +37,7 @@ object ConfigurationManager {
     private const val IMAGE_AUTO_GENERATE_IMAGE = "image_auto_generate_image"
     private const val IMAGE_ARTGEN_SHOW_PROMPT = "image_artgen_show_prompt"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
+    private const val FAVORITE_CHATS = "favorite_chats"
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -186,6 +189,16 @@ object ConfigurationManager {
             }
         }
         setAppModeApiUrl(url)
+    }
+
+    fun getFavoriteChats(): List<FavoriteChat> {
+        val json = getString(FAVORITE_CHATS, "[]")
+        return Gson().fromJson(json, object : TypeToken<List<FavoriteChat>>() {}.type)
+    }
+
+    fun setFavoriteChats(chats: List<FavoriteChat>) {
+        val json = Gson().toJson(chats)
+        setString(FAVORITE_CHATS, json)
     }
 
     // used for API calls - to prepare dict with all settings

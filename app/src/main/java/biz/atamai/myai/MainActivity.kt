@@ -84,23 +84,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
         setupCamera()
         setupPermissions()
 
-        // Initialize TopMenuHandler
-        val topMenuHandler = TopMenuHandler(
-            this,
-            // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
-            onFetchChatSessions = {
-                CoroutineScope(Dispatchers.Main).launch {
-                    DatabaseHelper.loadChatSessions()
-                }
-            },
-            onSearchMessages = { query ->
-                CoroutineScope(Dispatchers.Main).launch {
-                    DatabaseHelper.sendDBRequest("db_search_messages", mapOf("search_text" to query))
-                }
-            }
-        )
-        topMenuHandler.setupTopMenus(binding)
-
         chatHelper = ChatHelper(this, chatAdapter, chatItems, ConfigurationManager, characterManager)
         // this is needed - because chatHelper needs chatAdapter and vice versa
         // so first we initialize chatAdapter (without chatHelper as its not yet initialized) and later we set chatHelper to chatAdapter
@@ -117,6 +100,25 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // set default character (assistant) - in case there is some remaining from previous app run
         ConfigurationManager.setTextAICharacter("assistant")
 
+
+        // Initialize TopMenuHandler
+        val topMenuHandler = TopMenuHandler(
+            this,
+            chatHelper,
+            // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
+            onFetchChatSessions = {
+                CoroutineScope(Dispatchers.Main).launch {
+                    DatabaseHelper.loadChatSessions()
+                }
+            },
+            onSearchMessages = { query ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    DatabaseHelper.sendDBRequest("db_search_messages", mapOf("search_text" to query))
+                }
+            }
+        )
+        topMenuHandler.setupTopMenus(binding)
+
         // start new chat session
         // i tried many many different ways not to put it here (around 26-27May - check chatgpt if you want ;) )
         // mainly wanted to put it when new message is sent - but there was problem with order of execution (for user request and AI response)
@@ -127,7 +129,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 mapOf(
                     "session_name" to "New chat",
                     "ai_character_name" to "assistant",
-                    ))
+                ))
         }
 
         // set status bar color (above app -where clock is)
@@ -145,8 +147,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
             this,
             audioPlayerManager,
         )
-            { position, message -> chatHelper.startEditingMessage(position, message) }
-            //this,
+        { position, message -> chatHelper.startEditingMessage(position, message) }
+        //this,
 
         binding.chatContainer.adapter = chatAdapter
     }

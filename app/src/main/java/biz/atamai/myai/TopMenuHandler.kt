@@ -3,10 +3,8 @@
 package biz.atamai.myai
 
 import android.app.Dialog
-import android.content.Context
 import android.graphics.Typeface
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
@@ -15,6 +13,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.TopRightPopupMenuLayoutBinding
+import biz.atamai.myai.databinding.TopFavoritePopupMenuBinding
+import biz.atamai.myai.databinding.TopFavoritePopupFavItemBinding
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.text.Editable
@@ -23,8 +23,12 @@ import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 
+// class to store favorite chat data
+data class FavoriteChat(val id: String) //, val name: String)
+
 class TopMenuHandler(
     private val mainHandler: MainHandler,
+    private val chatHelperHandler: ChatHelperHandler,
     private val onFetchChatSessions: () -> Unit, // function to fetch chat sessions (when menu appears)
     private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
 ) {
@@ -44,6 +48,10 @@ class TopMenuHandler(
 
         binding.menuRight.setOnClickListener { view ->
             showTopRightPopupWindow(view)
+        }
+
+        binding.menuFavorite.setOnClickListener { view ->
+            showFavoriteChatsPopup(view)
         }
 
         binding.topLeftMenuNavigationView.setNavigationItemSelectedListener { menuItem ->
@@ -83,6 +91,63 @@ class TopMenuHandler(
             }
         })
 
+    }
+
+    private fun showFavoriteChatsPopup(view: View) {
+        //val popupBindingFavItem = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+        val popupBindingFavMenu = TopFavoritePopupMenuBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+
+        // Define the width for the popup window
+        val popupWidth = (mainHandler.context.resources.displayMetrics.density * 200).toInt()
+        val popupWindow = PopupWindow(popupBindingFavMenu.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        popupBindingFavMenu.btnAddFavorite.setOnClickListener {
+            val currentChat = chatHelperHandler.getCurrentDBSessionID()
+            addChatToFavorites(FavoriteChat(currentChat!!))
+            popupWindow.dismiss()
+        }
+
+        // Populate the popup window with favorite chats
+        val favoriteChats = getFavoriteChats()
+        println("favoriteChats: $favoriteChats")
+
+        popupBindingFavMenu.favoritesContainer.removeAllViews()
+        favoriteChats.forEach { chat ->
+            println("chat: $chat")
+            println("chat id: ${chat.id}")
+            val chatItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+            chatItemBinding.chatNameTextView.text = chat.id
+
+            chatItemBinding.removeButton.setOnClickListener {
+                removeFavoriteChat(chat)
+                popupWindow.dismiss()
+            }
+            popupBindingFavMenu.favoritesContainer.addView(chatItemBinding.root)
+        }
+
+        popupWindow.showAsDropDown(view)
+
+    }
+
+    private fun addChatToFavorites(chat: FavoriteChat) {
+        // new FavoriteChat
+
+        val favoriteChats = ConfigurationManager.getFavoriteChats().toMutableList()
+        if (!favoriteChats.contains(chat)) {
+            favoriteChats.add(chat)
+            ConfigurationManager.setFavoriteChats(favoriteChats)
+        }
+    }
+
+    private fun getFavoriteChats(): List<FavoriteChat> {
+        return ConfigurationManager.getFavoriteChats()
+    }
+
+    private fun removeFavoriteChat(chat: FavoriteChat) {
+        val favoriteChats = ConfigurationManager.getFavoriteChats().toMutableList()
+        favoriteChats.remove(chat)
+        ConfigurationManager.setFavoriteChats(favoriteChats)
     }
 
     private fun showTopRightPopupWindow(view: View) {
