@@ -46,6 +46,8 @@ interface MainHandler {
     fun getFullCharacterData(characterName: String): CharacterManager.Character
     fun resizeImage(filePath: String, maxDimension: Int): File?
     fun releaseMediaPlayer()
+    fun getDatabaseHelper(): DatabaseHelper
+    fun getConfigurationManager(): ConfigurationManager
     //fun getMainLayoutInflater(): LayoutInflater
 }
 

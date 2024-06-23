@@ -22,6 +22,9 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // class to store favorite chat data
 data class FavoriteChat(val id: String, val name: String, var imageResId: Int)
@@ -138,7 +141,9 @@ class TopMenuHandler(
             }
 
             chatItemBinding.chatNameTextView.setOnClickListener {
-                println("chat: ${chat.id}")
+                CoroutineScope(Dispatchers.Main).launch {
+                    mainHandler.getDatabaseHelper().sendDBRequest("db_get_user_session", mapOf("session_id" to chat.id))
+                }
                 popupWindow.dismiss()
             }
 

@@ -288,7 +288,7 @@ class ChatAdapter(
                             chatHelperHandler?.scrollToEnd()
                             CoroutineScope(Dispatchers.Main).launch {
                                 // update DB - in order to preserve image link (if we restore session later)
-                                DatabaseHelper.sendDBRequest(
+                                mainHandler.getDatabaseHelper().sendDBRequest(
                                     "db_update_session",
                                     mapOf(
                                         "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
@@ -413,7 +413,7 @@ class ChatAdapter(
                     R.id.forceDBSync -> {
                         // Force DB sync - this might be useful in few cases (for example when poor internet and functions - like transcription - fail)
                         CoroutineScope(Dispatchers.Main).launch {
-                            DatabaseHelper.sendDBRequest(
+                            mainHandler.getDatabaseHelper().sendDBRequest(
                                 "db_update_session",
                                 mapOf(
                                     "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
@@ -447,7 +447,7 @@ class ChatAdapter(
 
                         CoroutineScope(Dispatchers.Main).launch {
                             // update DB - in order to preserve TTS link (if we restore session later)
-                            DatabaseHelper.sendDBRequest(
+                            mainHandler.getDatabaseHelper().sendDBRequest(
                                 dbMethodToExecute,
                                 mapOf(
                                     "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
@@ -575,7 +575,7 @@ class ChatAdapter(
                             notifyItemChanged(position)
                             CoroutineScope(Dispatchers.Main).launch {
                                 // update DB - in order to preserve TTS link (if we restore session later)
-                                DatabaseHelper.sendDBRequest(
+                                mainHandler.getDatabaseHelper().sendDBRequest(
                                     "db_update_session",
                                     mapOf(
                                         "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
@@ -596,7 +596,7 @@ class ChatAdapter(
                 // here - we still need to update chat session with new audio file
                 CoroutineScope(Dispatchers.Main).launch {
                     // update DB - in order to preserve TTS link (if we restore session later)
-                    DatabaseHelper.sendDBRequest(
+                    mainHandler.getDatabaseHelper().sendDBRequest(
                         "db_update_session",
                         mapOf(
                             "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),

@@ -637,6 +637,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
     override fun releaseMediaPlayer() {
         audioPlayerManager.releaseMediaPlayer()
     }
+    override fun getDatabaseHelper(): DatabaseHelper {
+        return DatabaseHelper
+    }
+    override fun getConfigurationManager(): ConfigurationManager {
+        return ConfigurationManager
+    }
     // permissions
     override fun checkSelfPermission(permission: String): Int {
         return ContextCompat.checkSelfPermission(this, permission)
