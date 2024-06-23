@@ -237,6 +237,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             binding.btnShareLocation.visibility = View.GONE
             binding.characterScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("assistant")
+            ConfigurationManager.setTextCurrentSessionName("New chat")
             CoroutineScope(Dispatchers.Main).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",
                     mapOf(

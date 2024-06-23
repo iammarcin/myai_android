@@ -116,9 +116,9 @@ class TopMenuHandler(
 
         val addFavoriteClickListener = View.OnClickListener {
             if (isCurrentChatFavorited) {
-                removeFavoriteChat(FavoriteChat(currentChatId!!, currentCharacter.name, currentCharacter.imageResId))
+                removeFavoriteChat(currentChatId!!)
             } else {
-                addChatToFavorites(FavoriteChat(currentChatId!!, currentCharacter.name, currentCharacter.imageResId))
+                addChatToFavorites(FavoriteChat(currentChatId!!, ConfigurationManager.getTextCurrentSessionName(), currentCharacter.imageResId))
             }
             popupWindow.dismiss()
         }
@@ -134,8 +134,7 @@ class TopMenuHandler(
             chatItemBinding.chatCharacterImageView.setImageResource(chat.imageResId)
 
             chatItemBinding.removeButton.setOnClickListener {
-                removeFavoriteChat(chat)
-                popupWindow.dismiss()
+                removeFavoriteChat(chat.id)
             }
 
             chatItemBinding.chatNameTextView.setOnClickListener {
@@ -151,8 +150,6 @@ class TopMenuHandler(
     }
 
     private fun addChatToFavorites(chat: FavoriteChat) {
-        // new FavoriteChat
-
         val favoriteChats = ConfigurationManager.getFavoriteChats().toMutableList()
         if (!favoriteChats.contains(chat)) {
             favoriteChats.add(chat)
@@ -164,9 +161,10 @@ class TopMenuHandler(
         return ConfigurationManager.getFavoriteChats()
     }
 
-    private fun removeFavoriteChat(chat: FavoriteChat) {
+    private fun removeFavoriteChat(chatId: String) {
         val favoriteChats = ConfigurationManager.getFavoriteChats().toMutableList()
-        favoriteChats.remove(chat)
+        // remove by provided id
+        favoriteChats.remove(favoriteChats.find { it.id == chatId })
         ConfigurationManager.setFavoriteChats(favoriteChats)
     }
 

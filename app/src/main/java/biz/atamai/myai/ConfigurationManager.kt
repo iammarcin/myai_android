@@ -17,6 +17,7 @@ object ConfigurationManager {
     private const val TEXT_MEMORY_SIZE = "text_memory_size"
     private const val TEXT_STREAMING = "text_streaming"
     private const val TEXT_AI_CHARACTER = "text_ai_character"
+    private const val TEXT_SESSION_NAME = "text_session_name"
     private const val GENERAL_USE_BLUETOOTH = "general_use_bluetooth"
     private const val GENERAL_TEST_DATA = "general_test_data"
     private const val GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING = "general_download_audio_files_before_playing" // its in use in chat adapter / audio player - if we download - seekbar works fine (we can move audio playing to whatever point we want)
@@ -52,6 +53,7 @@ object ConfigurationManager {
         APP_MODE_USE_WATSON to false,
         TEXT_MODEL_NAME to "GPT-4o",
         TEXT_AI_CHARACTER to "assistant",
+        TEXT_SESSION_NAME to "New chat",
         TEXT_TEMPERATURE to 0.0f,
         TEXT_MEMORY_SIZE to 2000,
         TEXT_STREAMING to false,
@@ -122,6 +124,7 @@ object ConfigurationManager {
     fun getDownloadAudioFilesBeforePlaying() = getBoolean(GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING, defaultSettings[GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING] as Boolean)
     fun getTextModelName() = getString(TEXT_MODEL_NAME, defaultSettings[TEXT_MODEL_NAME] as String)
     fun getTextAICharacter() = getString(TEXT_AI_CHARACTER, defaultSettings[TEXT_AI_CHARACTER] as String)
+    fun getTextCurrentSessionName() = getString(TEXT_SESSION_NAME, defaultSettings[TEXT_SESSION_NAME] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
     fun getTextMemorySize() = getInt(TEXT_MEMORY_SIZE, defaultSettings[TEXT_MEMORY_SIZE] as Int)
     fun getIsStreamingEnabled() = getBoolean(TEXT_STREAMING, defaultSettings[TEXT_STREAMING] as Boolean)
@@ -152,6 +155,7 @@ object ConfigurationManager {
     fun setDownloadAudioFilesBeforePlaying(value: Boolean) = setBoolean(GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING, value)
     fun setTextModelName(value: String) = setString(TEXT_MODEL_NAME, value)
     fun setTextAICharacter(value: String) = setString(TEXT_AI_CHARACTER, value)
+    fun setTextCurrentSessionName(value: String) = setString(TEXT_SESSION_NAME, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)
     fun setTextMemorySize(value: Int) = setInt(TEXT_MEMORY_SIZE, value)
     fun setIsStreamingEnabled(value: Boolean) = setBoolean(TEXT_STREAMING, value)

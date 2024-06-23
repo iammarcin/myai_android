@@ -283,6 +283,8 @@ object DatabaseHelper {
                 // update UI
                 updateSessionNameInUI(session, newName)
 
+                ConfigurationManager.setTextCurrentSessionName(newName)
+
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest(
                         "db_update_session",
