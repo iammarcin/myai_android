@@ -107,7 +107,7 @@ class TopMenuHandler(
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         // get the list of favorite chats
-        val favoriteChats = getFavoriteChats()
+        var favoriteChats = getFavoriteChats()
         val isCurrentChatFavorited = favoriteChats.any { it.id == currentChatId }
 
         // depending if chat is already favorited, show different icon and text and set different click listener
@@ -137,6 +137,7 @@ class TopMenuHandler(
 
             chatItemBinding.removeButton.setOnClickListener {
                 removeFavoriteChat(chat.id)
+                popupWindow.dismiss()
             }
 
             chatItemBinding.chatNameTextView.setOnClickListener {
