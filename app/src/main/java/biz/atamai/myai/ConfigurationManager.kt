@@ -205,6 +205,16 @@ object ConfigurationManager {
         setString(FAVORITE_CHATS, json)
     }
 
+    // Update the name of a favorite chat (used in DatabaseHandler - when session is renamed)
+    fun updateFavoriteChatName(sessionId: String, newName: String) {
+        val favoriteChats = getFavoriteChats().toMutableList()
+        var chat = favoriteChats.find { it.id == sessionId }
+        if (chat != null) {
+            chat.name = newName
+            setFavoriteChats(favoriteChats)
+        }
+    }
+
     // used for API calls - to prepare dict with all settings
     fun getSettingsDict(): Map<String, Map<String, Any>> {
         return mapOf(

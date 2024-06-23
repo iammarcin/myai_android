@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 // class to store favorite chat data
-data class FavoriteChat(val id: String, val name: String, var imageResId: Int)
+data class FavoriteChat(val id: String, var name: String, var imageResId: Int)
 
 class TopMenuHandler(
     private val mainHandler: MainHandler,
