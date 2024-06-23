@@ -97,10 +97,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
         characterManager.setupCharacterCards(binding) { characterName ->
             chatHelper.insertCharacterName(characterName)
         }
-        // set default character (assistant) - in case there is some remaining from previous app run
+        // set default character (assistant) and session name - in case there is some remaining from previous app run
         ConfigurationManager.setTextAICharacter("assistant")
-
-
+        ConfigurationManager.setTextCurrentSessionName("New chat")
+        
         // Initialize TopMenuHandler
         val topMenuHandler = TopMenuHandler(
             this,

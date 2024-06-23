@@ -39,8 +39,6 @@ class ChatHelper(
         editingMessagePosition = position
     }
 
-
-
     // helper functions for currentDBSessionID
     override fun getCurrentDBSessionID(): String? {
         return currentDBSessionID
