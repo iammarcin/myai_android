@@ -5,6 +5,7 @@ package biz.atamai.myai
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 
 object ConfigurationManager {
@@ -38,9 +39,13 @@ object ConfigurationManager {
     private const val IMAGE_AUTO_GENERATE_IMAGE = "image_auto_generate_image"
     private const val IMAGE_ARTGEN_SHOW_PROMPT = "image_artgen_show_prompt"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
-    private const val FAVORITE_CHATS = "favorite_chats"
+    private const val FAVORITE_CHATS = "favorite_chats_list2"
 
     private lateinit var sharedPreferences: SharedPreferences
+
+    private val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(FavoriteItem::class.java, FavoriteItemTypeAdapter())
+        .create()
 
     fun init(context: Context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -195,24 +200,46 @@ object ConfigurationManager {
         setAppModeApiUrl(url)
     }
 
-    fun getFavoriteChats(): List<FavoriteChat> {
-        val json = getString(FAVORITE_CHATS, "[]")
-        return Gson().fromJson(json, object : TypeToken<List<FavoriteChat>>() {}.type)
+    fun addFavoriteItem(item: FavoriteItem) {
+        val favoriteItems = getFavoriteItems().toMutableList()
+        favoriteItems.add(item)
+        setFavoriteItems(favoriteItems)
     }
 
-    fun setFavoriteChats(chats: List<FavoriteChat>) {
-        val json = Gson().toJson(chats)
+    fun setFavoriteItems(items: List<FavoriteItem>) {
+        val json = gson.toJson(items)
+        println("Saving FavoriteItems JSON: $json")
         setString(FAVORITE_CHATS, json)
     }
 
+    fun getFavoriteItems(): List<FavoriteItem> {
+        val json = getString(FAVORITE_CHATS, "[]")
+        println("FavoriteItems JSON: $json")
+        return gson.fromJson(json, object : TypeToken<List<FavoriteItem>>() {}.type)
+    }
+
+    fun removeFavoriteItem(itemId: String) {
+        val favoriteItems = getFavoriteItems().toMutableList()
+        favoriteItems.removeAll { item ->
+            when (item) {
+                is FavoriteItem.Chat -> item.chat.id == itemId
+                is FavoriteItem.Folder -> item.folder.id == itemId
+                else -> false
+            }
+        }
+        setFavoriteItems(favoriteItems)
+    }
+
+
+
     // Update the name of a favorite chat (used in DatabaseHandler - when session is renamed)
     fun updateFavoriteChatName(sessionId: String, newName: String) {
-        val favoriteChats = getFavoriteChats().toMutableList()
+        /*val favoriteChats = getFavoriteChats().toMutableList()
         var chat = favoriteChats.find { it.id == sessionId }
         if (chat != null) {
             chat.name = newName
             setFavoriteChats(favoriteChats)
-        }
+        }*/
     }
 
     // used for API calls - to prepare dict with all settings

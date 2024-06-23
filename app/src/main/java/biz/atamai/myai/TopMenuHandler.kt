@@ -25,9 +25,7 @@ import android.view.inputmethod.EditorInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-// class to store favorite chat data
-data class FavoriteChat(val id: String, var name: String, var imageResId: Int)
+import java.util.UUID
 
 class TopMenuHandler(
     private val mainHandler: MainHandler,
@@ -93,24 +91,25 @@ class TopMenuHandler(
                 }
             }
         })
-
     }
 
-    private fun showFavoriteChatsPopup(view: View) {
+    private fun showFavoriteChatsPopup(view: View, currentFolder: FavoriteFolder? = null) {
         val popupBindingFavMenu = TopFavoritePopupMenuBinding.inflate(mainHandler.mainLayoutInflaterInstance)
         val currentChatId = chatHelperHandler.getCurrentDBSessionID()
         val currentCharacter = mainHandler.getFullCharacterData(mainHandler.getCurrentAICharacter())
 
-        // Define the width for the popup window
         val popupWidth = (mainHandler.context.resources.displayMetrics.density * 250).toInt()
         val popupWindow = PopupWindow(popupBindingFavMenu.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        // get the list of favorite chats
-        val favoriteChats = getFavoriteChats()
-        val isCurrentChatFavorited = favoriteChats.any { it.id == currentChatId }
+        val favoriteItems = currentFolder?.items ?: ConfigurationManager.getFavoriteItems()
 
-        // depending if chat is already favorited, show different icon and text and set different click listener
+        popupBindingFavMenu.btnCreateFolder.setOnClickListener {
+            createNewFolder(popupWindow, currentFolder)
+        }
+
+        val isCurrentChatFavorited = favoriteItems.any { it is FavoriteItem.Chat && it.chat.id == currentChatId }
+
         popupBindingFavMenu.btnAddFavorite.apply {
             setImageResource(if (isCurrentChatFavorited) R.drawable.ic_favorite_enabled else R.drawable.ic_favorite_disabled)
         }
@@ -118,9 +117,9 @@ class TopMenuHandler(
 
         val addFavoriteClickListener = View.OnClickListener {
             if (isCurrentChatFavorited) {
-                removeFavoriteChat(currentChatId!!)
+                ConfigurationManager.removeFavoriteItem(currentChatId!!)
             } else {
-                addChatToFavorites(FavoriteChat(currentChatId!!, mainHandler.getConfigurationManager().getTextCurrentSessionName(), currentCharacter.imageResId))
+                ConfigurationManager.addFavoriteItem(FavoriteItem.Chat(FavoriteChat(currentChatId!!, mainHandler.getConfigurationManager().getTextCurrentSessionName(), currentCharacter.imageResId)))
             }
             popupWindow.dismiss()
         }
@@ -128,48 +127,129 @@ class TopMenuHandler(
         popupBindingFavMenu.btnAddFavorite.setOnClickListener(addFavoriteClickListener)
         popupBindingFavMenu.addFavoriteTextView.setOnClickListener(addFavoriteClickListener)
 
-        // populate the list of favorite chats
         popupBindingFavMenu.favoritesContainer.removeAllViews()
-        favoriteChats.forEach { chat ->
-            val chatItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
-            chatItemBinding.chatNameTextView.text = chat.name
-            chatItemBinding.chatCharacterImageView.setImageResource(chat.imageResId)
+        favoriteItems.forEach { item ->
+            when (item) {
+                is FavoriteItem.Chat -> {
+                    val chatItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+                    chatItemBinding.chatNameTextView.text = item.chat.name
+                    chatItemBinding.chatCharacterImageView.setImageResource(item.chat.imageResId)
 
-            chatItemBinding.removeButton.setOnClickListener {
-                removeFavoriteChat(chat.id)
-            }
+                    chatItemBinding.removeButton.setOnClickListener {
+                        ConfigurationManager.removeFavoriteItem(item.chat.id)
+                        popupWindow.dismiss()
+                    }
 
-            chatItemBinding.chatNameTextView.setOnClickListener {
-                CoroutineScope(Dispatchers.Main).launch {
-                    mainHandler.getDatabaseHelper().sendDBRequest("db_get_user_session", mapOf("session_id" to chat.id))
+                    chatItemBinding.chatNameTextView.setOnClickListener {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            mainHandler.getDatabaseHelper().sendDBRequest("db_get_user_session", mapOf("session_id" to item.chat.id))
+                        }
+                        popupWindow.dismiss()
+                    }
+
+                    popupBindingFavMenu.favoritesContainer.addView(chatItemBinding.root)
                 }
-                popupWindow.dismiss()
-            }
+                is FavoriteItem.Folder -> {
+                    val folderItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+                    folderItemBinding.chatNameTextView.text = item.folder.name
+                    folderItemBinding.chatCharacterImageView.setImageResource(R.drawable.ic_folder)
 
-            popupBindingFavMenu.favoritesContainer.addView(chatItemBinding.root)
+                    folderItemBinding.chatNameTextView.setOnClickListener {
+                        showFolderPopup(view, item.folder)
+                    }
+
+                    popupBindingFavMenu.favoritesContainer.addView(folderItemBinding.root)
+                }
+                else -> {
+                    println("Unknown favorite item: $item")
+                }
+            }
         }
 
         popupWindow.showAsDropDown(view)
-
     }
 
-    private fun addChatToFavorites(chat: FavoriteChat) {
-        val favoriteChats = mainHandler.getConfigurationManager().getFavoriteChats().toMutableList()
-        if (!favoriteChats.contains(chat)) {
-            favoriteChats.add(chat)
-            mainHandler.getConfigurationManager().setFavoriteChats(favoriteChats)
+    private fun showFolderPopup(view: View, folder: FavoriteFolder) {
+        val popupBindingFolderMenu = TopFavoritePopupMenuBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+        val popupWidth = (mainHandler.context.resources.displayMetrics.density * 250).toInt()
+        val popupWindow = PopupWindow(popupBindingFolderMenu.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        popupBindingFolderMenu.btnCreateFolder.visibility = View.GONE
+
+        val favoriteItems = folder.items
+
+        popupBindingFolderMenu.btnAddFavorite.setOnClickListener {
+            val currentChatId = chatHelperHandler.getCurrentDBSessionID()
+            val currentCharacter = mainHandler.getFullCharacterData(mainHandler.getCurrentAICharacter())
+            val isCurrentChatFavorited = favoriteItems.any { it is FavoriteItem.Chat && it.chat.id == currentChatId }
+
+            if (isCurrentChatFavorited) {
+                folder.items.removeAll { it is FavoriteItem.Chat && it.chat.id == currentChatId }
+            } else {
+                folder.items.add(FavoriteItem.Chat(FavoriteChat(currentChatId!!, mainHandler.getConfigurationManager().getTextCurrentSessionName(), currentCharacter.imageResId)))
+            }
+            ConfigurationManager.setFavoriteItems(ConfigurationManager.getFavoriteItems())
+            popupWindow.dismiss()
         }
+
+        popupBindingFolderMenu.favoritesContainer.removeAllViews()
+        favoriteItems.forEach { item ->
+            when (item) {
+                is FavoriteItem.Chat -> {
+                    val chatItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+                    chatItemBinding.chatNameTextView.text = item.chat.name
+                    chatItemBinding.chatCharacterImageView.setImageResource(item.chat.imageResId)
+
+                    chatItemBinding.removeButton.setOnClickListener {
+                        folder.items.remove(item)
+                        ConfigurationManager.setFavoriteItems(ConfigurationManager.getFavoriteItems())
+                        popupWindow.dismiss()
+                    }
+
+                    chatItemBinding.chatNameTextView.setOnClickListener {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            mainHandler.getDatabaseHelper().sendDBRequest("db_get_user_session", mapOf("session_id" to item.chat.id))
+                        }
+                        popupWindow.dismiss()
+                    }
+
+                    popupBindingFolderMenu.favoritesContainer.addView(chatItemBinding.root)
+                }
+                else -> {
+                    println("Unknown favorite item: $item")
+                }
+            }
+        }
+
+        popupWindow.showAsDropDown(view)
     }
 
-    private fun getFavoriteChats(): List<FavoriteChat> {
-        return mainHandler.getConfigurationManager().getFavoriteChats()
-    }
+    private fun createNewFolder(popupWindow: PopupWindow, currentFolder: FavoriteFolder?) {
+        val dialog = Dialog(mainHandler.context)
+        dialog.setContentView(R.layout.top_favorite_dialog_create_folder)
 
-    private fun removeFavoriteChat(chatId: String) {
-        val favoriteChats = mainHandler.getConfigurationManager().getFavoriteChats().toMutableList()
-        // remove by provided id
-        favoriteChats.remove(favoriteChats.find { it.id == chatId })
-        mainHandler.getConfigurationManager().setFavoriteChats(favoriteChats)
+        val folderNameEditText = dialog.findViewById<EditText>(R.id.folderNameEditText)
+        val createButton = dialog.findViewById<Button>(R.id.createButton)
+
+        createButton.setOnClickListener {
+            val folderName = folderNameEditText.text.toString()
+            if (folderName.isNotEmpty()) {
+                val newFolder = FavoriteFolder(id = UUID.randomUUID().toString(), name = folderName)
+                if (currentFolder == null) {
+                    ConfigurationManager.addFavoriteItem(FavoriteItem.Folder(newFolder))
+                } else {
+                    currentFolder.items.add(FavoriteItem.Folder(newFolder))
+                    ConfigurationManager.setFavoriteItems(ConfigurationManager.getFavoriteItems())
+                }
+                dialog.dismiss()
+                popupWindow.dismiss()
+            } else {
+                folderNameEditText.error = "Folder name cannot be empty"
+            }
+        }
+
+        dialog.show()
     }
 
     private fun showTopRightPopupWindow(view: View) {
