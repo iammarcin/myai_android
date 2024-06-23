@@ -108,7 +108,6 @@ class TopMenuHandler(
 
         // get the list of favorite chats
         val favoriteChats = getFavoriteChats()
-        println("favoriteChats: $favoriteChats")
         val isCurrentChatFavorited = favoriteChats.any { it.id == currentChatId }
 
         // depending if chat is already favorited, show different icon and text and set different click listener

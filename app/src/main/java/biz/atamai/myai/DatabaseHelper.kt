@@ -285,7 +285,7 @@ object DatabaseHelper {
 
                 mainHandler.getConfigurationManager().setTextCurrentSessionName(newName)
                 mainHandler.getConfigurationManager().updateFavoriteChatName(session.sessionId, newName)
-                
+
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest(
                         "db_update_session",
