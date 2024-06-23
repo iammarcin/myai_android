@@ -271,25 +271,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // GPS button
         binding.btnShareLocation.setOnClickListener {
             if (gpsLocationManager.areLocationServicesEnabled()) {
-                val attachedImageLocations = mutableListOf<String>()
-                val attachedFilePaths = mutableListOf<Uri>()
 
-                for (i in 0 until binding.imagePreviewContainer.childCount) {
-                    val frameLayout = binding.imagePreviewContainer.getChildAt(i) as FrameLayout
-                    if (frameLayout.getChildAt(0) is ImageView) {
-                        val imageView = frameLayout.getChildAt(0) as ImageView
-                        if (imageView.tag == null) {
-                            Toast.makeText(this, "Problems with uploading files. Try again", Toast.LENGTH_SHORT).show()
-                            continue
-                        }
-                        attachedImageLocations.add(imageView.tag as String)
-                    } else {
-                        val placeholder = frameLayout.getChildAt(0) as View
-                        attachedFilePaths.add(placeholder.tag as Uri)
-                    }
-                }
-
-                gpsLocationManager.showGPSAccuracyDialog(attachedImageLocations, attachedFilePaths)
+                gpsLocationManager.showGPSAccuracyDialog(binding.imagePreviewContainer)
 
             } else {
                 Toast.makeText(this, "GPS Location services are disabled", Toast.LENGTH_SHORT).show()
@@ -325,7 +308,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             if (frameLayout.getChildAt(0) is ImageView) {
                 val imageView = frameLayout.getChildAt(0) as ImageView
                 if (imageView.tag == null) {
-                    Toast.makeText(this, "Problems with uploading files. Try again", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Problems with uploading files 2. Try again", Toast.LENGTH_SHORT).show()
                     continue
                 }
                 attachedImageLocations.add(imageView.tag as String)

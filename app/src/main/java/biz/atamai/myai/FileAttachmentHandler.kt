@@ -112,6 +112,9 @@ class FileAttachmentHandler(
             val utilityTools = UtilityTools(
                 mainHandler = mainHandler
             )
+
+
+
             // upload to S3 - so sending request to nodejs API
             utilityTools.uploadFileToServer(
                 filePath,
