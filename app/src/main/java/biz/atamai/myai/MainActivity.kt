@@ -271,9 +271,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // GPS button
         binding.btnShareLocation.setOnClickListener {
             if (gpsLocationManager.areLocationServicesEnabled()) {
-
                 gpsLocationManager.showGPSAccuracyDialog(binding.imagePreviewContainer)
-
             } else {
                 Toast.makeText(this, "GPS Location services are disabled", Toast.LENGTH_SHORT).show()
                 // Optionally, you can open the location settings

@@ -93,34 +93,39 @@ class GPSLocationManager(private val mainHandler: MainHandler) {
             stopAccuracyUpdates()
         }
 
-
-
         shareButton.setOnClickListener {
+            val attachedImageLocations = mutableListOf<String>()
+            val attachedFilePaths = mutableListOf<Uri>()
+            var allImagesUploaded = true
+
+            for (i in 0 until imagePreviewContainer.childCount) {
+                val frameLayout = imagePreviewContainer.getChildAt(i) as FrameLayout
+                if (frameLayout.getChildAt(0) is ImageView) {
+                    val imageView = frameLayout.getChildAt(0) as ImageView
+                    if (imageView.tag == null) {
+                        allImagesUploaded = false
+                        break
+                    } else {
+                        attachedImageLocations.add(imageView.tag as String)
+                    }
+                } else {
+                    val placeholder = frameLayout.getChildAt(0) as View
+                    attachedFilePaths.add(placeholder.tag as Uri)
+                }
+            }
+
+            if (!allImagesUploaded) {
+                mainHandler.createToastMessage("Images still uploading")
+                return@setOnClickListener
+            }
+
             currentLocation?.let {
                 val uri = Uri.parse("${it.latitude},${it.longitude}")
                 val message = "GPS location: $uri"
 
-                val attachedImageLocations = mutableListOf<String>()
-                val attachedFilePaths = mutableListOf<Uri>()
-
-                for (i in 0 until imagePreviewContainer.childCount) {
-                    val frameLayout = imagePreviewContainer.getChildAt(i) as FrameLayout
-                    if (frameLayout.getChildAt(0) is ImageView) {
-                        val imageView = frameLayout.getChildAt(0) as ImageView
-                        if (imageView.tag != null) {
-                            attachedImageLocations.add(imageView.tag as String)
-                        } else {
-                            continue
-                        }
-
-                    } else {
-                        val placeholder = frameLayout.getChildAt(0) as View
-                        attachedFilePaths.add(placeholder.tag as Uri)
-                    }
-                }
-
                 mainHandler.handleTextMessage(message, attachedImageLocations, attachedFilePaths, true)
             }
+
             alertDialog.dismiss()
             stopAccuracyUpdates()
         }
