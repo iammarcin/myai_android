@@ -93,7 +93,7 @@ class UtilityTools(
             category = apiCategory ?: "",
             action = apiAction ?: "",
             userInput = userInput ?: emptyMap(),
-            userSettings = ConfigurationManager.getSettingsDict(),
+            userSettings = mainHandler.getConfigurationManager().getSettingsDict(),
             customerId = 1
         )
 
@@ -113,7 +113,7 @@ class UtilityTools(
             onError = { error ->
                 onError(error)
             },
-            authToken = ConfigurationManager.getAuthTokenForBackend()
+            authToken = mainHandler.getConfigurationManager().getAuthTokenForBackend()
         )
 
         handler.sendFileRequest(fullApiUrl, apiDataModel, filePath)
@@ -137,7 +137,7 @@ class UtilityTools(
             category = "tts",
             action = action,
             userInput = mapOf("text" to message),
-            userSettings = ConfigurationManager.getSettingsDict(),
+            userSettings = mainHandler.getConfigurationManager().getSettingsDict(),
             customerId = 1
         )
 
@@ -157,7 +157,7 @@ class UtilityTools(
                     }
                 ),
                 onError = onError,
-                authToken = ConfigurationManager.getAuthTokenForBackend()
+                authToken = mainHandler.getConfigurationManager().getAuthTokenForBackend()
             )
         } else {
             ResponseHandler(
@@ -171,7 +171,7 @@ class UtilityTools(
                     }
                 }),
                 onError = onError,
-                authToken = ConfigurationManager.getAuthTokenForBackend()
+                authToken = mainHandler.getConfigurationManager().getAuthTokenForBackend()
             )
         }
 
@@ -190,7 +190,7 @@ class UtilityTools(
             category = "image",
             action = "generate",
             userInput = mapOf("text" to prompt),
-            userSettings = ConfigurationManager.getSettingsDict(),
+            userSettings = mainHandler.getConfigurationManager().getSettingsDict(),
             customerId = 1
         )
 
@@ -205,7 +205,7 @@ class UtilityTools(
                     }
                 }),
                 onError = onError,
-                authToken = ConfigurationManager.getAuthTokenForBackend()
+                authToken = mainHandler.getConfigurationManager().getAuthTokenForBackend()
             )
 
         handler.sendRequest(fullApiUrl, apiDataModel)

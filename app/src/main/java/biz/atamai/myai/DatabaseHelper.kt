@@ -50,11 +50,11 @@ object DatabaseHelper {
                 category = "provider.db",
                 action = action,
                 userInput = userInput + ("chat_history" to serializableChatItems),
-                userSettings = ConfigurationManager.getSettingsDict(),
+                userSettings = mainHandler.getConfigurationManager().getSettingsDict(),
                 customerId = 1,
             )
 
-            val dbUrl = ConfigurationManager.getAppModeApiUrl() + "api/db"
+            val dbUrl = mainHandler.getConfigurationManager().getAppModeApiUrl() + "api/db"
 
             val handler = ResponseHandler(
                 handlerType = HandlerType.NonStreaming(
@@ -72,7 +72,7 @@ object DatabaseHelper {
                         mainHandler.createToastMessage("Error with DB operation")
                     }
                 },
-                authToken = ConfigurationManager.getAuthTokenForBackend()
+                authToken = mainHandler.getConfigurationManager().getAuthTokenForBackend()
             )
 
             handler.sendRequest(dbUrl, apiDataModel)
@@ -283,7 +283,7 @@ object DatabaseHelper {
                 // update UI
                 updateSessionNameInUI(session, newName)
 
-                ConfigurationManager.setTextCurrentSessionName(newName)
+                mainHandler.getConfigurationManager().setTextCurrentSessionName(newName)
 
                 CoroutineScope(Dispatchers.Main).launch {
                     sendDBRequest(

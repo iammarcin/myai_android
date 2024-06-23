@@ -10,7 +10,7 @@ import android.widget.Toast
 import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.CharacterCardBinding
 
-class CharacterManager(private val context: Context) {
+class CharacterManager(private val mainHandler: MainHandler) {
 
     // Data class to hold character information
     // name = what will be displayed on the card in UI
@@ -63,7 +63,7 @@ class CharacterManager(private val context: Context) {
     // Function to programmatically set up character cards
     fun setupCharacterCards(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
         // default setting before user selection
-        ConfigurationManager.setTextAICharacter("assistant")
+        mainHandler.getConfigurationManager().setTextAICharacter("assistant")
         displayCharacterCards(binding, characters, onCharacterSelected)
     }
 
@@ -77,13 +77,13 @@ class CharacterManager(private val context: Context) {
     private fun displayCharacterCards(binding: ActivityMainBinding, characters: List<Character>, onCharacterSelected: (String) -> Unit) {
         binding.characterScrollView.removeAllViews()
         for (character in characters) {
-            val cardBinding = CharacterCardBinding.inflate(LayoutInflater.from(context))
+            val cardBinding = CharacterCardBinding.inflate(LayoutInflater.from(mainHandler.context))
             cardBinding.characterName.text = character.name
             cardBinding.characterImage.setImageResource(character.imageResId)
             cardBinding.root.setOnClickListener {
-                Toast.makeText(context, "${character.name} selected", Toast.LENGTH_SHORT).show()
+                mainHandler.createToastMessage("${character.name} selected")
                 binding.characterHorizontalMainScrollView.visibility = View.GONE
-                ConfigurationManager.setTextAICharacter(character.nameForAPI)
+                mainHandler.getConfigurationManager().setTextAICharacter(character.nameForAPI)
                 // show GPS button, but only for specific characters
                 // first reset in case other character is chosen
                 binding.btnShareLocation.visibility = View.GONE
@@ -93,10 +93,10 @@ class CharacterManager(private val context: Context) {
                 onCharacterSelected(character.name)
             }
             val layoutParams = LinearLayout.LayoutParams(
-                context.resources.getDimensionPixelSize(R.dimen.character_card_width),
+                mainHandler.context.resources.getDimensionPixelSize(R.dimen.character_card_width),
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
-                marginEnd = context.resources.getDimensionPixelSize(R.dimen.character_card_margin)
+                marginEnd = mainHandler.context.resources.getDimensionPixelSize(R.dimen.character_card_margin)
             }
             cardBinding.root.layoutParams = layoutParams
             binding.characterScrollView.addView(cardBinding.root)

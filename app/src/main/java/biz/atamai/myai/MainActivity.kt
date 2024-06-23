@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         setupCamera()
         setupPermissions()
 
-        chatHelper = ChatHelper(this, chatAdapter, chatItems, ConfigurationManager, characterManager)
+        chatHelper = ChatHelper(this, chatAdapter, chatItems)
         // this is needed - because chatHelper needs chatAdapter and vice versa
         // so first we initialize chatAdapter (without chatHelper as its not yet initialized) and later we set chatHelper to chatAdapter
         chatAdapter.setChatHelperHandler(chatHelper)
@@ -143,7 +143,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
         chatAdapter = ChatAdapter(
             chatItems,
             ConfigurationManager.getAppModeApiUrl(),
-            characterManager,
             this,
             audioPlayerManager,
         )
@@ -356,7 +355,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         }
 
         // some characters have autoResponse set to false - if this is the case - we don't stream
-        val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
+        val character = characterManager.getCharacterByNameForAPI(ConfigurationManager.getTextAICharacter())
+
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)

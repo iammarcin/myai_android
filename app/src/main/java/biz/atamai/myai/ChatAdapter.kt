@@ -33,7 +33,6 @@ import kotlinx.coroutines.launch
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
-    private val characterManager: CharacterManager,
     private val mainHandler: MainHandler,
     private val audioPlayerManager: AudioPlayerManager,
     private val onEditMessage: (position: Int, message: String) -> Unit,
@@ -100,7 +99,7 @@ class ChatAdapter(
                 R.drawable.user_avatar_placeholder
             } else {
                 chatItem.aiCharacterName?.let { characterName ->
-                    characterManager.getCharacterByNameForAPI(characterName)?.imageResId
+                    mainHandler.getMainCharacterManager().getCharacterByNameForAPI(characterName)?.imageResId
                 } ?: R.drawable.ai_avatar_placeholder
             }
 
@@ -149,7 +148,7 @@ class ChatAdapter(
                     // so i split for my readability - idc if its best practices
                     // we're checking if:
                     // audio is playing, is file remote, should we download it, which item is playing
-                    val shouldDownloadFile = ConfigurationManager.getDownloadAudioFilesBeforePlaying()
+                    val shouldDownloadFile = mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()
                     val isRemoteFile = fileToPlay.toString().startsWith("http")
                     val isPlaying = audioPlayerManager.isPlaying()
                     val currentFile = audioPlayerManager.currentUri
@@ -204,7 +203,7 @@ class ChatAdapter(
 
                     chatItem.fileNames.firstOrNull()?.let {
                         // if its stream file or not - we might need to download it
-                        if (it.toString().startsWith("http") && ConfigurationManager.getDownloadAudioFilesBeforePlaying()) {
+                        if (it.toString().startsWith("http") && mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()) {
                             downloadAndOptionallyPlayAudio(it, chatItem.message, true)
                         } else {
                             playAudio(it, chatItem.message)
@@ -256,15 +255,15 @@ class ChatAdapter(
             // if its message (or whole chat) for artgen - we want to allow user to create images
             if (chatItem.aiCharacterName == "tools_artgen" && !chatItem.isUserMessage) {
                 binding.imageGenerationView.visibility = View.VISIBLE
-                if (!ConfigurationManager.getImageArtgenShowPrompt())
+                if (!mainHandler.getConfigurationManager().getImageArtgenShowPrompt())
                     binding.messageTextView.visibility = View.GONE
 
-                if (ConfigurationManager.getImageAutoGenerateImage() && chatItem.imageLocations.contains("image_placeholder_url")) {
+                if (mainHandler.getConfigurationManager().getImageAutoGenerateImage() && chatItem.imageLocations.contains("image_placeholder_url")) {
                     chatItem.imageLocations = emptyList()
                     binding.generateImageButton.visibility = View.VISIBLE
 
                     // that's bit strange - but when streaming is disabled - we have to wait for the view to be ready to perform click
-                    if (!ConfigurationManager.getIsStreamingEnabled()) {
+                    if (!mainHandler.getConfigurationManager().getIsStreamingEnabled()) {
                         binding.root.post {
                             binding.generateImageButton.performClick()
                         }
@@ -526,8 +525,8 @@ class ChatAdapter(
         }
         mainHandler.showProgressBar("TTS")
 
-        val apiUrl = ConfigurationManager.getAppModeApiUrl()
-        val action = if (ConfigurationManager.getTTSStreaming()) "tts_stream" else "tts_no_stream"
+        val apiUrl = mainHandler.getConfigurationManager().getAppModeApiUrl()
+        val action = if (mainHandler.getConfigurationManager().getTTSStreaming()) "tts_stream" else "tts_no_stream"
 
         // Split the message into chunks of 4096 characters or less (this is the limit of OpenAI)
         // TODO one day - handle chunks maybe - because here i just take first (because its super rare to be longer)

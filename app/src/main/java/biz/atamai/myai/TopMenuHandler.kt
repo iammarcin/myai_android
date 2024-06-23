@@ -36,7 +36,7 @@ class TopMenuHandler(
     private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
 ) {
 
-    private var textModelName: String = ConfigurationManager.getTextModelName()
+    private var textModelName: String = mainHandler.getConfigurationManager().getTextModelName()
     // in menu options dialog there are buttons like AUDIO, GENERAL, etc - so this is about this button (later it will be bold)
     private var currentSelectedButton: TextView? = null
 
@@ -121,7 +121,7 @@ class TopMenuHandler(
             if (isCurrentChatFavorited) {
                 removeFavoriteChat(currentChatId!!)
             } else {
-                addChatToFavorites(FavoriteChat(currentChatId!!, ConfigurationManager.getTextCurrentSessionName(), currentCharacter.imageResId))
+                addChatToFavorites(FavoriteChat(currentChatId!!, mainHandler.getConfigurationManager().getTextCurrentSessionName(), currentCharacter.imageResId))
             }
             popupWindow.dismiss()
         }
@@ -155,22 +155,22 @@ class TopMenuHandler(
     }
 
     private fun addChatToFavorites(chat: FavoriteChat) {
-        val favoriteChats = ConfigurationManager.getFavoriteChats().toMutableList()
+        val favoriteChats = mainHandler.getConfigurationManager().getFavoriteChats().toMutableList()
         if (!favoriteChats.contains(chat)) {
             favoriteChats.add(chat)
-            ConfigurationManager.setFavoriteChats(favoriteChats)
+            mainHandler.getConfigurationManager().setFavoriteChats(favoriteChats)
         }
     }
 
     private fun getFavoriteChats(): List<FavoriteChat> {
-        return ConfigurationManager.getFavoriteChats()
+        return mainHandler.getConfigurationManager().getFavoriteChats()
     }
 
     private fun removeFavoriteChat(chatId: String) {
-        val favoriteChats = ConfigurationManager.getFavoriteChats().toMutableList()
+        val favoriteChats = mainHandler.getConfigurationManager().getFavoriteChats().toMutableList()
         // remove by provided id
         favoriteChats.remove(favoriteChats.find { it.id == chatId })
-        ConfigurationManager.setFavoriteChats(favoriteChats)
+        mainHandler.getConfigurationManager().setFavoriteChats(favoriteChats)
     }
 
     private fun showTopRightPopupWindow(view: View) {
@@ -218,7 +218,7 @@ class TopMenuHandler(
     }
 
     private fun handleModelSelection(model: String) {
-        ConfigurationManager.setTextModelName(model)
+        mainHandler.getConfigurationManager().setTextModelName(model)
         textModelName = model
         mainHandler.createToastMessage("$model selected")
     }
@@ -308,27 +308,27 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSwitchRow("Use Bluetooth", ConfigurationManager.getUseBluetooth()) { isChecked ->
-                ConfigurationManager.setUseBluetooth(isChecked)
+            addView(createSwitchRow("Use Bluetooth", mainHandler.getConfigurationManager().getUseBluetooth()) { isChecked ->
+                mainHandler.getConfigurationManager().setUseBluetooth(isChecked)
             })
-            addView(createSwitchRow("Test Data", ConfigurationManager.getUseTestData()) { isChecked ->
-                ConfigurationManager.setUseTestData(isChecked)
+            addView(createSwitchRow("Test Data", mainHandler.getConfigurationManager().getUseTestData()) { isChecked ->
+                mainHandler.getConfigurationManager().setUseTestData(isChecked)
             })
             // add production mode setting
-            addView(createSwitchRow("Production Mode", ConfigurationManager.getIsProdMode()) { isChecked ->
-                ConfigurationManager.setIsProdMode(isChecked)
-                ConfigurationManager.setURLForAPICalls()
+            addView(createSwitchRow("Production Mode", mainHandler.getConfigurationManager().getIsProdMode()) { isChecked ->
+                mainHandler.getConfigurationManager().setIsProdMode(isChecked)
+                mainHandler.getConfigurationManager().setURLForAPICalls()
             })
-            addView(createSwitchRow("Use Watson for nonprod", ConfigurationManager.getAppModeUseWatson()) { isChecked ->
-                ConfigurationManager.setAppModeUseWatson(isChecked)
-                ConfigurationManager.setURLForAPICalls()
+            addView(createSwitchRow("Use Watson for nonprod", mainHandler.getConfigurationManager().getAppModeUseWatson()) { isChecked ->
+                mainHandler.getConfigurationManager().setAppModeUseWatson(isChecked)
+                mainHandler.getConfigurationManager().setURLForAPICalls()
             })
-            addView(createSwitchRow("Download audio files before playing", ConfigurationManager.getDownloadAudioFilesBeforePlaying()) { isChecked ->
-                ConfigurationManager.setDownloadAudioFilesBeforePlaying(isChecked)
+            addView(createSwitchRow("Download audio files before playing", mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()) { isChecked ->
+                mainHandler.getConfigurationManager().setDownloadAudioFilesBeforePlaying(isChecked)
             })
             // token for connecting to backend API
-            addView(createTextEditRow("API auth Token", ConfigurationManager.getAuthTokenForBackend(), isPassword = true) { value ->
-                ConfigurationManager.setAuthTokenForBackend(value)
+            addView(createTextEditRow("API auth Token", mainHandler.getConfigurationManager().getAuthTokenForBackend(), isPassword = true) { value ->
+                mainHandler.getConfigurationManager().setAuthTokenForBackend(value)
             })
         }
     }
@@ -338,14 +338,14 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createSeekBarRow("Temperature", 1, 0.05f, ConfigurationManager.getTextTemperature()) { value ->
-                ConfigurationManager.setTextTemperature(value)
+            addView(createSeekBarRow("Temperature", 1, 0.05f, mainHandler.getConfigurationManager().getTextTemperature()) { value ->
+                mainHandler.getConfigurationManager().setTextTemperature(value)
             })
-            addView(createSeekBarRow("Memory Size", 2000, 1f, ConfigurationManager.getTextMemorySize().toFloat()) { value ->
-                ConfigurationManager.setTextMemorySize(value.toInt())
+            addView(createSeekBarRow("Memory Size", 2000, 1f, mainHandler.getConfigurationManager().getTextMemorySize().toFloat()) { value ->
+                mainHandler.getConfigurationManager().setTextMemorySize(value.toInt())
             })
-            addView(createSwitchRow("Streaming", ConfigurationManager.getIsStreamingEnabled()) { isChecked ->
-                ConfigurationManager.setIsStreamingEnabled(isChecked)
+            addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getIsStreamingEnabled()) { isChecked ->
+                mainHandler.getConfigurationManager().setIsStreamingEnabled(isChecked)
             })
         }
     }
@@ -355,27 +355,27 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createTextEditRow("Model", ConfigurationManager.getImageModelName(), isPassword = false, additionalText = "Possible values: dall-e-3", ) { value ->
-                ConfigurationManager.setImageModelName(value)
+            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getImageModelName(), isPassword = false, additionalText = "Possible values: dall-e-3", ) { value ->
+                mainHandler.getConfigurationManager().setImageModelName(value)
             })
 
-            addView(createSwitchRow("HD Quality", ConfigurationManager.getImageQualityHD()) { isChecked ->
-                ConfigurationManager.setImageQualityHD(isChecked)
+            addView(createSwitchRow("HD Quality", mainHandler.getConfigurationManager().getImageQualityHD()) { isChecked ->
+                mainHandler.getConfigurationManager().setImageQualityHD(isChecked)
             })
 
-            addView(createSwitchRow("Disable Openai revised prompt", ConfigurationManager.getImageDisableSafePrompt()) { isChecked ->
-                ConfigurationManager.setImageDisableSafePrompt(isChecked)
+            addView(createSwitchRow("Disable Openai revised prompt", mainHandler.getConfigurationManager().getImageDisableSafePrompt()) { isChecked ->
+                mainHandler.getConfigurationManager().setImageDisableSafePrompt(isChecked)
             })
 
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("Artgen mode"))
 
-            addView(createSwitchRow("Show image prompt", ConfigurationManager.getImageArtgenShowPrompt()) { isChecked ->
-                ConfigurationManager.setImageArtgenShowPrompt(isChecked)
+            addView(createSwitchRow("Show image prompt", mainHandler.getConfigurationManager().getImageArtgenShowPrompt()) { isChecked ->
+                mainHandler.getConfigurationManager().setImageArtgenShowPrompt(isChecked)
             })
 
-            addView(createSwitchRow("Auto generate image", ConfigurationManager.getImageAutoGenerateImage()) { isChecked ->
-                ConfigurationManager.setImageAutoGenerateImage(isChecked)
+            addView(createSwitchRow("Auto generate image", mainHandler.getConfigurationManager().getImageAutoGenerateImage()) { isChecked ->
+                mainHandler.getConfigurationManager().setImageAutoGenerateImage(isChecked)
             })
         }
     }
@@ -385,38 +385,38 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createTextEditRow("Model", ConfigurationManager.getTTSModelName(), isPassword = false, additionalText = "Possible values: tts-1, tts-1-hd", ) { value ->
-                ConfigurationManager.setTTSModelName(value)
+            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "Possible values: tts-1, tts-1-hd", ) { value ->
+                mainHandler.getConfigurationManager().setTTSModelName(value)
             })
 
-            addView(createSwitchRow("Streaming", ConfigurationManager.getTTSStreaming()) { isChecked ->
-                ConfigurationManager.setTTSStreaming(isChecked)
+            addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getTTSStreaming()) { isChecked ->
+                mainHandler.getConfigurationManager().setTTSStreaming(isChecked)
             })
 
-            addView(createSwitchRow("Auto trigger TTS upon AI response", ConfigurationManager.getTTSAutoExecute()) { isChecked ->
-                ConfigurationManager.setTTSAutoExecute(isChecked)
+            addView(createSwitchRow("Auto trigger TTS upon AI response", mainHandler.getConfigurationManager().getTTSAutoExecute()) { isChecked ->
+                mainHandler.getConfigurationManager().setTTSAutoExecute(isChecked)
             })
 
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("OpenAI"))
 
-            addView(createTextEditRow("Voice", ConfigurationManager.getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
-                ConfigurationManager.setTTSVoice(value)
+            addView(createTextEditRow("Voice", mainHandler.getConfigurationManager().getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
+                mainHandler.getConfigurationManager().setTTSVoice(value)
             })
 
             // speed
-            addView(createSeekBarRow("Speed", 4, 0.05f, ConfigurationManager.getTTSSpeed()) { value ->
-                ConfigurationManager.setTTSSpeed(value)
+            addView(createSeekBarRow("Speed", 4, 0.05f, mainHandler.getConfigurationManager().getTTSSpeed()) { value ->
+                mainHandler.getConfigurationManager().setTTSSpeed(value)
             })
 
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("Elevenlabs"))
 
-            addView(createSeekBarRow("Stability", 1, 0.05f, ConfigurationManager.getTTSStability()) { value ->
-                ConfigurationManager.setTTSStability(value)
+            addView(createSeekBarRow("Stability", 1, 0.05f, mainHandler.getConfigurationManager().getTTSStability()) { value ->
+                mainHandler.getConfigurationManager().setTTSStability(value)
             })
-            addView(createSeekBarRow("Similarity", 1, 0.05f, ConfigurationManager.getTTSSimilarity()) { value ->
-                ConfigurationManager.setTTSSimilarity(value)
+            addView(createSeekBarRow("Similarity", 1, 0.05f, mainHandler.getConfigurationManager().getTTSSimilarity()) { value ->
+                mainHandler.getConfigurationManager().setTTSSimilarity(value)
             })
         }
     }
@@ -426,11 +426,11 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createTextEditRow("Language", ConfigurationManager.getSpeechLanguage()) { value ->
-                ConfigurationManager.setSpeechLanguage(value)
+            addView(createTextEditRow("Language", mainHandler.getConfigurationManager().getSpeechLanguage()) { value ->
+                mainHandler.getConfigurationManager().setSpeechLanguage(value)
             })
-            addView(createSeekBarRow("Temperature", 1, 0.05f, ConfigurationManager.getSpeechTemperature()) { value ->
-                ConfigurationManager.setSpeechTemperature(value)
+            addView(createSeekBarRow("Temperature", 1, 0.05f, mainHandler.getConfigurationManager().getSpeechTemperature()) { value ->
+                mainHandler.getConfigurationManager().setSpeechTemperature(value)
             })
         }
     }

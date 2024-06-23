@@ -21,8 +21,6 @@ class ChatHelper(
     private val mainHandler: MainHandler,
     private val chatAdapter: ChatAdapter,
     private val chatItems: MutableList<ChatItem>,
-    private val configurationManager: ConfigurationManager,
-    private val characterManager: CharacterManager,
 ) : ChatHelperHandler {
     // same string set in backend in config.py
     private val ERROR_MESSAGE_FOR_TEXT_GEN = "Error in Text Generator. Try again!"
@@ -209,13 +207,13 @@ class ChatHelper(
         }
 
         val sessionCharacter = sessionData.getString("ai_character_name")
-        configurationManager.setTextAICharacter(sessionCharacter)
+        mainHandler.getConfigurationManager().setTextAICharacter(sessionCharacter)
 
         setCurrentDBSessionID(sessionData.getString("session_id") ?: "")
         mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.GONE
 
         mainHandler.getMainBinding().btnShareLocation.visibility = View.GONE
-        if (characterManager.getCharacterByNameForAPI(sessionCharacter)?.showGPSButton == true) {
+        if (mainHandler.getMainCharacterManager().getCharacterByNameForAPI(sessionCharacter)?.showGPSButton == true) {
             mainHandler.getMainBinding().btnShareLocation.visibility = View.VISIBLE
         }
 
