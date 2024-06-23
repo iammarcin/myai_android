@@ -611,6 +611,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
     override fun getMainCharacterManager(): CharacterManager {
         return characterManager
     }
+    override fun getFullCharacterData(characterName: String): CharacterManager.Character {
+        return characterManager.getCharacterByNameForAPI(characterName)!!
+    }
     override val mainLayoutInflaterInstance: LayoutInflater
         get() = this.layoutInflater
 

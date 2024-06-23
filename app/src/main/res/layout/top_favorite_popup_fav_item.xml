@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- top_favorite_popup_fav_item.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <ImageButton
-        android:id="@+id/removeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:src="@drawable/ic_favorite_enabled" />
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/chat_character_image_view"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:padding="0dp"
+        android:layout_marginEnd="9dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ai_avatar_placeholder"
+        app:shapeAppearanceOverlay="@style/RoundedImage" />
 
     <TextView
         android:id="@+id/chatNameTextView"
@@ -21,5 +25,11 @@
         android:textColor="@color/white"
         android:textSize="16sp" />
 
-
+    <ImageButton
+        android:id="@+id/removeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:background="?attr/selectableItemBackground"
+        android:src="@drawable/ic_remove_rounded" />
 </LinearLayout>

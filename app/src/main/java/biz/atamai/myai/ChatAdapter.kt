@@ -100,7 +100,7 @@ class ChatAdapter(
                 R.drawable.user_avatar_placeholder
             } else {
                 chatItem.aiCharacterName?.let { characterName ->
-                    characterManager.getCharacterImageResId(characterName)
+                    characterManager.getCharacterByNameForAPI(characterName)?.imageResId
                 } ?: R.drawable.ai_avatar_placeholder
             }
 

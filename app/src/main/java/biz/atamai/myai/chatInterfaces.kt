@@ -43,6 +43,7 @@ interface MainHandler {
     fun checkSelfPermission(permission: String): Int
     fun requestAllPermissions(permissions: Array<String>, requestCode: Int)
     fun getMainCharacterManager(): CharacterManager
+    fun getFullCharacterData(characterName: String): CharacterManager.Character
     fun resizeImage(filePath: String, maxDimension: Int): File?
     fun releaseMediaPlayer()
     //fun getMainLayoutInflater(): LayoutInflater

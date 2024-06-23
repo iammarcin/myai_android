@@ -67,13 +67,9 @@ class CharacterManager(private val context: Context) {
         displayCharacterCards(binding, characters, onCharacterSelected)
     }
 
+    // return whole character (used in chatHelper)
     // when restoring data from DB - using just resId will not be enough (because for example if you reinstall app - IDs will be different)
     // so we will use this method to lookup directly images based on name of character
-    fun getCharacterImageResId(characterNameForAPI: String): Int {
-        return characters.find { it.nameForAPI == characterNameForAPI }?.imageResId ?: R.drawable.ai_avatar_placeholder
-    }
-
-    // return whole character (used in chatHelper)
     fun getCharacterByNameForAPI(characterName: String): Character? {
         return characters.find { it.nameForAPI == characterName }
     }

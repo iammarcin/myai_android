@@ -24,7 +24,7 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 
 // class to store favorite chat data
-data class FavoriteChat(val id: String) //, val name: String)
+data class FavoriteChat(val id: String, val name: String, var imageResId: Int)
 
 class TopMenuHandler(
     private val mainHandler: MainHandler,
@@ -94,35 +94,55 @@ class TopMenuHandler(
     }
 
     private fun showFavoriteChatsPopup(view: View) {
-        //val popupBindingFavItem = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
         val popupBindingFavMenu = TopFavoritePopupMenuBinding.inflate(mainHandler.mainLayoutInflaterInstance)
+        val currentChatId = chatHelperHandler.getCurrentDBSessionID()
+        val currentCharacter = mainHandler.getFullCharacterData(mainHandler.getCurrentAICharacter())
 
         // Define the width for the popup window
-        val popupWidth = (mainHandler.context.resources.displayMetrics.density * 200).toInt()
+        val popupWidth = (mainHandler.context.resources.displayMetrics.density * 250).toInt()
         val popupWindow = PopupWindow(popupBindingFavMenu.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        popupBindingFavMenu.btnAddFavorite.setOnClickListener {
-            val currentChat = chatHelperHandler.getCurrentDBSessionID()
-            addChatToFavorites(FavoriteChat(currentChat!!))
+        // get the list of favorite chats
+        val favoriteChats = getFavoriteChats()
+        println("favoriteChats: $favoriteChats")
+        val isCurrentChatFavorited = favoriteChats.any { it.id == currentChatId }
+
+        // depending if chat is already favorited, show different icon and text and set different click listener
+        popupBindingFavMenu.btnAddFavorite.apply {
+            setImageResource(if (isCurrentChatFavorited) R.drawable.ic_favorite_enabled else R.drawable.ic_favorite_disabled)
+        }
+        popupBindingFavMenu.addFavoriteTextView.text = if (isCurrentChatFavorited) "Remove from Favorites" else "Add to Favorites"
+
+        val addFavoriteClickListener = View.OnClickListener {
+            if (isCurrentChatFavorited) {
+                removeFavoriteChat(FavoriteChat(currentChatId!!, currentCharacter.name, currentCharacter.imageResId))
+            } else {
+                addChatToFavorites(FavoriteChat(currentChatId!!, currentCharacter.name, currentCharacter.imageResId))
+            }
             popupWindow.dismiss()
         }
 
-        // Populate the popup window with favorite chats
-        val favoriteChats = getFavoriteChats()
-        println("favoriteChats: $favoriteChats")
+        popupBindingFavMenu.btnAddFavorite.setOnClickListener(addFavoriteClickListener)
+        popupBindingFavMenu.addFavoriteTextView.setOnClickListener(addFavoriteClickListener)
 
+        // populate the list of favorite chats
         popupBindingFavMenu.favoritesContainer.removeAllViews()
         favoriteChats.forEach { chat ->
-            println("chat: $chat")
-            println("chat id: ${chat.id}")
             val chatItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
-            chatItemBinding.chatNameTextView.text = chat.id
+            chatItemBinding.chatNameTextView.text = chat.name
+            chatItemBinding.chatCharacterImageView.setImageResource(chat.imageResId)
 
             chatItemBinding.removeButton.setOnClickListener {
                 removeFavoriteChat(chat)
                 popupWindow.dismiss()
             }
+
+            chatItemBinding.chatNameTextView.setOnClickListener {
+                println("chat: ${chat.id}")
+                popupWindow.dismiss()
+            }
+
             popupBindingFavMenu.favoritesContainer.addView(chatItemBinding.root)
         }
 
