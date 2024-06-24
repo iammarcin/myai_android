@@ -463,7 +463,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         val handler = ResponseHandler(
             handlerType = HandlerType.Streaming(
                 onChunkReceived = { chunk ->
-                    runOnUiThread {
+                    CoroutineScope(Dispatchers.Main).launch {
                         currentResponseItemPosition?.let { position ->
                             chatItems[position].message += chunk
                             chatAdapter.notifyItemChanged(position)
@@ -478,7 +478,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                     }
                 },
                 onStreamEnd = {
-                    runOnUiThread {
+                    CoroutineScope(Dispatchers.Main).launch {
                         hideProgressBar("Text generation")
                         if (ConfigurationManager.getTTSAutoExecute()) {
                             chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
