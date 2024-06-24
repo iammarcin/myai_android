@@ -9,6 +9,9 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.SeekBar
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
@@ -110,7 +113,7 @@ class AudioPlayerManager(private val mainHandler: MainHandler) {
     }
 
     fun createToastMessage(message: String, duration: Int = Toast.LENGTH_SHORT) {
-        mainHandler.executeOnUIThread {
+        CoroutineScope(Dispatchers.Main).launch {
             mainHandler.createToastMessage(message)
         }
     }

@@ -141,7 +141,7 @@ class TopMenuHandler(
             }
 
             chatItemBinding.chatNameTextView.setOnClickListener {
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     mainHandler.getDatabaseHelper().sendDBRequest("db_get_user_session", mapOf("session_id" to chat.id))
                 }
                 popupWindow.dismiss()

@@ -222,26 +222,27 @@ class ChatAdapter(
                 binding.transcribeButton.setOnClickListener {
                     mainHandler.showProgressBar("Transcription")
                     val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
-
-                    utilityTools.uploadFileToServer(
-                        audioFilePath,
-                        apiUrl,
-                        "chat_audio2text",
-                        "speech",
-                        "chat",
-                        onResponseReceived = { response ->
-                            mainHandler.executeOnUIThread {
-                                mainHandler.handleTextMessage(response)
-                                mainHandler.hideProgressBar("Transcription")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        utilityTools.uploadFileToServer(
+                            audioFilePath,
+                            apiUrl,
+                            "chat_audio2text",
+                            "speech",
+                            "chat",
+                            onResponseReceived = { response ->
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    mainHandler.handleTextMessage(response)
+                                    mainHandler.hideProgressBar("Transcription")
+                                }
+                            },
+                            onError = { error ->
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    mainHandler.hideProgressBar("Transcription")
+                                    mainHandler.createToastMessage("Error: ${error.message}")
+                                }
                             }
-                        },
-                        onError = { error ->
-                            mainHandler.executeOnUIThread {
-                                mainHandler.hideProgressBar("Transcription")
-                                mainHandler.createToastMessage("Error: ${error.message}")
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
 
             } else {
@@ -276,36 +277,41 @@ class ChatAdapter(
                     mainHandler.showProgressBar("Image")
                     val prompt = chatItem.message
 
-                    utilityTools.sendImageRequest(
-                        prompt,
-                        apiUrl,
-                        { result ->
-                            chatItem.imageLocations += result
-                            notifyItemChanged(adapterPosition)
-                            mainHandler.hideProgressBar("Image")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        utilityTools.sendImageRequest(
+                            prompt,
+                            apiUrl,
+                            { result ->
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    chatItem.imageLocations += result
+                                    notifyItemChanged(adapterPosition)
+                                    mainHandler.hideProgressBar("Image")
 
-                            chatHelperHandler?.scrollToEnd()
-                            CoroutineScope(Dispatchers.Main).launch {
-                                // update DB - in order to preserve image link (if we restore session later)
-                                mainHandler.getDatabaseHelper().sendDBRequest(
-                                    "db_update_session",
-                                    mapOf(
-                                        "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
-                                        "chat_history" to chatItems.map { it.toSerializableMap() }
+                                    chatHelperHandler?.scrollToEnd()
+                                }
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    // update DB - in order to preserve image link (if we restore session later)
+                                    mainHandler.getDatabaseHelper().sendDBRequest(
+                                        "db_update_session",
+                                        mapOf(
+                                            "session_id" to (chatHelperHandler?.getCurrentDBSessionID()
+                                                ?: ""),
+                                            "chat_history" to chatItems.map { it.toSerializableMap() }
+                                        )
                                     )
-                                )
-                            }
+                                }
 
-                        },
-                        { error ->
-                            mainHandler.executeOnUIThread {
-                                mainHandler.hideProgressBar("Image")
-                                println("Error image: ${error.message}")
-                                mainHandler.createToastMessage("Error generating image ${error.message}")
+                            },
+                            { error ->
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    mainHandler.hideProgressBar("Image")
+                                    println("Error image: ${error.message}")
+                                    mainHandler.createToastMessage("Error generating image ${error.message}")
 
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             } else {
                 binding.imageGenerationView.visibility = View.GONE
@@ -411,7 +417,7 @@ class ChatAdapter(
                     }
                     R.id.forceDBSync -> {
                         // Force DB sync - this might be useful in few cases (for example when poor internet and functions - like transcription - fail)
-                        CoroutineScope(Dispatchers.Main).launch {
+                        CoroutineScope(Dispatchers.IO).launch {
                             mainHandler.getDatabaseHelper().sendDBRequest(
                                 "db_update_session",
                                 mapOf(
@@ -444,7 +450,7 @@ class ChatAdapter(
                             "db_update_session"
                         }
 
-                        CoroutineScope(Dispatchers.Main).launch {
+                        CoroutineScope(Dispatchers.IO).launch {
                             // update DB - in order to preserve TTS link (if we restore session later)
                             mainHandler.getDatabaseHelper().sendDBRequest(
                                 dbMethodToExecute,
@@ -497,13 +503,15 @@ class ChatAdapter(
         // Function to download file and then (optionally) play it
         private fun downloadAndOptionallyPlayAudio(fileUri: Uri, message: String, shouldPlayFile: Boolean) {
             mainHandler.showProgressBar("Downloading audio")
-            utilityTools.downloadFile(fileUri.toString()) { file ->
-                mainHandler.executeOnUIThread {
-                    mainHandler.hideProgressBar("Downloading audio")
-                    if (file != null && shouldPlayFile) {
-                        playAudio(Uri.fromFile(file), message)
-                    } else {
-                        mainHandler.createToastMessage("Error downloading audio")
+            CoroutineScope(Dispatchers.IO).launch {
+                utilityTools.downloadFile(fileUri.toString()) { file ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        mainHandler.hideProgressBar("Downloading audio")
+                        if (file != null && shouldPlayFile) {
+                            playAudio(Uri.fromFile(file), message)
+                        } else {
+                            mainHandler.createToastMessage("Error downloading audio")
+                        }
                     }
                 }
             }
@@ -532,23 +540,25 @@ class ChatAdapter(
         // TODO one day - handle chunks maybe - because here i just take first (because its super rare to be longer)
         val message4API = message.chunked(4096)[0]
 
-        utilityTools.sendTTSRequest(
-            message4API,
-            apiUrl,
-            action,
-            { result -> handleTTSCompletedResponse(result, position, action) },
-            { error ->
-                mainHandler.executeOnUIThread {
-                    mainHandler.hideProgressBar("TTS")
-                    mainHandler.createToastMessage("Error generating TTS: ${error.message}")
+        CoroutineScope(Dispatchers.IO).launch {
+            utilityTools.sendTTSRequest(
+                message4API,
+                apiUrl,
+                action,
+                { result -> handleTTSCompletedResponse(result, position, action) },
+                { error ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        mainHandler.hideProgressBar("TTS")
+                        mainHandler.createToastMessage("Error generating TTS: ${error.message}")
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 
     // upon receiving TTS response - we have to update chat item with audio file
     private fun handleTTSCompletedResponse(result: String, position: Int, action: String) {
-        mainHandler.executeOnUIThread {
+        CoroutineScope(Dispatchers.Main).launch {
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
@@ -561,39 +571,42 @@ class ChatAdapter(
 
             // if its stream - we should upload to S3, if its not stream - its already uploaded via backend
             if (action == "tts_stream") {
-                // this already consists of chat session update
-                utilityTools.uploadFileToServer(
-                    result,
-                    apiUrl,
-                    "api/aws",
-                    "provider.s3",
-                    "s3_upload",
-                    onResponseReceived = { response ->
-                        mainHandler.executeOnUIThread {
-                            chatItem.fileNames = listOf(Uri.parse(response))
-                            notifyItemChanged(position)
+                CoroutineScope(Dispatchers.IO).launch {
+                    // this already consists of chat session update
+                    utilityTools.uploadFileToServer(
+                        result,
+                        apiUrl,
+                        "api/aws",
+                        "provider.s3",
+                        "s3_upload",
+                        onResponseReceived = { response ->
                             CoroutineScope(Dispatchers.Main).launch {
-                                // update DB - in order to preserve TTS link (if we restore session later)
-                                mainHandler.getDatabaseHelper().sendDBRequest(
-                                    "db_update_session",
-                                    mapOf(
-                                        "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
-                                        "chat_history" to chatItems.map { it.toSerializableMap() }
+                                chatItem.fileNames = listOf(Uri.parse(response))
+                                notifyItemChanged(position)
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    // update DB - in order to preserve TTS link (if we restore session later)
+                                    mainHandler.getDatabaseHelper().sendDBRequest(
+                                        "db_update_session",
+                                        mapOf(
+                                            "session_id" to (chatHelperHandler?.getCurrentDBSessionID()
+                                                ?: ""),
+                                            "chat_history" to chatItems.map { it.toSerializableMap() }
+                                        )
                                     )
-                                )
+                                }
+                            }
+                        },
+                        onError = { error ->
+                            CoroutineScope(Dispatchers.Main).launch {
+                                println("Error handleTTSCompletedResponse: ${error.message}")
+                                mainHandler.createToastMessage("Error: ${error.message}")
                             }
                         }
-                    },
-                    onError = { error ->
-                        mainHandler.executeOnUIThread {
-                            println("Error handleTTSCompletedResponse: ${error.message}")
-                            mainHandler.createToastMessage("Error: ${error.message}")
-                        }
-                    }
-                )
+                    )
+                }
             } else {
                 // here - we still need to update chat session with new audio file
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     // update DB - in order to preserve TTS link (if we restore session later)
                     mainHandler.getDatabaseHelper().sendDBRequest(
                         "db_update_session",

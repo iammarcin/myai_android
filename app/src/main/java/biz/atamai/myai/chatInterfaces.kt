@@ -33,7 +33,6 @@ interface MainHandler {
     fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean): ChatItem
     fun showProgressBar(message: String = "")
     fun hideProgressBar(message: String = "")
-    fun executeOnUIThread(action: Runnable)
     fun getCurrentAICharacter(): String
     fun setRecordButtonImageResource(resourceId: Int)
     fun createToastMessage(message: String, duration: Int = Toast.LENGTH_SHORT)

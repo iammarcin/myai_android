@@ -18,6 +18,9 @@ import android.database.Cursor
 import android.provider.OpenableColumns
 import androidx.appcompat.app.AppCompatActivity
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 class FileAttachmentHandler(
@@ -114,29 +117,32 @@ class FileAttachmentHandler(
             )
 
 
-
-            // upload to S3 - so sending request to nodejs API
-            utilityTools.uploadFileToServer(
-                filePath,
-                apiUrl,
-                "api/aws",
-                "provider.s3",
-                "s3_upload",
-                onResponseReceived = { response ->
-                    mainHandler.executeOnUIThread {
-                        imageView.setImageURI(null) // Clear local URI
-                        // set imageview tag as response - so we can use it to remove image from preview
-                        imageView.tag = response
-                        Picasso.get().load(response).into(imageView)
-                        decrementUploadCounter()
-                    }
-                },
-                onError = { error ->
-                    mainHandler.executeOnUIThread {
-                        decrementUploadCounter()
-                        mainHandler.createToastMessage("Error: ${error.message}")
-                    }
-                })
+            CoroutineScope(Dispatchers.IO).launch {
+                // upload to S3 - so sending request to nodejs API
+                utilityTools.uploadFileToServer(
+                    filePath,
+                    apiUrl,
+                    "api/aws",
+                    "provider.s3",
+                    "s3_upload",
+                    onResponseReceived = { response ->
+                        CoroutineScope(Dispatchers.Main).launch {
+                            imageView.setImageURI(null) // Clear local URI
+                            // set imageview tag as response - so we can use it to remove image from preview
+                            imageView.tag = response
+                            CoroutineScope(Dispatchers.IO).launch {
+                                Picasso.get().load(response).into(imageView)
+                            }
+                            decrementUploadCounter()
+                        }
+                    },
+                    onError = { error ->
+                        CoroutineScope(Dispatchers.Main).launch {
+                            decrementUploadCounter()
+                            mainHandler.createToastMessage("Error: ${error.message}")
+                        }
+                    })
+            }
         } else {
             val placeholder = View(mainHandler.context).apply {
                 layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {

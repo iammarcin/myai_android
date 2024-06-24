@@ -107,12 +107,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
             chatHelper,
             // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
             onFetchChatSessions = {
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     DatabaseHelper.loadChatSessions()
                 }
             },
             onSearchMessages = { query ->
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     DatabaseHelper.sendDBRequest("db_search_messages", mapOf("search_text" to query))
                 }
             }
@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // mainly wanted to put it when new message is sent - but there was problem with order of execution (for user request and AI response)
         // and multiple sessions were created anyway
         // so decided to do this way - probably will end up with many empty sessions - but i guess i ignore it (or clean up later)
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             DatabaseHelper.sendDBRequest("db_new_session",
                 mapOf(
                     "session_name" to "New chat",
@@ -237,7 +237,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             binding.characterScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("assistant")
             ConfigurationManager.setTextCurrentSessionName("New chat")
-            CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 DatabaseHelper.sendDBRequest("db_new_session",
                     mapOf(
                         "session_name" to "New chat",
@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         swipeRefreshLayout.setOnRefreshListener {
             // db_search_messages - it is not exactly search of course - but we trigger it with empty search text - so it searches for everything
             // + it has everything we need here - reset chat, load chat sessions etc
-            CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 DatabaseHelper.sendDBRequest("db_search_messages", mapOf("search_text" to ""))
             }
             swipeRefreshLayout.isRefreshing = false
@@ -349,7 +349,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             } else {
                 val currentUserMessage = chatItems[position]
                 // if we don't stream - we still need to save user message to DB
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentSessionId, currentUserMessage, null)
                 }
             }
@@ -359,7 +359,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 startStreaming(currentSessionId)
             } else {
                 // if we don't stream - we still need to save to DB
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentSessionId, currentUserMessage, null)
                 }
             }
@@ -494,12 +494,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
                         // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
                         if (responseItemPosition == null) {
-                            CoroutineScope(Dispatchers.Main).launch {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentSessionId, currentUserMessage, currentAIResponse)
                             }
                         } else {
                             // if it is after user updated their message - AI response also needs to be overwritten in DB
-                            CoroutineScope(Dispatchers.Main).launch {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentSessionId, currentUserMessage, currentAIResponse)
                             }
                         }
@@ -578,9 +578,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
     }
     override fun getCurrentAICharacter(): String {
         return ConfigurationManager.getTextAICharacter()
-    }
-    override fun executeOnUIThread(action: Runnable) {
-        this@MainActivity.runOnUiThread(action)
     }
     override fun getMainActivity(): Activity {
         return this

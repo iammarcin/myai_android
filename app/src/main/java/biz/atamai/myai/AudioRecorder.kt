@@ -26,6 +26,9 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
@@ -207,31 +210,40 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
         val utilityTools = UtilityTools(
             mainHandler = mainHandler,
         )
-        utilityTools.uploadFileToServer(
-            audioFilePath,
-            apiUrl,
-            "chat_audio2text",
-            "speech",
-            "chat",
-            onResponseReceived = { response ->
-                mainHandler.executeOnUIThread {
-                    mainHandler.handleTextMessage(response, attachedImageLocations, attachedFilePaths, false)
-                    mainHandler.hideProgressBar("Audio to text")
+        CoroutineScope(Dispatchers.IO).launch {
+            utilityTools.uploadFileToServer(
+                audioFilePath,
+                apiUrl,
+                "chat_audio2text",
+                "speech",
+                "chat",
+                onResponseReceived = { response ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        mainHandler.handleTextMessage(
+                            response,
+                            attachedImageLocations,
+                            attachedFilePaths,
+                            false
+                        )
+                        mainHandler.hideProgressBar("Audio to text")
+                    }
+                },
+                onError = { error ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        mainHandler.createToastMessage("Error: ${error.message}")
+                        mainHandler.hideProgressBar("Audio to text")
+                        // as probably something didn't work out - we can allow transcribe action
+                        chatItem.showTranscribeButton = true
+                        // notify changes (to show transcribe button)
+                        val position = mainHandler.chatItemsList.indexOf(chatItem)
+                        // probably better to create some interface for that but it works
+                        mainHandler.getMainBinding().chatContainer.adapter?.notifyItemChanged(
+                            position
+                        )
+                    }
                 }
-            },
-            onError = { error ->
-                mainHandler.executeOnUIThread {
-                    mainHandler.createToastMessage("Error: ${error.message}")
-                    mainHandler.hideProgressBar("Audio to text")
-                    // as probably something didn't work out - we can allow transcribe action
-                    chatItem.showTranscribeButton = true
-                    // notify changes (to show transcribe button)
-                    val position = mainHandler.chatItemsList.indexOf(chatItem)
-                    // probably better to create some interface for that but it works
-                    mainHandler.getMainBinding().chatContainer.adapter?.notifyItemChanged(position)
-                }
-            }
-        )
+            )
+        }
     }
 
     private fun addRecordingToFileList(filePath: String?): ChatItem? {

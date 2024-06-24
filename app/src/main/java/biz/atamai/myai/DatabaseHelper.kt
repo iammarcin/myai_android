@@ -182,7 +182,7 @@ object DatabaseHelper {
     fun loadChatSessions() {
         println("Load chat sessions. sessionsLoaded: $sessionsLoaded")
         if (sessionsLoaded) return
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             isLoading = true
             fetchChatSessions(limit, offset)
             isLoading = false
@@ -243,7 +243,7 @@ object DatabaseHelper {
             //handle click on session
             sessionViewBinding.root.setOnClickListener {
                 // get data for this specific session
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     sendDBRequest("db_get_user_session", mapOf("session_id" to session.sessionId))
                 }
                 mainHandler.getMainBinding().drawerLayout.closeDrawer(GravityCompat.START)
@@ -287,7 +287,7 @@ object DatabaseHelper {
                 mainHandler.getConfigurationManager().setTextCurrentSessionName(newName)
                 mainHandler.getConfigurationManager().updateFavoriteChatName(session.sessionId, newName)
 
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     sendDBRequest(
                         "db_update_session",
                         mapOf("session_id" to session.sessionId, "new_session_name" to newName)

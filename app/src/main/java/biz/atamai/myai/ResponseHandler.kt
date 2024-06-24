@@ -164,7 +164,7 @@ class ResponseHandler(
     private fun handleNonStreamingResponse(body: ResponseBody) {
         coroutineScope.launch {
             try {
-                val responseText = body.string() // Perform this operation in the IO thread
+                val responseText = withContext(Dispatchers.IO) { body.use { it.string() } }
                 withContext(Dispatchers.Main) {
                     (handlerType as HandlerType.NonStreaming).onResponseReceived(responseText)
                 }
@@ -181,10 +181,8 @@ class ResponseHandler(
                 val responseText = body.string()
                 (handlerType as HandlerType.FileUpload).onResponseReceived(responseText)
             } catch (e: Exception) {
-                coroutineScope.launch(Dispatchers.Main) {
-                    onError(e)
-                    println("ERROR in handleAudioUploadResponse: ${e.message}")
-                }
+                onError(e)
+                println("ERROR in handleAudioUploadResponse: ${e.message}")
             }
         }
     }
