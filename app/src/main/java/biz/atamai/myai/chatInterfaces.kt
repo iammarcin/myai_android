@@ -52,7 +52,7 @@ interface MainHandler {
 }
 
 interface ChatHelperHandler {
-    fun getCurrentDBSessionID(): String?
+    fun getCurrentDBSessionID(): String
     fun setCurrentDBSessionID(sessionID: String)
     fun setEditingMessagePosition(position: Int?)
     fun createNewSessionFromHere(position: Int)
