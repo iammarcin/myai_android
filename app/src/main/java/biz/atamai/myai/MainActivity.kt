@@ -464,43 +464,62 @@ class MainActivity : AppCompatActivity(), MainHandler {
             handlerType = HandlerType.Streaming(
                 onChunkReceived = { chunk ->
                     CoroutineScope(Dispatchers.Main).launch {
-                        currentResponseItemPosition?.let { position ->
-                            chatItems[position].message += chunk
-                            chatAdapter.notifyItemChanged(position)
-                        }
-                        // slight delay to smooth scrolling on adding chunks to UI
-                        val handler = Handler(Looper.getMainLooper())
-                        handler.postDelayed({
-                            currentResponseItemPosition?.let { _ ->
-                                chatHelper.scrollToEnd()
+                        // only if session has NOT changed - we want to add chunks to chat
+                        if (currentSessionId == chatHelper.getCurrentDBSessionID()) {
+                            currentResponseItemPosition?.let { position ->
+                                chatItems[position].message += chunk
+                                chatAdapter.notifyItemChanged(position)
                             }
-                        }, 50) // Adjust the delay time as needed
+                            // slight delay to smooth scrolling on adding chunks to UI
+                            val handler = Handler(Looper.getMainLooper())
+                            handler.postDelayed({
+                                currentResponseItemPosition?.let { _ ->
+                                    chatHelper.scrollToEnd()
+                                }
+                            }, 50)
+                        }
                     }
                 },
                 onStreamEnd = {
                     CoroutineScope(Dispatchers.Main).launch {
                         hideProgressBar("Text generation")
-                        if (ConfigurationManager.getTTSAutoExecute()) {
-                            chatAdapter.sendTTSRequest(chatItems[currentResponseItemPosition!!].message, currentResponseItemPosition!!)
-                        }
-
-                        // save to DB
-                        // edit is possible only on last message
-                        val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
-                        val currentAIResponse = chatItems[currentResponseItemPosition!!]
-                        if (currentAIResponse.aiCharacterName == "tools_artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
-                            chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
-                        }
-
-                        // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
-                        if (responseItemPosition == null) {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentSessionId, currentUserMessage, currentAIResponse)
+                        // only if session has NOT changed - we want to proceed
+                        if (currentSessionId == chatHelper.getCurrentDBSessionID()) {
+                            if (ConfigurationManager.getTTSAutoExecute()) {
+                                chatAdapter.sendTTSRequest(
+                                    chatItems[currentResponseItemPosition!!].message,
+                                    currentResponseItemPosition!!
+                                )
                             }
-                        } else {
-                            // if it is after user updated their message - AI response also needs to be overwritten in DB
-                            CoroutineScope(Dispatchers.IO).launch {
-                                DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentSessionId, currentUserMessage, currentAIResponse)
+
+                            // save to DB
+                            // edit is possible only on last message
+                            val currentUserMessage = chatItems[currentResponseItemPosition!! - 1]
+                            val currentAIResponse = chatItems[currentResponseItemPosition!!]
+                            if (currentAIResponse.aiCharacterName == "tools_artgen" && ConfigurationManager.getImageAutoGenerateImage() && currentAIResponse.imageLocations.isEmpty()) {
+                                chatAdapter.triggerImageGeneration(currentResponseItemPosition!!)
+                            }
+
+                            // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
+                            if (responseItemPosition == null) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    DatabaseHelper.addNewOrEditDBMessage(
+                                        "db_new_message",
+                                        currentSessionId,
+                                        currentUserMessage,
+                                        currentAIResponse
+                                    )
+                                }
+                            } else {
+                                // if it is after user updated their message - AI response also needs to be overwritten in DB
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    DatabaseHelper.addNewOrEditDBMessage(
+                                        "db_edit_message",
+                                        currentSessionId,
+                                        currentUserMessage,
+                                        currentAIResponse
+                                    )
+                                }
                             }
                         }
                     }
