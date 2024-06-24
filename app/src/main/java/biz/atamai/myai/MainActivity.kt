@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // set default character (assistant) and session name - in case there is some remaining from previous app run
         ConfigurationManager.setTextAICharacter("assistant")
         ConfigurationManager.setTextCurrentSessionName("New chat")
-        
+
         // Initialize TopMenuHandler
         val topMenuHandler = TopMenuHandler(
             this,
@@ -338,28 +338,29 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // some characters have autoResponse set to false - if this is the case - we don't stream
         val character = characterManager.getCharacterByNameForAPI(ConfigurationManager.getTextAICharacter())
 
+        val currentSessionId = chatHelper.getCurrentDBSessionID()
         // Add message to chat
         chatHelper.getEditingMessagePosition()?.let { position ->
             chatHelper.editMessageInChat(position, message, attachedImageLocations, attachedFiles)
 
             // some characters have autoResponse set to false - if this is the case - we don't want to get response from AI (it's just data collection)
             if (character?.autoResponse == true) {
-                startStreaming(position)
+                startStreaming(currentSessionId, position)
             } else {
                 val currentUserMessage = chatItems[position]
                 // if we don't stream - we still need to save user message to DB
                 CoroutineScope(Dispatchers.Main).launch {
-                    DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentUserMessage, null)
+                    DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentSessionId, currentUserMessage, null)
                 }
             }
         } ?: run {
             val currentUserMessage = addMessageToChat(message, attachedImageLocations, attachedFiles, gpsLocationMessage)
             if (character?.autoResponse == true) {
-                startStreaming()
+                startStreaming(currentSessionId)
             } else {
                 // if we don't stream - we still need to save to DB
                 CoroutineScope(Dispatchers.Main).launch {
-                    DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentUserMessage, null)
+                    DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentSessionId, currentUserMessage, null)
                 }
             }
         }
@@ -372,7 +373,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
     // streaming request to API - text
     // responseItemPosition - if it's null - it's new message - otherwise it's edited message
-    private fun startStreaming(responseItemPosition: Int? = null) {
+    private fun startStreaming(currentSessionId: String, responseItemPosition: Int? = null) {
         showProgressBar("Text generation")
 
         // collect chat history (needed to send it API to get whole context of chat)
@@ -494,12 +495,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
                         // as above checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
                         if (responseItemPosition == null) {
                             CoroutineScope(Dispatchers.Main).launch {
-                                DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentUserMessage, currentAIResponse)
+                                DatabaseHelper.addNewOrEditDBMessage("db_new_message", currentSessionId, currentUserMessage, currentAIResponse)
                             }
                         } else {
                             // if it is after user updated their message - AI response also needs to be overwritten in DB
                             CoroutineScope(Dispatchers.Main).launch {
-                                DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentUserMessage, currentAIResponse)
+                                DatabaseHelper.addNewOrEditDBMessage("db_edit_message", currentSessionId, currentUserMessage, currentAIResponse)
                             }
                         }
                     }

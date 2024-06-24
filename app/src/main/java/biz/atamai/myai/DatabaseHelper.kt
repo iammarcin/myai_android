@@ -123,12 +123,13 @@ object DatabaseHelper {
         }
     }
 
-    suspend fun addNewOrEditDBMessage(method: String, userMessage: ChatItem, aiResponse: ChatItem?) {
+    // important is to get sessionId now while sending, because if we get it after response - it might be different already (user can switch) and we can overwrite data
+    suspend fun addNewOrEditDBMessage(method: String, sessionId: String, userMessage: ChatItem, aiResponse: ChatItem?) {
         // there might be case (when character has autoResponse = false , so we're only collecting data)
         // that there is no aiResponse - but we still need to save user message
         val userInput = mutableMapOf<String, Any>(
             "customer_id" to 1,
-            "session_id" to (chatHelperHandler.getCurrentDBSessionID() ?: ""),
+            "session_id" to sessionId,
             "userMessage" to mapOf(
                 "sender" to "User",
                 "message" to userMessage.message,

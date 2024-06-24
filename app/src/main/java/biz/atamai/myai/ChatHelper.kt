@@ -29,7 +29,7 @@ class ChatHelper(
     private var editingMessagePosition: Int? = null
 
     // this is to store DB session ID - so when submitting/updating DB messages - they will be assigned to proper session
-    private var currentDBSessionID: String? = ""
+    private var currentDBSessionID: String = ""
 
     // helper functions for editingMessagePosition
     fun getEditingMessagePosition(): Int? {
@@ -40,7 +40,7 @@ class ChatHelper(
     }
 
     // helper functions for currentDBSessionID
-    override fun getCurrentDBSessionID(): String? {
+    override fun getCurrentDBSessionID(): String {
         return currentDBSessionID
     }
     override fun setCurrentDBSessionID(sessionID: String) {
