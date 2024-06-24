@@ -47,6 +47,7 @@ interface MainHandler {
     fun releaseMediaPlayer()
     fun getDatabaseHelper(): DatabaseHelper
     fun getConfigurationManager(): ConfigurationManager
+    fun getIsUserScrolling(): Boolean
     //fun getMainLayoutInflater(): LayoutInflater
 }
 

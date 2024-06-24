@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
@@ -241,9 +242,18 @@ class ChatHelper(
 
 
     override fun scrollToEnd() {
+        if (mainHandler.getIsUserScrolling()) {
+            return
+        }
         //ensure that the scroll operation happens after the RecyclerView has completed any pending layout passes (to smooth scrolling)
-        mainHandler.getMainBinding().chatContainer.post {
-            mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
+        val layoutManager = mainHandler.getMainBinding().chatContainer.layoutManager as LinearLayoutManager
+        val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
+
+        // Only scroll to end if the user is near the bottom of the chat
+        if (lastVisiblePosition >= chatItems.size - 2) {
+            mainHandler.getMainBinding().chatContainer.post {
+                mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
+            }
         }
     }
 

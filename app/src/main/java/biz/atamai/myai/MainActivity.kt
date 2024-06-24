@@ -24,6 +24,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import java.io.File
@@ -61,6 +62,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
     private var originalAICharacter: String? = null
 
     private lateinit var audioPlayerManager: AudioPlayerManager
+
+    // this is for chat scrolling - if user scrolls - we don't want to scroll to the end
+    private var isUserScrolling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -267,6 +271,16 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 DatabaseHelper.loadMoreChatSessions()
             }
         }
+
+        // scroll listener for chat container (to detect if user is scrolling)
+        binding.chatContainer.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                when (newState) {
+                    RecyclerView.SCROLL_STATE_DRAGGING -> isUserScrolling = true
+                    RecyclerView.SCROLL_STATE_IDLE -> isUserScrolling = false
+                }
+            }
+        })
 
         // GPS button
         binding.btnShareLocation.setOnClickListener {
@@ -640,6 +654,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
     }
     override fun getConfigurationManager(): ConfigurationManager {
         return ConfigurationManager
+    }
+    override fun getIsUserScrolling(): Boolean {
+        return isUserScrolling
     }
     // permissions
     override fun checkSelfPermission(permission: String): Int {
