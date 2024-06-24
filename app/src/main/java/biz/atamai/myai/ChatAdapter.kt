@@ -277,6 +277,8 @@ class ChatAdapter(
                     mainHandler.showProgressBar("Image")
                     val prompt = chatItem.message
 
+                    val currentSessionID = chatHelperHandler?.getCurrentDBSessionID() ?: ""
+
                     CoroutineScope(Dispatchers.IO).launch {
                         utilityTools.sendImageRequest(
                             prompt,
@@ -294,8 +296,7 @@ class ChatAdapter(
                                     mainHandler.getDatabaseHelper().sendDBRequest(
                                         "db_update_session",
                                         mapOf(
-                                            "session_id" to (chatHelperHandler?.getCurrentDBSessionID()
-                                                ?: ""),
+                                            "session_id" to currentSessionID,
                                             "chat_history" to chatItems.map { it.toSerializableMap() }
                                         )
                                     )
@@ -540,12 +541,14 @@ class ChatAdapter(
         // TODO one day - handle chunks maybe - because here i just take first (because its super rare to be longer)
         val message4API = message.chunked(4096)[0]
 
+        val currentSessionID = chatHelperHandler?.getCurrentDBSessionID() ?: ""
+
         CoroutineScope(Dispatchers.IO).launch {
             utilityTools.sendTTSRequest(
                 message4API,
                 apiUrl,
                 action,
-                { result -> handleTTSCompletedResponse(result, position, action) },
+                { result -> handleTTSCompletedResponse(result, position, action, currentSessionID) },
                 { error ->
                     CoroutineScope(Dispatchers.Main).launch {
                         mainHandler.hideProgressBar("TTS")
@@ -557,7 +560,7 @@ class ChatAdapter(
     }
 
     // upon receiving TTS response - we have to update chat item with audio file
-    private fun handleTTSCompletedResponse(result: String, position: Int, action: String) {
+    private fun handleTTSCompletedResponse(result: String, position: Int, action: String, currentSessionID: String) {
         CoroutineScope(Dispatchers.Main).launch {
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(result))
@@ -588,8 +591,7 @@ class ChatAdapter(
                                     mainHandler.getDatabaseHelper().sendDBRequest(
                                         "db_update_session",
                                         mapOf(
-                                            "session_id" to (chatHelperHandler?.getCurrentDBSessionID()
-                                                ?: ""),
+                                            "session_id" to currentSessionID,
                                             "chat_history" to chatItems.map { it.toSerializableMap() }
                                         )
                                     )
@@ -611,7 +613,7 @@ class ChatAdapter(
                     mainHandler.getDatabaseHelper().sendDBRequest(
                         "db_update_session",
                         mapOf(
-                            "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
+                            "session_id" to currentSessionID,
                             "chat_history" to chatItems.map { it.toSerializableMap() }
                         )
                     )
