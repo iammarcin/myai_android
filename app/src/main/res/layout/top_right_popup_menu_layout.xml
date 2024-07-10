@@ -37,6 +37,15 @@
         android:textSize="16sp" />
 
     <TextView
+        android:id="@+id/claude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:drawablePadding="18dp"
+        android:text="Claude-3.5"
+        android:textSize="16sp" />
+
+    <TextView
         android:id="@+id/llama3_70b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

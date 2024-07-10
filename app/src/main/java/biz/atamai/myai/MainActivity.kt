@@ -413,7 +413,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         println("Start streaming")
         println("Chat history: $chatHistory")
 
-        // user prompt prepartion
+        // user prompt preparation
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         // first lets get user message - either last one or the one that was edited
         val userActiveChatItem = if (responseItemPosition == null) {
