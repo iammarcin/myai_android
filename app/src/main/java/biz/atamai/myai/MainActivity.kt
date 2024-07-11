@@ -123,19 +123,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
         )
         topMenuHandler.setupTopMenus(binding)
 
-        // start new chat session
-        // i tried many many different ways not to put it here (around 26-27May - check chatgpt if you want ;) )
-        // mainly wanted to put it when new message is sent - but there was problem with order of execution (for user request and AI response)
-        // and multiple sessions were created anyway
-        // so decided to do this way - probably will end up with many empty sessions - but i guess i ignore it (or clean up later)
-        CoroutineScope(Dispatchers.IO).launch {
-            DatabaseHelper.sendDBRequest("db_new_session",
-                mapOf(
-                    "session_name" to "New chat",
-                    "ai_character_name" to "assistant",
-                ))
-        }
-
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
 
@@ -241,13 +228,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
             binding.characterScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("assistant")
             ConfigurationManager.setTextCurrentSessionName("New chat")
-            CoroutineScope(Dispatchers.IO).launch {
-                DatabaseHelper.sendDBRequest("db_new_session",
-                    mapOf(
-                        "session_name" to "New chat",
-                        "ai_character_name" to "assistant",
-                    ))
-            }
+            binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
         }
 
         // scrollview with sessions list on top left menu
