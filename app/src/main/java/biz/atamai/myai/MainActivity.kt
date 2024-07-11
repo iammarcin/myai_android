@@ -225,10 +225,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
         binding.newChatButton.setOnClickListener {
             chatHelper.resetChat()
             binding.btnShareLocation.visibility = View.GONE
-            binding.characterScrollView.visibility = View.VISIBLE
+            binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("assistant")
             ConfigurationManager.setTextCurrentSessionName("New chat")
-            binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
         }
 
         // scrollview with sessions list on top left menu
