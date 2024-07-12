@@ -142,6 +142,8 @@ class ChatHelper(
 
         for (i in 0 until chatHistory.length()) {
             val chatItemJson = chatHistory.getJSONObject(i)
+            println("!!!!!")
+            println(chatItemJson.toString())
 
             // Extract message, imageLocations, and fileNames
             val message = chatItemJson.getString("message")
@@ -166,7 +168,9 @@ class ChatHelper(
             // (for example editing this message will overwrite next user message with AI response)
             if (i + 1 < chatHistory.length()) {
                 val nextMessage = chatHistory.getJSONObject(i + 1).getString("message")
-                if (nextMessage == ERROR_MESSAGE_FOR_TEXT_GEN) {
+                // finally skip it only if it's not last message... because if it is - we want to restore it
+                // if it's not last message - then in fact with editing there could be potential problem with overwriting
+                if (nextMessage == ERROR_MESSAGE_FOR_TEXT_GEN && i + 2 < chatHistory.length()) {
                     continue
                 }
             }
