@@ -228,6 +228,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
             binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
             ConfigurationManager.setTextAICharacter("assistant")
             ConfigurationManager.setTextCurrentSessionName("New chat")
+            originalAICharacter = null
+            chatHelper.setCurrentDBSessionID("")
         }
 
         // scrollview with sessions list on top left menu
