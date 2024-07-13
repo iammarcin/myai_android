@@ -18,6 +18,7 @@ object ConfigurationManager {
     private const val TEXT_STREAMING = "text_streaming"
     private const val TEXT_AI_CHARACTER = "text_ai_character"
     private const val TEXT_SESSION_NAME = "text_session_name"
+    private const val TEXT_FILE_ATTACHED_MESSAGE_LIMIT = "text_file_attached_message_limit" // how many messages after which we don't send attachments any more
     private const val GENERAL_USE_BLUETOOTH = "general_use_bluetooth"
     private const val GENERAL_TEST_DATA = "general_test_data"
     private const val GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING = "general_download_audio_files_before_playing" // its in use in chat adapter / audio player - if we download - seekbar works fine (we can move audio playing to whatever point we want)
@@ -57,6 +58,7 @@ object ConfigurationManager {
         TEXT_TEMPERATURE to 0.0f,
         TEXT_MEMORY_SIZE to 2000,
         TEXT_STREAMING to false,
+        TEXT_FILE_ATTACHED_MESSAGE_LIMIT to 3,
         GENERAL_USE_BLUETOOTH to false,
         GENERAL_TEST_DATA to false,
         GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING to true,
@@ -127,6 +129,7 @@ object ConfigurationManager {
     fun getTextCurrentSessionName() = getString(TEXT_SESSION_NAME, defaultSettings[TEXT_SESSION_NAME] as String)
     fun getTextTemperature() = getFloat(TEXT_TEMPERATURE, defaultSettings[TEXT_TEMPERATURE] as Float)
     fun getTextMemorySize() = getInt(TEXT_MEMORY_SIZE, defaultSettings[TEXT_MEMORY_SIZE] as Int)
+    fun getTextFileAttachedMessageLimit() = getInt(TEXT_FILE_ATTACHED_MESSAGE_LIMIT, defaultSettings[TEXT_FILE_ATTACHED_MESSAGE_LIMIT] as Int)
     fun getIsStreamingEnabled() = getBoolean(TEXT_STREAMING, defaultSettings[TEXT_STREAMING] as Boolean)
     fun getUseBluetooth() = getBoolean(GENERAL_USE_BLUETOOTH, defaultSettings[GENERAL_USE_BLUETOOTH] as Boolean)
     fun getUseTestData() = getBoolean(GENERAL_TEST_DATA, defaultSettings[GENERAL_TEST_DATA] as Boolean)
@@ -158,6 +161,7 @@ object ConfigurationManager {
     fun setTextCurrentSessionName(value: String) = setString(TEXT_SESSION_NAME, value)
     fun setTextTemperature(value: Float) = setFloat(TEXT_TEMPERATURE, value)
     fun setTextMemorySize(value: Int) = setInt(TEXT_MEMORY_SIZE, value)
+    fun setTextFileAttachedMessageLimit(value: Int) = setInt(TEXT_FILE_ATTACHED_MESSAGE_LIMIT, value)
     fun setIsStreamingEnabled(value: Boolean) = setBoolean(TEXT_STREAMING, value)
     fun setUseBluetooth(value: Boolean) = setBoolean(GENERAL_USE_BLUETOOTH, value)
     fun setUseTestData(value: Boolean) = setBoolean(GENERAL_TEST_DATA, value)
@@ -224,6 +228,7 @@ object ConfigurationManager {
                 "memory_limit" to getTextMemorySize(),
                 "ai_character" to getTextAICharacter(),
                 "streaming" to getIsStreamingEnabled(),
+                "file_attached_message_limit" to getTextFileAttachedMessageLimit(),
             ),
             "tts" to mapOf(
                 "stability" to getTTSStability(),

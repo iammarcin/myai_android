@@ -374,10 +374,16 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         // collect chat history (needed to send it API to get whole context of chat)
         // (excluding the latest message - as this will be sent via userPrompt), including images if any
-        // or excluding 2 last messages - if its edited user message
+        // or excluding 1 or 2 last messages - if its edited user message
         var dropHowMany = 1
         if (responseItemPosition != null) {
-            dropHowMany = 2
+            // if it is edited message - we have to drop 2 last messages (user and AI response)
+            // but only if it is not the last message in chat
+            if (responseItemPosition == chatItems.size - 1) {
+                dropHowMany = 1
+            } else {
+                dropHowMany = 2
+            }
         }
         val chatHistory = chatItems.dropLast(dropHowMany).map {
             if (it.isUserMessage) {

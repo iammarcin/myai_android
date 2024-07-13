@@ -364,6 +364,7 @@ class ChatAdapter(
                     popupMenu.menu.add(0, R.id.selectText, 1, "Select Text")
                     popupMenu.menu.add(0, R.id.tts, 2, "Speak")
                     popupMenu.menu.add(0, R.id.newSessionFromHere, 3, "New session from here")
+                    popupMenu.menu.add(0, R.id.forceDBSync, 4, "Force DB sync")
                 }
             }
 
@@ -418,12 +419,30 @@ class ChatAdapter(
                     }
                     R.id.forceDBSync -> {
                         // Force DB sync - this might be useful in few cases (for example when poor internet and functions - like transcription - fail)
+                        // when new session from here is chosen and something doesn't work
                         CoroutineScope(Dispatchers.IO).launch {
+                            val dbMethodToExecute = if (chatHelperHandler?.getCurrentDBSessionID() == "") {
+                                "db_new_session"
+                            } else {
+                                "db_update_session"
+                            }
+
+                            // if it's force it means that something was not ok
+                            // let's make sure to avoid problems in future - and here we will remove messageId from each chat item
+                            // because those numbers for sure are wrong in this case (and if we for example edit message in future it will cause problems)
+                            val modifiedChatItems = chatItems.map { chatItem ->
+                                if (chatItem.messageId != null) {
+                                    chatItem.copy(messageId = null)
+                                } else {
+                                    chatItem
+                                }
+                            }
+
                             mainHandler.getDatabaseHelper().sendDBRequest(
-                                "db_update_session",
+                                dbMethodToExecute,
                                 mapOf(
                                     "session_id" to (chatHelperHandler?.getCurrentDBSessionID() ?: ""),
-                                    "chat_history" to chatItems.map { it.toSerializableMap() }
+                                    "chat_history" to modifiedChatItems.map { it.toSerializableMap() }
                                 )
                             )
                         }

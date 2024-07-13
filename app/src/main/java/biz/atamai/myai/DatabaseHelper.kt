@@ -90,6 +90,12 @@ object DatabaseHelper {
 
                 callback?.invoke(DBResponse.SessionId(sessionId))
             }
+            "db_update_session" -> {
+                println("db_update_session response: $response")
+                if (chatHelperHandler.getCurrentDBSessionID() == "") {
+                    chatHelperHandler.setCurrentDBSessionID(jsonResponse.getJSONObject("message").getString("result"))
+                }
+            }
             // important - db_search_messages - used obviously for search but also for resetting list of sessions (like when user swipes up on top of the list)
             "db_all_sessions_for_user", "db_search_messages" -> {
                 if (action == "db_search_messages")

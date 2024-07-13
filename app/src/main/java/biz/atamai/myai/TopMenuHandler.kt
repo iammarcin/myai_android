@@ -349,6 +349,9 @@ class TopMenuHandler(
             addView(createSeekBarRow("Memory Size", 2000, 1f, mainHandler.getConfigurationManager().getTextMemorySize().toFloat()) { value ->
                 mainHandler.getConfigurationManager().setTextMemorySize(value.toInt())
             })
+            addView(createSeekBarRow("Attachments message count limit", 10, 1f, mainHandler.getConfigurationManager().getTextFileAttachedMessageLimit().toFloat()) { value ->
+                mainHandler.getConfigurationManager().setTextFileAttachedMessageLimit(value.toInt())
+            })
             addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getIsStreamingEnabled()) { isChecked ->
                 mainHandler.getConfigurationManager().setIsStreamingEnabled(isChecked)
             })
