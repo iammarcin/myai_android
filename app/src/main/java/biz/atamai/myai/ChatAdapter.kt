@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -133,118 +134,160 @@ class ChatAdapter(
             }
 
             // if filenames are set - those are non images but different kind of files
-            // for the moment - audio - but later maybe others
             if (chatItem.fileNames.isNotEmpty()) {
-                binding.audioPlayer.visibility = View.VISIBLE
-                // here we assume this is audio file - as we did not implement anything else
-                // if its audio - there will be only single filename in the list
-                // and we can process it - either play audio or transcribe
+                // lets see if its pdf or audio
+                val pdfFiles = chatItem.fileNames.filter { it.toString().endsWith(".pdf") }
+                if (pdfFiles.isNotEmpty()) {
+                    binding.audioPlayer.visibility = View.GONE
+                    binding.transcribeButton.visibility = View.GONE
 
-                binding.playButton.setOnClickListener {
-                    previousPlayingPosition = currentPlayingPosition
-                    var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+                    binding.pdfPlaceholderContainer.visibility = View.VISIBLE
+                    binding.pdfPlaceholderContainer.removeAllViews()
 
-                    // it was in one long line with conditions - but it got too complex
-                    // so i split for my readability - idc if its best practices
-                    // we're checking if:
-                    // audio is playing, is file remote, should we download it, which item is playing
-                    val shouldDownloadFile = mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()
-                    val isRemoteFile = fileToPlay.toString().startsWith("http")
-                    val isPlaying = audioPlayerManager.isPlaying()
-                    val currentFile = audioPlayerManager.currentUri
+                    pdfFiles.forEach { url ->
+                        // sometimes file names are really long - lets shorten them
+                        val fileName = url.toString().split("/").last().take(15)
 
-                    if (!isPlaying){
-                        if (shouldDownloadFile && isRemoteFile) {
-                            downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
-                        } else {
-                            fileToPlay?.let {
+                        val displayFileName = "PDF:\n\n$fileName.."
+
+                        val textView = TextView(mainHandler.context).apply {
+                            text = displayFileName
+                            setTextColor(Color.WHITE)
+                            setBackgroundColor(Color.parseColor("#555555"))
+                            setPadding(4, 4, 4, 4)
+                            textSize = 10f
+                            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                                width = 55.dpToPx(context)
+                                height = 60.dpToPx(context)
+                            }
+                        }
+
+                        binding.pdfPlaceholderContainer.addView(textView)
+                    }
+                } else {
+                    binding.pdfPlaceholderContainer.visibility = View.GONE
+                    binding.audioPlayer.visibility = View.VISIBLE
+                    // here we assume this is audio file - as we did not implement anything else
+                    // if its audio - there will be only single filename in the list
+                    // and we can process it - either play audio or transcribe
+
+                    binding.playButton.setOnClickListener {
+                        previousPlayingPosition = currentPlayingPosition
+                        var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+
+                        // it was in one long line with conditions - but it got too complex
+                        // so i split for my readability - idc if its best practices
+                        // we're checking if:
+                        // audio is playing, is file remote, should we download it, which item is playing
+                        val shouldDownloadFile =
+                            mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()
+                        val isRemoteFile = fileToPlay.toString().startsWith("http")
+                        val isPlaying = audioPlayerManager.isPlaying()
+                        val currentFile = audioPlayerManager.currentUri
+
+                        if (!isPlaying) {
+                            if (shouldDownloadFile && isRemoteFile) {
+                                downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
+                            } else {
+                                fileToPlay?.let {
+                                    playAudio(it, chatItem.message)
+                                }
+                            }
+                        } else { // if audio player is playing
+                            if (shouldDownloadFile) {
+                                if (!isRemoteFile && fileToPlay == currentFile) {
+                                    pauseAudio()
+                                } else if (isRemoteFile && currentFile == Uri.fromFile(
+                                        utilityTools.getDownloadedFileUri(
+                                            fileToPlay.toString()
+                                        )
+                                    )
+                                ) {
+                                    pauseAudio()
+                                } else if (isRemoteFile && currentFile != Uri.fromFile(
+                                        utilityTools.getDownloadedFileUri(
+                                            fileToPlay.toString()
+                                        )
+                                    )
+                                ) {
+                                    downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
+                                } else {
+                                    playAudio(fileToPlay!!, chatItem.message)
+                                }
+                            } else {
+                                if (fileToPlay == currentFile) {
+                                    pauseAudio()
+                                } else {
+                                    playAudio(fileToPlay!!, chatItem.message)
+                                }
+                            }
+                        }
+
+                    }
+
+                    // below we handle icons and seekbar - making sure that we do it for proper chat item (as we have multiple chat items with individual audio files)
+                    // Update play button icon based on current playing item
+                    if (adapterPosition == currentPlayingPosition && audioPlayerManager.isPlaying()) {
+                        binding.playButton.setImageResource(R.drawable.ic_pause_24)
+                    } else {
+                        binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
+                    }
+                    // Update seek bar if this is the current playing item
+                    if (adapterPosition == currentPlayingPosition) {
+                        currentPlayingSeekBar = binding.seekBar
+                        audioPlayerManager.setSeekBar(binding.seekBar)
+                    } else {
+                        binding.seekBar.progress = 0
+                    }
+
+                    // if file is TTS generated and auto play is ON
+                    if (chatItem.isTTS && chatItem.isAutoPlay) {
+                        chatItem.isAutoPlay = false // Reset the flag
+
+                        chatItem.fileNames.firstOrNull()?.let {
+                            // if its stream file or not - we might need to download it
+                            if (it.toString().startsWith("http") && mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()) {
+                                downloadAndOptionallyPlayAudio(it, chatItem.message, true)
+                            } else {
                                 playAudio(it, chatItem.message)
                             }
                         }
-                    } else { // if audio player is playing
-                        if (shouldDownloadFile) {
-                            if (!isRemoteFile && fileToPlay == currentFile) {
-                                pauseAudio()
-                            } else if (isRemoteFile && currentFile == Uri.fromFile(utilityTools.getDownloadedFileUri(fileToPlay.toString()))) {
-                                pauseAudio()
-                            } else if (isRemoteFile && currentFile != Uri.fromFile(utilityTools.getDownloadedFileUri(fileToPlay.toString()))) {
-                                downloadAndOptionallyPlayAudio(fileToPlay!!, chatItem.message, true)
-                            } else {
-                                playAudio(fileToPlay!!, chatItem.message)
-                            }
-                        } else {
-                            if (fileToPlay == currentFile) {
-                                pauseAudio()
-                            } else {
-                                playAudio(fileToPlay!!, chatItem.message)
-                            }
+                    }
+
+                    // set transcribe button - but only for uploaded files (non tts)
+                    // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
+                    if (chatItem.isTTS || !chatItem.showTranscribeButton) {
+                        binding.transcribeButton.visibility = View.GONE
+                    } else {
+                        binding.transcribeButton.visibility = View.VISIBLE
+                    }
+
+                    binding.transcribeButton.setOnClickListener {
+                        mainHandler.showProgressBar("Transcription")
+                        val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
+                        CoroutineScope(Dispatchers.IO).launch {
+                            utilityTools.uploadFileToServer(
+                                audioFilePath,
+                                apiUrl,
+                                "chat_audio2text",
+                                "speech",
+                                "chat",
+                                onResponseReceived = { response ->
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        mainHandler.handleTextMessage(response)
+                                        mainHandler.hideProgressBar("Transcription")
+                                    }
+                                },
+                                onError = { error ->
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        mainHandler.hideProgressBar("Transcription")
+                                        mainHandler.createToastMessage("Error: ${error.message}")
+                                    }
+                                }
+                            )
                         }
                     }
-                }
-
-                // below we handle icons and seekbar - making sure that we do it for proper chat item (as we have multiple chat items with individual audio files)
-                // Update play button icon based on current playing item
-                if (adapterPosition == currentPlayingPosition && audioPlayerManager.isPlaying()) {
-                    binding.playButton.setImageResource(R.drawable.ic_pause_24)
-                } else {
-                    binding.playButton.setImageResource(R.drawable.ic_play_arrow_24)
-                }
-                // Update seek bar if this is the current playing item
-                if (adapterPosition == currentPlayingPosition) {
-                    currentPlayingSeekBar = binding.seekBar
-                    audioPlayerManager.setSeekBar(binding.seekBar)
-                } else {
-                    binding.seekBar.progress = 0
-                }
-
-                // if file is TTS generated and auto play is ON
-                if (chatItem.isTTS && chatItem.isAutoPlay) {
-                    chatItem.isAutoPlay = false // Reset the flag
-
-                    chatItem.fileNames.firstOrNull()?.let {
-                        // if its stream file or not - we might need to download it
-                        if (it.toString().startsWith("http") && mainHandler.getConfigurationManager().getDownloadAudioFilesBeforePlaying()) {
-                            downloadAndOptionallyPlayAudio(it, chatItem.message, true)
-                        } else {
-                            playAudio(it, chatItem.message)
-                        }
-                    }
-                }
-
-                // set transcribe button - but only for uploaded files (non tts)
-                // and also there are cases where we want to disable it (via showTranscribeButton) - for example after recording (when auto transcribe is executed)
-                if (chatItem.isTTS || !chatItem.showTranscribeButton) {
-                    binding.transcribeButton.visibility = View.GONE
-                } else {
-                    binding.transcribeButton.visibility = View.VISIBLE
-                }
-
-                binding.transcribeButton.setOnClickListener {
-                    mainHandler.showProgressBar("Transcription")
-                    val audioFilePath = chatItem.fileNames[0].path // Ensure the correct path is obtained
-                    CoroutineScope(Dispatchers.IO).launch {
-                        utilityTools.uploadFileToServer(
-                            audioFilePath,
-                            apiUrl,
-                            "chat_audio2text",
-                            "speech",
-                            "chat",
-                            onResponseReceived = { response ->
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    mainHandler.handleTextMessage(response)
-                                    mainHandler.hideProgressBar("Transcription")
-                                }
-                            },
-                            onError = { error ->
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    mainHandler.hideProgressBar("Transcription")
-                                    mainHandler.createToastMessage("Error: ${error.message}")
-                                }
-                            }
-                        )
-                    }
-                }
-
+                } // end if else ift is pdf or audio
             } else {
                 binding.audioPlayer.visibility = View.GONE
                 binding.transcribeButton.visibility = View.GONE

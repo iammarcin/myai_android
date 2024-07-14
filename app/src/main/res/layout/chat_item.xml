@@ -85,6 +85,19 @@
                 />
         </LinearLayout>
 
+        <!-- Add a placeholder for the PDF files -->
+        <LinearLayout
+            android:id="@+id/pdf_placeholder_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="8dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="2dp"
+            android:gravity="center_vertical"
+            />
+
         <!-- Add an icon for audio attachments -->
         <LinearLayout
             android:id="@+id/audio_player"
