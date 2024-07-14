@@ -14,6 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 /// TODO LIMITATION OF createNewSessionFromHere - read below
 // but mainly it can lead to errors if we try to edit message that is just restored
@@ -315,6 +318,12 @@ class ChatHelper(
         } else {
             mainHandler.createToastMessage("No application available to share location")
         }
+    }
+
+    override fun getCurrentDate(): String {
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        return current.format(formatter)
     }
 
     private fun Int.dpToPx(context: Context): Int {

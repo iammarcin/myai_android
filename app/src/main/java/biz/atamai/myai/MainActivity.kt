@@ -280,7 +280,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
     // sending data to chat adapter
     // used from multiple places (main, audio recorder, file attachment)
     override fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean): ChatItem {
-        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles, isGPSLocationMessage = gpsLocationMessage)
+        val messageDate = chatHelper.getCurrentDate()
+        val chatItem = ChatItem(message = message, isUserMessage = true, imageLocations = attachedImageLocations, aiCharacterName = "", fileNames = attachedFiles, isGPSLocationMessage = gpsLocationMessage, dateGenerate = messageDate)
         chatItems.add(chatItem)
         chatAdapter.notifyItemInserted(chatItems.size - 1)
         chatHelper.scrollToEnd()
@@ -438,11 +439,14 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // having name of character via ConfigurationManager.getTextAICharacter() - lets get whole character from characters
         val character = characterManager.characters.find { it.nameForAPI == ConfigurationManager.getTextAICharacter() }
 
+        // data now in format YYYY-MM-DD HH:MM
+        val messageDate = chatHelper.getCurrentDate()
+
         // adding new or resetting AI response message (so we can add streaming chunks here)
         // checking responseItemPosition - if it's null - it's new message - otherwise it's edited message
         if (responseItemPosition == null) {
             // This is a new message, add a new response item
-            val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI)
+            val responseItem = ChatItem(message = "", isUserMessage = false, aiCharacterName = character?.nameForAPI, apiAIModelName = ConfigurationManager.getTextModelName(), dateGenerate = messageDate)
             chatItems.add(responseItem)
             currentResponseItemPosition = chatItems.size - 1
             chatAdapter.notifyItemInserted(currentResponseItemPosition!!)
@@ -457,6 +461,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 chatItems.add(responseItem)
             }
             chatItems[currentResponseItemPosition!!].message = ""  // Clear previous response
+            chatItems[currentResponseItemPosition!!].aiCharacterName = character?.nameForAPI
+            chatItems[currentResponseItemPosition!!].apiAIModelName = ConfigurationManager.getTextModelName()
+            chatItems[currentResponseItemPosition!!].dateGenerate = messageDate
             chatAdapter.notifyItemChanged(currentResponseItemPosition!!)
         }
 

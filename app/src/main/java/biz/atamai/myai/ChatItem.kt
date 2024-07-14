@@ -15,6 +15,8 @@ data class ChatItem(
     var isAutoPlay: Boolean = false, // this is to set if audio file should be played automatically (for example TTS)
     var showTranscribeButton: Boolean = true, // this is to show or hide transcribe button (for example to avoid double transcribe executions)
     var isGPSLocationMessage: Boolean = false, // this is to show or hide GPS button (when GPS location is shared by user - we can show it on the map)
+    var apiAIModelName: String? = null, // which model generated this message
+    var dateGenerate: String? = null, // date when message was generated
 ) { // not big fan of that - but its chagpt suggestion
     // mainly fileNames must be List of uri - because we sometimes use http url, but sometimes it is really uri (for example in AudioRecorder)
     // so below function is to convert it to serializable map so later in fastapi all values are correct (without it list of filenames was empty)
@@ -30,7 +32,9 @@ data class ChatItem(
             "isTTS" to isTTS,
             "isAutoPlay" to isAutoPlay,
             "showTranscribeButton" to showTranscribeButton,
-            "isGPSLocationMessage" to isGPSLocationMessage
+            "isGPSLocationMessage" to isGPSLocationMessage,
+            "apiAIModelName" to apiAIModelName,
+            "dateGenerate" to dateGenerate
         )
     }
 }

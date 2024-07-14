@@ -59,4 +59,5 @@ interface ChatHelperHandler {
     fun restoreSessionData(sessionData: JSONObject)
     fun scrollToEnd()
     fun shareGPSLocation(latitude: Double, longitude: Double)
+    fun getCurrentDate(): String
 }
