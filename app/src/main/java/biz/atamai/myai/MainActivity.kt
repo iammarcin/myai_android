@@ -336,8 +336,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
         }
 
         // if there is image attached and we use model that does not support images
-        if (attachedImageLocations != emptyList<String>() && ConfigurationManager.getTextModelName() != "GPT-4o" && ConfigurationManager.getTextModelName() != "GPT-4" ) {
+        if (attachedImageLocations != emptyList<String>() && ConfigurationManager.getTextModelName() != "GPT-4o" && ConfigurationManager.getTextModelName() != "GPT-4" && ConfigurationManager.getTextModelName() != "Claude-3.5" ) {
             Toast.makeText(this, "Currently chosen model does not support images. Remove image or change the model", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (attachedFiles != emptyList<Uri>() && ConfigurationManager.getTextModelName() != "GPT-4o" && ConfigurationManager.getTextModelName() != "GPT-4" && ConfigurationManager.getTextModelName() != "Claude-3.5" ) {
+            Toast.makeText(this, "In order to process attached files you need to change the model", Toast.LENGTH_SHORT).show()
             return
         }
 
