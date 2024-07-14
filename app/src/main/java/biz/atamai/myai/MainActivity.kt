@@ -310,7 +310,16 @@ class MainActivity : AppCompatActivity(), MainHandler {
             } else {
                 // if it's a file
                 val placeholder = frameLayout.getChildAt(0) as View
-                attachedFilePaths.add(placeholder.tag as Uri)
+                val tag = placeholder.tag
+                if (tag is Uri) {
+                    // in most cases it will be URI
+                    attachedFilePaths.add(tag)
+                } else if (tag is String && tag.startsWith("http")) {
+                    // it can be URL (for example when we earlier upload to S3)
+                    attachedFilePaths.add(Uri.parse(tag))
+                } else {
+                    // Handle other cases if needed
+                }
             }
         }
 
@@ -393,6 +402,11 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 it.imageLocations.forEach { imageUrl ->
                     content.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
                 }
+                it.fileNames.forEach { fileUri ->
+                    if (fileUri.toString().endsWith(".pdf")) {
+                        content.add(mapOf("type" to "file_url", "file_url" to mapOf("url" to fileUri.toString())))
+                    }
+                }
                 mapOf("role" to "user", "content" to content)
             } else {
                 mapOf("role" to "assistant", "content" to it.message)
@@ -416,6 +430,11 @@ class MainActivity : AppCompatActivity(), MainHandler {
         userPrompt.add(mapOf("type" to "text", "text" to userActiveChatItem.message))
         userActiveChatItem.imageLocations.forEach { imageUrl ->
             userPrompt.add(mapOf("type" to "image_url", "image_url" to mapOf("url" to imageUrl)))
+        }
+        userActiveChatItem.fileNames.forEach { fileUri ->
+            if (fileUri.toString().endsWith(".pdf")) {
+                userPrompt.add(mapOf("type" to "file_url", "file_url" to mapOf("url" to fileUri.toString())))
+            }
         }
 
         println("11111")

@@ -41,7 +41,7 @@ class FileAttachmentHandler(
     fun openFileChooser() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/mpeg", "audio/x-wav"))
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/mpeg", "audio/x-wav", "application/pdf"))
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
         fileChooserLauncher.launch(Intent.createChooser(intent, "Select File"))
@@ -133,6 +133,45 @@ class FileAttachmentHandler(
                             CoroutineScope(Dispatchers.IO).launch {
                                 Picasso.get().load(response).into(imageView)
                             }
+                            decrementUploadCounter()
+                        }
+                    },
+                    onError = { error ->
+                        CoroutineScope(Dispatchers.Main).launch {
+                            decrementUploadCounter()
+                            mainHandler.createToastMessage("Error: ${error.message}")
+                        }
+                    })
+            }
+        } else if (mimeType == "application/pdf") {
+            val placeholder = View(mainHandler.context).apply {
+                layoutParams = FrameLayout.LayoutParams(50.toPx(), 50.toPx()).apply {
+                    gravity = Gravity.CENTER
+                }
+                setBackgroundColor(
+                    ContextCompat.getColor(
+                        mainHandler.context,
+                        R.color.attached_file_placeholder
+                    )
+                )
+                tag = uri
+            }
+            frameLayout.addView(placeholder)
+
+            var filePath = getFilePathFromUri(uri)
+            val utilityTools = UtilityTools(mainHandler = mainHandler)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                // upload to S3 - so sending request to nodejs API
+                utilityTools.uploadFileToServer(
+                    filePath,
+                    apiUrl,
+                    "api/aws",
+                    "provider.s3",
+                    "s3_upload",
+                    onResponseReceived = { response ->
+                        CoroutineScope(Dispatchers.Main).launch {
+                            placeholder.tag = response
                             decrementUploadCounter()
                         }
                     },
