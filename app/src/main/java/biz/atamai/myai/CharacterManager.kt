@@ -2,11 +2,9 @@
 
 package biz.atamai.myai
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.Toast
 import biz.atamai.myai.databinding.ActivityMainBinding
 import biz.atamai.myai.databinding.CharacterCardBinding
 

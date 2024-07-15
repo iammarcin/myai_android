@@ -199,6 +199,7 @@ class ChatHelper(
                 isUserMessage = chatItemJson.getBoolean("isUserMessage"),
                 imageLocations = imageLocations,
                 fileNames = fileNames,
+                dateGenerate = chatItemJson.optString("dateGenerate", ""),
                 aiCharacterName = chatItemJson.optString("aiCharacterName", ""),
                 isTTS = chatItemJson.optBoolean("isTTS", false),
                 isGPSLocationMessage = chatItemJson.optBoolean("isGPSLocationMessage", false)
