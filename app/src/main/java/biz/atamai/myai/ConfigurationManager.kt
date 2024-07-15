@@ -51,7 +51,7 @@ object ConfigurationManager {
     // Default values
     private val defaultSettings = mapOf(
         APP_MODE_PRODUCTION to true, // "production" - true or "test" - false
-        APP_MODE_API_URL to "https://ai.atamai.biz/api/",
+        APP_MODE_API_URL to "https://www.goodtogreat.life/api/",
         APP_MODE_USE_WATSON to false,
         TEXT_MODEL_NAME to "GPT-4o",
         TEXT_AI_CHARACTER to "assistant",
