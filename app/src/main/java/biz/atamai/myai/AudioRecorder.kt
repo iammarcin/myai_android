@@ -228,7 +228,7 @@ class AudioRecorder(private val mainHandler: MainHandler, var useBluetoothIfConn
                 onResponseReceived = { response ->
                     CoroutineScope(Dispatchers.Main).launch {
                         mainHandler.handleTextMessage(
-                            response,
+                            response.trim(),
                             attachedImageLocations,
                             attachedFilePaths,
                             false

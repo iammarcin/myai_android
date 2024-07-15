@@ -40,6 +40,7 @@ object ConfigurationManager {
     private const val IMAGE_ARTGEN_SHOW_PROMPT = "image_artgen_show_prompt"
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
     private const val FAVORITE_CHATS = "favorite_chats"
+    private const val FAVORITE_CHATS_NON_PROD = "favorite_chats_non_prod"
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -186,7 +187,7 @@ object ConfigurationManager {
     // depending if it's production mode and also depending which internal API server is in use (sherlock, local, etc)
     fun setURLForAPICalls() {
         val url = if (getIsProdMode()) {
-            "https://ai.atamai.biz/api/"
+            "https://www.goodtogreat.life/api/"
         } else {
             if (getAppModeUseWatson()) {
                 "http://192.168.1.123:8000/" 
@@ -200,13 +201,23 @@ object ConfigurationManager {
     }
 
     fun getFavoriteChats(): List<FavoriteChat> {
-        val json = getString(FAVORITE_CHATS, "[]")
+        val whichItem = if (getIsProdMode()) {
+            FAVORITE_CHATS
+        } else {
+            FAVORITE_CHATS_NON_PROD
+        }
+        val json = getString(whichItem, "[]")
         return Gson().fromJson(json, object : TypeToken<List<FavoriteChat>>() {}.type)
     }
 
     fun setFavoriteChats(chats: List<FavoriteChat>) {
+        val whichItem = if (getIsProdMode()) {
+            FAVORITE_CHATS
+        } else {
+            FAVORITE_CHATS_NON_PROD
+        }
         val json = Gson().toJson(chats)
-        setString(FAVORITE_CHATS, json)
+        setString(whichItem, json)
     }
 
     // Update the name of a favorite chat (used in DatabaseHandler - when session is renamed)
