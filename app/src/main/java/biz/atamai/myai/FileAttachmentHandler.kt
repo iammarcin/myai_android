@@ -21,6 +21,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class FileAttachmentHandler(
@@ -130,8 +131,12 @@ class FileAttachmentHandler(
                             imageView.setImageURI(null) // Clear local URI
                             // set imageview tag as response - so we can use it to remove image from preview
                             imageView.tag = response
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Picasso.get().load(response).into(imageView)
+
+                            withContext(Dispatchers.IO) {
+                                val bitmap = Picasso.get().load(response).get() // Load the image in background thread no to block the UI (this is download from URL)
+                                withContext(Dispatchers.Main) {
+                                    imageView.setImageBitmap(bitmap) // Update the UI on the main thread
+                                }
                             }
                             decrementUploadCounter()
                         }
