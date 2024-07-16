@@ -113,6 +113,17 @@ class ChatAdapter(
                 } ?: R.drawable.ai_avatar_placeholder
             }
 
+            // Add click listener to the avatar image
+            binding.avatarImageView.setOnClickListener {
+                chatItem.aiCharacterName?.let { characterName ->
+                    val character = mainHandler.getMainCharacterManager().getCharacterByNameForAPI(characterName)
+                    if (character != null) {
+
+                        showFullScreenImages(listOf(character.imageResId.toString()), 0, character.name, character.welcomeMsg)
+                    }
+                }
+            }
+
             binding.avatarImageView.setImageResource(avatarResId)
             // if URIs for images are set - those are images
             if (chatItem.imageLocations.isNotEmpty()) {
@@ -694,20 +705,45 @@ class ChatAdapter(
     }
 
     // create new view for image - when clicked on chat item images
-    private fun showFullScreenImages(imageUrls: List<String>, initialPosition: Int) {
+    private fun showFullScreenImages(imageUrls: List<String>, initialPosition: Int, characterName: String = "", characterDescription: String = "") {
         val dialog = Dialog(mainHandler.context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
         val binding: DialogFullscreenImagesBinding = DialogFullscreenImagesBinding.inflate(LayoutInflater.from(mainHandler.context))
         dialog.setContentView(binding.root)
 
-        val adapter = FullScreenImageAdapter(mainHandler.context, imageUrls)
+        val adapter = FullScreenImageAdapter(mainHandler.context, imageUrls, characterName, characterDescription)
         binding.viewPager.adapter = adapter
         binding.viewPager.setCurrentItem(initialPosition, false)
 
         binding.closeButton.setOnClickListener { dialog.dismiss() }
 
+        binding.characterDescription.text = characterDescription
+        binding.characterName.text = characterName
+
+        // Make the TextViews visible if they have content
+        if (characterName.isNotEmpty()) {
+            binding.characterName.visibility = View.VISIBLE
+        }
+        if (characterDescription.isNotEmpty()) {
+            binding.characterDescription.visibility = View.VISIBLE
+        }
         dialog.show()
     }
 
+    // Show character full screen with name and description
+    /*private fun showCharacterFullScreen(imageResId: Int, characterName: String, characterDescription: String) {
+        val dialog = Dialog(mainHandler.context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        val binding: DialogFullscreenImagesBinding = DialogFullscreenImagesBinding.inflate(LayoutInflater.from(mainHandler.context))
+        dialog.setContentView(binding.root)
+
+        // Set the image, name, and description
+        Picasso.get().load(imageResId).into(binding.fullscreenImage)
+        binding.characterName.text = characterName
+        binding.characterDescription.text = characterDescription
+
+        binding.closeButton.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    } */
 
     // used in chatHelper
     fun resetChatAdapter() {

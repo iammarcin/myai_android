@@ -21,7 +21,7 @@ class CharacterManager(private val mainHandler: MainHandler) {
     data class Character(val name: String, val imageResId: Int, val nameForAPI: String, val autoResponse: Boolean = true, val showGPSButton: Boolean = false, val voice: String, val welcomeMsg: String, val waitForUserInput: Boolean)
 
     val characters = listOf(
-        Character(name = "Assistant", imageResId = R.drawable.assistant, nameForAPI = "assistant", autoResponse = true, showGPSButton = false, voice = "Sherlock", welcomeMsg = "Hey! What do you want to do? Let's talk or choose any option from above", waitForUserInput = true),
+        Character(name = "Assistant", imageResId = R.drawable.assistant, nameForAPI = "assistant", autoResponse = true, showGPSButton = false, voice = "Sherlock", welcomeMsg = "Hey! What do you want to do? Let's talk about anything!", waitForUserInput = true),
         Character(name = "Your best AI", imageResId = R.drawable.best_ai, nameForAPI = "best_ai", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm best AI you can imagine to interact with. Test me.", waitForUserInput = false),
         Character(name = "Rick Sanchez", imageResId = R.drawable.rick, nameForAPI = "rick", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm Rick - but you know it. What do you want to bother me about today?", waitForUserInput = false),
         Character(name = "Art gen", imageResId = R.drawable.tools_artgen, nameForAPI = "tools_artgen", autoResponse = true, showGPSButton = false, voice = "Sherlock", welcomeMsg = "I am artist. I will create you any medium you want. Just describe it.", waitForUserInput = true),
