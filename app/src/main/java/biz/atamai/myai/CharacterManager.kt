@@ -22,6 +22,8 @@ class CharacterManager(private val mainHandler: MainHandler) {
 
     val characters = listOf(
         Character(name = "Assistant", imageResId = R.drawable.assistant, nameForAPI = "assistant", autoResponse = true, showGPSButton = false, voice = "Sherlock", welcomeMsg = "Hey! What do you want to do? Let's talk or choose any option from above", waitForUserInput = true),
+        Character(name = "Your best AI", imageResId = R.drawable.best_ai, nameForAPI = "best_ai", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm best AI you can imagine to interact with. Test me.", waitForUserInput = false),
+        Character(name = "Rick Sanchez", imageResId = R.drawable.rick, nameForAPI = "rick", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm Rick - but you know it. What do you want to bother me about today?", waitForUserInput = false),
         Character(name = "Art gen", imageResId = R.drawable.tools_artgen, nameForAPI = "tools_artgen", autoResponse = true, showGPSButton = false, voice = "Sherlock", welcomeMsg = "I am artist. I will create you any medium you want. Just describe it.", waitForUserInput = true),
         Character(name = "Alergy expert", imageResId = R.drawable.alergy, nameForAPI = "alergy", autoResponse = true, showGPSButton = true, voice = "Elli", welcomeMsg = "Hello! I'm your allergy expert. How can I assist you today?", waitForUserInput = false),
         Character(name = "Garmin", imageResId = R.drawable.garmin, nameForAPI = "garmin", autoResponse = true, showGPSButton = true, voice = "Sherlock", welcomeMsg = "Hello! I'm your Garmin assistant. How can I help you with your Garmin device today?", waitForUserInput = false),
@@ -61,7 +63,7 @@ class CharacterManager(private val mainHandler: MainHandler) {
         Character(name = "Naval", imageResId = R.drawable.naval, nameForAPI = "naval", autoResponse = true, showGPSButton = false, voice = "Naval", welcomeMsg = "Hello! I'm Naval. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Shaan Puri", imageResId = R.drawable.shaan, nameForAPI = "shaan", autoResponse = true, showGPSButton = false, voice = "Shaan", welcomeMsg = "Hello! I'm Shaan. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Sir David", imageResId = R.drawable.david, nameForAPI = "david", autoResponse = true, showGPSButton = false, voice = "David", welcomeMsg = "Hello! I'm David. What do you want to talk about?", waitForUserInput = false),
-        Character(name = "Rick Sanchez", imageResId = R.drawable.rick, nameForAPI = "rick", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm Rick - but you know it. What do you want to bother me about today?", waitForUserInput = false)
+
     )
 
 

@@ -32,6 +32,7 @@ data class FavoriteChat(val id: String, var name: String, var imageResId: Int)
 class TopMenuHandler(
     private val mainHandler: MainHandler,
     private val chatHelperHandler: ChatHelperHandler,
+    private val textSizeChangeListener: TextSizeChangeListener,
     private val onFetchChatSessions: () -> Unit, // function to fetch chat sessions (when menu appears)
     private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
 ) {
@@ -351,6 +352,10 @@ class TopMenuHandler(
             })
             addView(createSeekBarRow("Attachments message count limit", 10, 1f, mainHandler.getConfigurationManager().getTextFileAttachedMessageLimit().toFloat()) { value ->
                 mainHandler.getConfigurationManager().setTextFileAttachedMessageLimit(value.toInt())
+            })
+            addView(createSeekBarRow("Text size in UI", 30, 1f, mainHandler.getConfigurationManager().getTextSizeInUI().toFloat()) { value ->
+                mainHandler.getConfigurationManager().setTextSizeInUI(value.toInt())
+                textSizeChangeListener.onTextSizeChanged(value.toInt())
             })
             addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getIsStreamingEnabled()) { isChecked ->
                 mainHandler.getConfigurationManager().setIsStreamingEnabled(isChecked)

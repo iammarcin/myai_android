@@ -109,6 +109,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         val topMenuHandler = TopMenuHandler(
             this,
             chatHelper,
+            chatAdapter,
             // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
             onFetchChatSessions = {
                 CoroutineScope(Dispatchers.IO).launch {

@@ -31,13 +31,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+// interface to monitor text size changes (for example from Top menu)
+interface TextSizeChangeListener {
+    fun onTextSizeChanged(newSize: Int)
+}
+
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
     private val mainHandler: MainHandler,
     private val audioPlayerManager: AudioPlayerManager,
     private val onEditMessage: (position: Int, message: String) -> Unit,
-) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
+) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>(), TextSizeChangeListener {
     //private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
@@ -52,6 +57,8 @@ class ChatAdapter(
     private var currentPlayingSeekBar: SeekBar? = null
     // and to track previous playing item (to reset it when new item is played)
     private var previousPlayingPosition: Int = -1
+    // this can be changed via options in top menu
+    var fontSize: Int = mainHandler.getConfigurationManager().getTextSizeInUI()
 
     fun setChatHelperHandler(chatHelperHandler: ChatHelperHandler) {
         this.chatHelperHandler = chatHelperHandler
@@ -93,6 +100,8 @@ class ChatAdapter(
         }
 
         fun bind(chatItem: ChatItem) {
+            // Set the font size dynamically
+            binding.messageTextView.textSize = fontSize.toFloat()
             // Render message using Markwon
             markwon.setMarkdown(binding.messageTextView, chatItem.message)
 
@@ -717,6 +726,12 @@ class ChatAdapter(
 
     override fun onBindViewHolder(holder: ChatAdapter.ChatViewHolder, position: Int) {
         holder.bind(chatItems[position])
+    }
+
+    // i set interface to monitor text size changes - (when changed in options via top menu)
+    override fun onTextSizeChanged(newSize: Int) {
+        fontSize = newSize
+        notifyItemRangeChanged(0, chatItems.size)
     }
 
     override fun getItemCount(): Int = chatItems.size
