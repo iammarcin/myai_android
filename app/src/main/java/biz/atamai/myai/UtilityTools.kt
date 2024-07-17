@@ -143,10 +143,13 @@ class UtilityTools(
         // Extract the TTS settings
         val ttsSettings = settingsDict["tts"]?.toMutableMap() ?: mutableMapOf()
         val textSettings = settingsDict["text"]?.toMutableMap() ?: mutableMapOf()
-        val aiCharacter = textSettings["ai_character"] ?: "assistant"
-        // overwrite voice with voice of the character
+        val aiCharacter = textSettings["ai_character"]
+        // overwrite voice with voice of the character (if it's set)
+        // if it isn't it should take voice from settings
         mainHandler.getMainCharacterManager().getCharacterByNameForAPI(aiCharacter.toString())?.let {
-            ttsSettings["voice"] = it.voice
+            if (it.voice != "") {
+                ttsSettings["voice"] = it.voice
+            }
         }
         // Create the updated settings dictionary
         val updatedSettingsDict = settingsDict.toMutableMap()

@@ -705,7 +705,7 @@ class ChatAdapter(
         val binding: DialogFullscreenImagesBinding = DialogFullscreenImagesBinding.inflate(LayoutInflater.from(mainHandler.context))
         dialog.setContentView(binding.root)
 
-        val adapter = FullScreenImageAdapter(mainHandler.context, imageUrls, characterName, characterDescription)
+        val adapter = FullScreenImageAdapter(mainHandler.context, imageUrls)
         binding.viewPager.adapter = adapter
         binding.viewPager.setCurrentItem(initialPosition, false)
 

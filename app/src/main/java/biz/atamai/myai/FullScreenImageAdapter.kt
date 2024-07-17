@@ -13,8 +13,6 @@ import com.squareup.picasso.Picasso
 class FullScreenImageAdapter(
     private val context: Context,
     private val imageUrls: List<String>,
-    private val characterName: String,
-    private val characterDescription: String,
 ) : RecyclerView.Adapter<FullScreenImageAdapter.ImageViewHolder>() {
 
     inner class ImageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
