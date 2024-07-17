@@ -315,7 +315,7 @@ class TopMenuHandler(
     }
 
     private fun createGeneralFragmentView(): View {
-        return LinearLayout(mainHandler.context).apply {
+        val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -342,10 +342,14 @@ class TopMenuHandler(
                 mainHandler.getConfigurationManager().setAuthTokenForBackend(value)
             })
         }
+
+        return ScrollView(mainHandler.context).apply {
+            addView(linearLayout)
+        }
     }
 
     private fun createTextFragmentView(): View {
-        return LinearLayout(mainHandler.context).apply {
+        val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -366,10 +370,14 @@ class TopMenuHandler(
                 mainHandler.getConfigurationManager().setIsStreamingEnabled(isChecked)
             })
         }
+
+        return ScrollView(mainHandler.context).apply {
+            addView(linearLayout)
+        }
     }
 
     private fun createImageFragmentView(): View {
-        return LinearLayout(mainHandler.context).apply {
+        val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -396,16 +404,16 @@ class TopMenuHandler(
                 mainHandler.getConfigurationManager().setImageAutoGenerateImage(isChecked)
             })
         }
+
+        return ScrollView(mainHandler.context).apply {
+            addView(linearLayout)
+        }
     }
 
     private fun createTTSFragmentView(): View {
-        return LinearLayout(mainHandler.context).apply {
+        val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
-
-            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "Possible values: tts-1, tts-1-hd", ) { value ->
-                mainHandler.getConfigurationManager().setTTSModelName(value)
-            })
 
             addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getTTSStreaming()) { isChecked ->
                 mainHandler.getConfigurationManager().setTTSStreaming(isChecked)
@@ -428,6 +436,10 @@ class TopMenuHandler(
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("OpenAI"))
 
+            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "Possible values: tts-1, tts-1-hd", ) { value ->
+                mainHandler.getConfigurationManager().setTTSModelName(value)
+            })
+
             addView(createTextEditRow("Voice", mainHandler.getConfigurationManager().getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
                 mainHandler.getConfigurationManager().setTTSVoice(value)
             })
@@ -437,10 +449,14 @@ class TopMenuHandler(
                 mainHandler.getConfigurationManager().setTTSSpeed(value)
             })
         }
+
+        return ScrollView(mainHandler.context).apply {
+            addView(linearLayout)
+        }
     }
 
     private fun createSpeechFragmentView(): View {
-        return LinearLayout(mainHandler.context).apply {
+        val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
@@ -450,6 +466,10 @@ class TopMenuHandler(
             addView(createSeekBarRow("Temperature", 1, 0.05f, mainHandler.getConfigurationManager().getSpeechTemperature()) { value ->
                 mainHandler.getConfigurationManager().setSpeechTemperature(value)
             })
+        }
+
+        return ScrollView(mainHandler.context).apply {
+            addView(linearLayout)
         }
     }
 
