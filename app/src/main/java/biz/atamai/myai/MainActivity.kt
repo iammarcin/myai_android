@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
 
         gpsLocationManager = GPSLocationManager(this)
 
+        characterManager.setChatAdapterHandler(chatAdapter)
         // on character selection - update character name in chat and set temporary character for single message (when using @ in chat)
         characterManager.setupCharacterCards(binding) { characterName ->
             chatHelper.insertCharacterName(characterName)
@@ -109,7 +110,6 @@ class MainActivity : AppCompatActivity(), MainHandler {
         val topMenuHandler = TopMenuHandler(
             this,
             chatHelper,
-            chatAdapter,
             // below 2 functions must be in coroutine scope - because they are sending requests to DB and based on results different UI is displayed (different chat sessions)
             onFetchChatSessions = {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -122,6 +122,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                 }
             }
         )
+        topMenuHandler.setChatAdapterHandler(chatAdapter)
         topMenuHandler.setupTopMenus(binding)
 
         // set status bar color (above app -where clock is)

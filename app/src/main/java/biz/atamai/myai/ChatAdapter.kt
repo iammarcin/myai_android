@@ -31,18 +31,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-// interface to monitor text size changes (for example from Top menu)
-interface TextSizeChangeListener {
-    fun onTextSizeChanged(newSize: Int)
-}
-
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
     private val mainHandler: MainHandler,
     private val audioPlayerManager: AudioPlayerManager,
     private val onEditMessage: (position: Int, message: String) -> Unit,
-) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>(), TextSizeChangeListener {
+) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>(), ChatAdapterHandler {
     //private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
@@ -768,6 +763,10 @@ class ChatAdapter(
     override fun onTextSizeChanged(newSize: Int) {
         fontSize = newSize
         notifyItemRangeChanged(0, chatItems.size)
+    }
+
+    override fun onCharacterLongPress(character: CharacterManager.Character) {
+        showFullScreenImages(listOf(character.imageResId.toString()), 0, character.name, character.welcomeMsg)
     }
 
     override fun getItemCount(): Int = chatItems.size

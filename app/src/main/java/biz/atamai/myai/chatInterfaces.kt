@@ -61,3 +61,8 @@ interface ChatHelperHandler {
     fun shareGPSLocation(latitude: Double, longitude: Double)
     fun getCurrentDate(): String
 }
+
+interface ChatAdapterHandler {
+    fun onTextSizeChanged(newSize: Int)
+    fun onCharacterLongPress(character: CharacterManager.Character)
+}

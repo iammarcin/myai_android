@@ -10,6 +10,12 @@ import biz.atamai.myai.databinding.CharacterCardBinding
 
 class CharacterManager(private val mainHandler: MainHandler) {
 
+    private var chatAdapterHandler: ChatAdapterHandler? = null
+
+    fun setChatAdapterHandler(chatAdapterHandler: ChatAdapterHandler) {
+        this.chatAdapterHandler = chatAdapterHandler
+    }
+
     // Data class to hold character information
     // name = what will be displayed on the card in UI
     // nameForAPI = what will be sent to the API
@@ -88,6 +94,8 @@ class CharacterManager(private val mainHandler: MainHandler) {
             val cardBinding = CharacterCardBinding.inflate(LayoutInflater.from(mainHandler.context))
             cardBinding.characterName.text = character.name
             cardBinding.characterImage.setImageResource(character.imageResId)
+
+            // click listener to choose character
             cardBinding.root.setOnClickListener {
                 mainHandler.createToastMessage("${character.name} selected")
                 binding.characterHorizontalMainScrollView.visibility = View.GONE
@@ -100,6 +108,15 @@ class CharacterManager(private val mainHandler: MainHandler) {
                 }
                 onCharacterSelected(character.name)
             }
+
+            // long click listener to show character profile
+            cardBinding.root.setOnLongClickListener {
+                chatAdapterHandler?.onCharacterLongPress(character)
+                println("LONG PRESS")
+                println(character.name)
+                true
+            }
+
             val layoutParams = LinearLayout.LayoutParams(
                 mainHandler.context.resources.getDimensionPixelSize(R.dimen.character_card_width),
                 LinearLayout.LayoutParams.WRAP_CONTENT

@@ -32,14 +32,19 @@ data class FavoriteChat(val id: String, var name: String, var imageResId: Int)
 class TopMenuHandler(
     private val mainHandler: MainHandler,
     private val chatHelperHandler: ChatHelperHandler,
-    private val textSizeChangeListener: TextSizeChangeListener,
     private val onFetchChatSessions: () -> Unit, // function to fetch chat sessions (when menu appears)
     private val onSearchMessages: (String) -> Unit // function to search messages (when user submits search query)
 ) {
 
+    private var chatAdapterHandler: ChatAdapterHandler? = null
+
     private var textModelName: String = mainHandler.getConfigurationManager().getTextModelName()
     // in menu options dialog there are buttons like AUDIO, GENERAL, etc - so this is about this button (later it will be bold)
     private var currentSelectedButton: TextView? = null
+
+    fun setChatAdapterHandler(chatAdapterHandler: ChatAdapterHandler) {
+        this.chatAdapterHandler = chatAdapterHandler
+    }
 
     fun setupTopMenus(binding: ActivityMainBinding) {
         // search text edit on top of menu
@@ -355,7 +360,7 @@ class TopMenuHandler(
             })
             addView(createSeekBarRow("Text size in UI", 30, 1f, mainHandler.getConfigurationManager().getTextSizeInUI().toFloat()) { value ->
                 mainHandler.getConfigurationManager().setTextSizeInUI(value.toInt())
-                textSizeChangeListener.onTextSizeChanged(value.toInt())
+                chatAdapterHandler?.onTextSizeChanged(value.toInt())
             })
             addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getIsStreamingEnabled()) { isChecked ->
                 mainHandler.getConfigurationManager().setIsStreamingEnabled(isChecked)
