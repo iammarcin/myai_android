@@ -636,7 +636,7 @@ class ChatAdapter(
                         mainHandler.hideProgressBar("TTS")
                         mainHandler.createToastMessage("Error generating TTS: ${error.message}")
                     }
-                }
+                },
             )
         }
     }

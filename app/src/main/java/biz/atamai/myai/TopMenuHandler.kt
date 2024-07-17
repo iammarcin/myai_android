@@ -411,6 +411,16 @@ class TopMenuHandler(
             })
 
             addView(createTextLabelRow(""))
+            addView(createTextLabelRow("Elevenlabs"))
+
+            addView(createSeekBarRow("Stability", 1, 0.05f, mainHandler.getConfigurationManager().getTTSStability()) { value ->
+                mainHandler.getConfigurationManager().setTTSStability(value)
+            })
+            addView(createSeekBarRow("Similarity", 1, 0.05f, mainHandler.getConfigurationManager().getTTSSimilarity()) { value ->
+                mainHandler.getConfigurationManager().setTTSSimilarity(value)
+            })
+
+            addView(createTextLabelRow(""))
             addView(createTextLabelRow("OpenAI"))
 
             addView(createTextEditRow("Voice", mainHandler.getConfigurationManager().getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
@@ -420,16 +430,6 @@ class TopMenuHandler(
             // speed
             addView(createSeekBarRow("Speed", 4, 0.05f, mainHandler.getConfigurationManager().getTTSSpeed()) { value ->
                 mainHandler.getConfigurationManager().setTTSSpeed(value)
-            })
-
-            addView(createTextLabelRow(""))
-            addView(createTextLabelRow("Elevenlabs"))
-
-            addView(createSeekBarRow("Stability", 1, 0.05f, mainHandler.getConfigurationManager().getTTSStability()) { value ->
-                mainHandler.getConfigurationManager().setTTSStability(value)
-            })
-            addView(createSeekBarRow("Similarity", 1, 0.05f, mainHandler.getConfigurationManager().getTTSSimilarity()) { value ->
-                mainHandler.getConfigurationManager().setTTSSimilarity(value)
             })
         }
     }

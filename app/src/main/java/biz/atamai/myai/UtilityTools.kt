@@ -130,20 +130,37 @@ class UtilityTools(
         apiUrl: String,
         action: String,
         onResponseReceived: (String) -> Unit,
-        onError: (Exception) -> Unit
+        onError: (Exception) -> Unit,
     ) {
         val apiEndpoint = "generate"
         val fullApiUrl = apiUrl + apiEndpoint
+
+        // now we will take settings, get ID of ai character, look it up in our character list
+        // and get voice of that character - and this will be send to TTS backend
+        // Get the settings dictionary
+        val settingsDict = mainHandler.getConfigurationManager().getSettingsDict()
+
+        // Extract the TTS settings
+        val ttsSettings = settingsDict["tts"]?.toMutableMap() ?: mutableMapOf()
+        val textSettings = settingsDict["text"]?.toMutableMap() ?: mutableMapOf()
+        val aiCharacter = textSettings["ai_character"] ?: "assistant"
+        // overwrite voice with voice of the character
+        mainHandler.getMainCharacterManager().getCharacterByNameForAPI(aiCharacter.toString())?.let {
+            ttsSettings["voice"] = it.voice
+        }
+        // Create the updated settings dictionary
+        val updatedSettingsDict = settingsDict.toMutableMap()
+        updatedSettingsDict["tts"] = ttsSettings
+
         val apiDataModel = APIDataModel(
             category = "tts",
             action = action,
             userInput = mapOf("text" to message),
-            userSettings = mainHandler.getConfigurationManager().getSettingsDict(),
+            userSettings = updatedSettingsDict,
             customerId = 1
         )
 
         // remove audioFile (so there are no remaining from prev session)
-
         audioFile.delete()
 
         val handler = if (action == "tts_stream") {
