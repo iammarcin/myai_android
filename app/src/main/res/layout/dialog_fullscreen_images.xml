@@ -4,6 +4,7 @@
     CC000000
     -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/dialog_fullscreen_images_main_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#CC000000">
