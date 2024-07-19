@@ -232,6 +232,54 @@ class UtilityTools(
         handler.sendRequest(fullApiUrl, apiDataModel)
     }
 
+    fun getElevenLabsBilling(
+        onResponseReceived: (String) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        println("EXECUTED BILLING")
+        val apiUrl = mainHandler.getConfigurationManager().getAppModeApiUrl()
+        val apiEndpoint = "generate"
+        val fullApiUrl = apiUrl + apiEndpoint
+
+        // i'm sure it can be done way better - but no time for that now
+        // now we will take settings, and no matter what is there - we need to update with one of voices used in 11labs - to make sure that billing is taken for 11labs
+        val settingsDict = mainHandler.getConfigurationManager().getSettingsDict()
+        // Extract the TTS settings
+        val ttsSettings = settingsDict["tts"]?.toMutableMap() ?: mutableMapOf()
+        ttsSettings["voice"] = "Sherlock"
+        // Create the updated settings dictionary
+        val updatedSettingsDict = settingsDict.toMutableMap()
+        updatedSettingsDict["tts"] = ttsSettings
+
+        val apiDataModel = APIDataModel(
+            category = "tts",
+            action = "billing",
+            userInput = mapOf("text" to "does not matter"),
+            userSettings = updatedSettingsDict,
+            customerId = 1
+        )
+
+        val handler = ResponseHandler(
+            handlerType = HandlerType.NonStreaming(onResponseReceived = { response ->
+                try {
+                    val jsonResponse = JSONObject(response)
+                    val billingData = jsonResponse.getJSONObject("message").getJSONObject("result")
+                    val tokenUsed = billingData.getString("character_count")
+                    val tokenLimit = billingData.getString("character_limit")
+                    println("TOKENS USED: $tokenUsed / $tokenLimit")
+                    val finalResponse = "Usage: $tokenUsed / $tokenLimit"
+                    onResponseReceived(finalResponse)
+                } catch (e: JSONException) {
+                    onError(e)
+                }
+            }),
+            onError = onError,
+            authToken = mainHandler.getConfigurationManager().getAuthTokenForBackend()
+        )
+
+        handler.sendRequest(fullApiUrl, apiDataModel)
+    }
+
     private fun saveChunkToFile(chunk: ByteArray) {
         try {
             val fileOutputStream = FileOutputStream(audioFile, true)

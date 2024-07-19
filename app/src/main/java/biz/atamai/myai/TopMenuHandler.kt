@@ -37,10 +37,16 @@ class TopMenuHandler(
 ) {
 
     private var chatAdapterHandler: ChatAdapterHandler? = null
-
+    private var utilityTools: UtilityTools
     private var textModelName: String = mainHandler.getConfigurationManager().getTextModelName()
     // in menu options dialog there are buttons like AUDIO, GENERAL, etc - so this is about this button (later it will be bold)
     private var currentSelectedButton: TextView? = null
+
+    init {
+        utilityTools = UtilityTools(
+            mainHandler = mainHandler
+        )
+    }
 
     fun setChatAdapterHandler(chatAdapterHandler: ChatAdapterHandler) {
         this.chatAdapterHandler = chatAdapterHandler
@@ -99,6 +105,8 @@ class TopMenuHandler(
                 }
             }
         })
+
+
 
     }
 
@@ -188,7 +196,7 @@ class TopMenuHandler(
         val popupWindow = PopupWindow(popupBinding.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4, popupBinding.gpt35, popupBinding.claude, popupBinding.llama370b)
+        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4, popupBinding.gpt4oMini, popupBinding.claude, popupBinding.llama370b)
 
         // Update items to reflect the selected model
         items.forEach { item ->
@@ -205,8 +213,8 @@ class TopMenuHandler(
             handleModelSelection(popupBinding.gpt4.text.toString())
             popupWindow.dismiss()
         }
-        popupBinding.gpt35.setOnClickListener {
-            handleModelSelection(popupBinding.gpt35.text.toString())
+        popupBinding.gpt4oMini.setOnClickListener {
+            handleModelSelection(popupBinding.gpt4oMini.text.toString())
             popupWindow.dismiss()
         }
 
@@ -411,6 +419,19 @@ class TopMenuHandler(
     }
 
     private fun createTTSFragmentView(): View {
+        var text = "1"
+        CoroutineScope(Dispatchers.IO).launch {
+            println("EXECUTING BILLING")
+            utilityTools.getElevenLabsBilling(
+                { response ->
+                    println("RESPONSE: $response")
+                    text = response
+                },
+                { error ->
+                    println("Error getting billing status: $error")
+                }
+            )
+        }
         val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
@@ -424,7 +445,7 @@ class TopMenuHandler(
             })
 
             addView(createTextLabelRow(""))
-            addView(createTextLabelRow("Elevenlabs"))
+            addView(createTextLabelRow("Elevenlabs $text"))
 
             addView(createSeekBarRow("Stability", 1, 0.05f, mainHandler.getConfigurationManager().getTTSStability()) { value ->
                 mainHandler.getConfigurationManager().setTTSStability(value)

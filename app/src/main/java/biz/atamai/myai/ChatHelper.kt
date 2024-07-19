@@ -218,7 +218,7 @@ class ChatHelper(
 
         val sessionName = sessionData.getString("session_name")
         mainHandler.getConfigurationManager().setTextCurrentSessionName(sessionName)
-        
+
         setCurrentDBSessionID(sessionData.getString("session_id") ?: "")
         mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.GONE
 
