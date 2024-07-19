@@ -236,7 +236,6 @@ class UtilityTools(
         onResponseReceived: (String) -> Unit,
         onError: (Exception) -> Unit
     ) {
-        println("EXECUTED BILLING")
         val apiUrl = mainHandler.getConfigurationManager().getAppModeApiUrl()
         val apiEndpoint = "generate"
         val fullApiUrl = apiUrl + apiEndpoint
@@ -265,9 +264,9 @@ class UtilityTools(
                     val jsonResponse = JSONObject(response)
                     val billingData = jsonResponse.getJSONObject("message").getJSONObject("result")
                     val tokenUsed = billingData.getString("character_count")
-                    val tokenLimit = billingData.getString("character_limit")
-                    println("TOKENS USED: $tokenUsed / $tokenLimit")
-                    val finalResponse = "Usage: $tokenUsed / $tokenLimit"
+                    val tokenLimit = billingData.getString("character_limit").toInt() / 1000
+                    val nextBillingDate = billingData.getString("next_billing_date")
+                    val finalResponse = "Usage: $tokenUsed / ${tokenLimit}k. Till: $nextBillingDate"
                     onResponseReceived(finalResponse)
                 } catch (e: JSONException) {
                     onError(e)

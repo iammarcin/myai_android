@@ -419,19 +419,6 @@ class TopMenuHandler(
     }
 
     private fun createTTSFragmentView(): View {
-        var text = "1"
-        CoroutineScope(Dispatchers.IO).launch {
-            println("EXECUTING BILLING")
-            utilityTools.getElevenLabsBilling(
-                { response ->
-                    println("RESPONSE: $response")
-                    text = response
-                },
-                { error ->
-                    println("Error getting billing status: $error")
-                }
-            )
-        }
         val linearLayout = LinearLayout(mainHandler.context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
@@ -445,7 +432,28 @@ class TopMenuHandler(
             })
 
             addView(createTextLabelRow(""))
-            addView(createTextLabelRow("Elevenlabs $text"))
+            addView(createTextLabelRow("Elevenlabs"))
+
+            addView(createRefreshDataRow("Get billing data") { textView ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    textView.post {
+                        textView.text = "Fetching..."
+                    }
+                    utilityTools.getElevenLabsBilling(
+                        { response ->
+                            textView.post {
+                                textView.text = response
+                            }
+                        },
+                        { error ->
+                            println("Error getting billing status: $error")
+                            textView.post {
+                                textView.text = "Error: $error"
+                            }
+                        }
+                    )
+                }
+            })
 
             addView(createSeekBarRow("Stability", 1, 0.05f, mainHandler.getConfigurationManager().getTTSStability()) { value ->
                 mainHandler.getConfigurationManager().setTTSStability(value)
@@ -642,6 +650,37 @@ class TopMenuHandler(
             })
         }
     }
+
+    private fun createRefreshDataRow(label: String, onRefresh: (TextView) -> Unit): LinearLayout {
+        return LinearLayout(mainHandler.context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 16, 0, 16)
+
+            val textView = TextView(context).apply {
+                text = label
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(context, R.color.white))
+                setPadding(24, 32, 0, 0)
+            }
+
+            val imageButton = ImageButton(context).apply {
+                setImageResource(R.drawable.ic_refresh)
+                setBackgroundColor(Color.TRANSPARENT)
+                setOnClickListener {
+                    onRefresh(textView)
+                }
+            }
+
+            addView(imageButton, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ))
+
+            addView(textView, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ))
+        }
+    }
+
 
     // category button on top of the dialog
     private fun createCategoryButton(name: String, layoutId: Int, onClick: (TextView) -> Unit): TextView {
