@@ -27,6 +27,7 @@ object ConfigurationManager {
     private const val SPEECH_TEMPERATURE = "speech_temperature"
     private const val TTS_STABILITY = "tts_stability"
     private const val TTS_SIMILARITY = "tts_similarity"
+    private const val TTS_STYLE_EXAGGERATION = "tts_style_exaggeration"
     private const val TTS_VOICE = "tts_voice"
     private const val TTS_STREAMING = "tts_streaming"
     private const val TTS_SPEED = "tts_speed"
@@ -69,6 +70,7 @@ object ConfigurationManager {
         SPEECH_TEMPERATURE to 0.0f,
         TTS_STABILITY to 0.0f,
         TTS_SIMILARITY to 0.0f,
+        TTS_STYLE_EXAGGERATION to 0.0f,
         TTS_VOICE to "alloy",
         TTS_STREAMING to false,
         TTS_SPEED to 1.0f,
@@ -141,6 +143,7 @@ object ConfigurationManager {
     fun getSpeechTemperature() = getFloat(SPEECH_TEMPERATURE, defaultSettings[SPEECH_TEMPERATURE] as Float)
     fun getTTSStability() = getFloat(TTS_STABILITY, defaultSettings[TTS_STABILITY] as Float)
     fun getTTSSimilarity() = getFloat(TTS_SIMILARITY, defaultSettings[TTS_SIMILARITY] as Float)
+    fun getTTSStyleExaggeration() = getFloat(TTS_STYLE_EXAGGERATION, defaultSettings[TTS_STYLE_EXAGGERATION] as Float)
     fun getTTSVoice() = getString(TTS_VOICE, defaultSettings[TTS_VOICE] as String)
     fun getTTSStreaming() = getBoolean(TTS_STREAMING, defaultSettings[TTS_STREAMING] as Boolean)
     fun getTTSSpeed() = getFloat(TTS_SPEED, defaultSettings[TTS_SPEED] as Float)
@@ -174,6 +177,7 @@ object ConfigurationManager {
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
     fun setTTSStability(value: Float) = setFloat(TTS_STABILITY, value)
     fun setTTSSimilarity(value: Float) = setFloat(TTS_SIMILARITY, value)
+    fun setTTSStyleExaggeration(value: Float) = setFloat(TTS_STYLE_EXAGGERATION, value)
     fun setTTSVoice(value: String) = setString(TTS_VOICE, value)
     fun setTTSStreaming(value: Boolean) = setBoolean(TTS_STREAMING, value)
     fun setTTSSpeed(value: Float) = setFloat(TTS_SPEED, value)
@@ -248,6 +252,7 @@ object ConfigurationManager {
             "tts" to mapOf(
                 "stability" to getTTSStability(),
                 "similarity_boost" to getTTSSimilarity(),
+                "style_exaggeration" to getTTSStyleExaggeration(),
                 "voice" to getTTSVoice(),
                 "streaming" to getTTSStreaming(),
                 "speed" to getTTSSpeed(),

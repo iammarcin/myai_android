@@ -196,7 +196,7 @@ class TopMenuHandler(
         val popupWindow = PopupWindow(popupBinding.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4, popupBinding.gpt4oMini, popupBinding.claude, popupBinding.llama370b)
+        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4oMini, popupBinding.claude, popupBinding.llama370b)
 
         // Update items to reflect the selected model
         items.forEach { item ->
@@ -207,10 +207,6 @@ class TopMenuHandler(
 
         popupBinding.gpt4o.setOnClickListener {
             handleModelSelection(popupBinding.gpt4o.text.toString())
-            popupWindow.dismiss()
-        }
-        popupBinding.gpt4.setOnClickListener {
-            handleModelSelection(popupBinding.gpt4.text.toString())
             popupWindow.dismiss()
         }
         popupBinding.gpt4oMini.setOnClickListener {
@@ -423,6 +419,10 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
+            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "11labs: english, multi, turbo, OpenAI: tts-1, tts-1-hd, ", ) { value ->
+                mainHandler.getConfigurationManager().setTTSModelName(value)
+            })
+
             addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getTTSStreaming()) { isChecked ->
                 mainHandler.getConfigurationManager().setTTSStreaming(isChecked)
             })
@@ -462,12 +462,12 @@ class TopMenuHandler(
                 mainHandler.getConfigurationManager().setTTSSimilarity(value)
             })
 
+            addView(createSeekBarRow("Style exaggeration", 1, 0.05f, mainHandler.getConfigurationManager().getTTSStyleExaggeration()) { value ->
+                mainHandler.getConfigurationManager().setTTSStyleExaggeration(value)
+            })
+
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("OpenAI"))
-
-            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "Possible values: tts-1, tts-1-hd", ) { value ->
-                mainHandler.getConfigurationManager().setTTSModelName(value)
-            })
 
             addView(createTextEditRow("Voice", mainHandler.getConfigurationManager().getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
                 mainHandler.getConfigurationManager().setTTSVoice(value)
