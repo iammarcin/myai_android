@@ -27,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 // class to store favorite chat data
-data class FavoriteChat(val id: String, var name: String, var imageResId: Int)
+data class FavoriteChat(val id: String, var chatName: String, var chatCharacter: String)
 
 class TopMenuHandler(
     private val mainHandler: MainHandler,
@@ -134,7 +134,8 @@ class TopMenuHandler(
             if (isCurrentChatFavorited) {
                 removeFavoriteChat(currentChatId!!)
             } else {
-                addChatToFavorites(FavoriteChat(currentChatId!!, mainHandler.getConfigurationManager().getTextCurrentSessionName(), currentCharacter.imageResId))
+                if (currentChatId != "")
+                    addChatToFavorites(FavoriteChat(currentChatId, mainHandler.getConfigurationManager().getTextCurrentSessionName(), currentCharacter.nameForAPI))
             }
             popupWindow.dismiss()
         }
@@ -146,8 +147,9 @@ class TopMenuHandler(
         popupBindingFavMenu.favoritesContainer.removeAllViews()
         favoriteChats.forEach { chat ->
             val chatItemBinding = TopFavoritePopupFavItemBinding.inflate(mainHandler.mainLayoutInflaterInstance)
-            chatItemBinding.chatNameTextView.text = chat.name
-            chatItemBinding.chatCharacterImageView.setImageResource(chat.imageResId)
+            chatItemBinding.chatNameTextView.text = chat.chatName
+            val character = mainHandler.getFullCharacterData(chat.chatCharacter)
+            chatItemBinding.chatCharacterImageView.setImageResource(character.imageResId)
 
             chatItemBinding.removeButton.setOnClickListener {
                 removeFavoriteChat(chat.id)
@@ -448,7 +450,7 @@ class TopMenuHandler(
                         { error ->
                             println("Error getting billing status: $error")
                             textView.post {
-                                textView.text = "Error: $error"
+                                textView.text = "Problem getting billing data"
                             }
                         }
                     )

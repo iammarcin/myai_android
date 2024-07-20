@@ -233,7 +233,7 @@ object ConfigurationManager {
         val favoriteChats = getFavoriteChats().toMutableList()
         var chat = favoriteChats.find { it.id == sessionId }
         if (chat != null) {
-            chat.name = newName
+            chat.chatName = newName
             setFavoriteChats(favoriteChats)
         }
     }
