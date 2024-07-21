@@ -421,8 +421,12 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
-            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "11labs: english, multi, turbo, OpenAI: tts-1, tts-1-hd, ", ) { value ->
+            addView(createTextEditRow("Model", mainHandler.getConfigurationManager().getTTSModelName(), isPassword = false, additionalText = "ElevenLabs: english, multi, turbo\nOpenAI: tts-1, tts-1-hd ", ) { value ->
                 mainHandler.getConfigurationManager().setTTSModelName(value)
+            })
+
+            addView(createTextEditRow("Voice", mainHandler.getConfigurationManager().getTTSVoice(), isPassword = false, additionalText = "ElevenLabs: alice, bill, brian, eric, jessica, sarah, will\nOpenAI: alloy, echo, fable, onyx, nova, shimmer", ) { value ->
+                mainHandler.getConfigurationManager().setTTSVoice(value)
             })
 
             addView(createSwitchRow("Streaming", mainHandler.getConfigurationManager().getTTSStreaming()) { isChecked ->
@@ -470,10 +474,6 @@ class TopMenuHandler(
 
             addView(createTextLabelRow(""))
             addView(createTextLabelRow("OpenAI"))
-
-            addView(createTextEditRow("Voice", mainHandler.getConfigurationManager().getTTSVoice(), isPassword = false, additionalText = "Possible values: alloy, echo, fable, onyx, nova, and shimmer", ) { value ->
-                mainHandler.getConfigurationManager().setTTSVoice(value)
-            })
 
             // speed
             addView(createSeekBarRow("Speed", 4, 0.05f, mainHandler.getConfigurationManager().getTTSSpeed()) { value ->
