@@ -228,7 +228,7 @@ class ChatHelper(
         }
 
         chatAdapter.notifyItemRangeInserted(0, chatItems.size)
-        scrollToEnd()
+        scrollToEnd(autoToEnd = true)
     }
 
     // in popup menu when we click on AI or user message there are few options... one is newSessionFromHere
@@ -252,7 +252,7 @@ class ChatHelper(
     }
 
 
-    override fun scrollToEnd() {
+    override fun scrollToEnd(autoToEnd: Boolean) {
         if (mainHandler.getIsUserScrolling()) {
             return
         }
@@ -261,7 +261,8 @@ class ChatHelper(
         val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
 
         // Only scroll to end if the user is near the bottom of the chat
-        if (lastVisiblePosition >= chatItems.size - 2) {
+        // or if autoToEnd is true (it is automated scroll to end) - for example once we restore session
+        if (lastVisiblePosition >= chatItems.size - 2 || autoToEnd) {
             mainHandler.getMainBinding().chatContainer.post {
                 mainHandler.getMainBinding().chatContainer.scrollToPosition(chatItems.size - 1)
             }

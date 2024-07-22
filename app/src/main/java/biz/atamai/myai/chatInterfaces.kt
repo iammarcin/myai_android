@@ -57,7 +57,7 @@ interface ChatHelperHandler {
     fun setEditingMessagePosition(position: Int?)
     fun createNewSessionFromHere(position: Int)
     fun restoreSessionData(sessionData: JSONObject)
-    fun scrollToEnd()
+    fun scrollToEnd(autoToEnd: Boolean = false)
     fun shareGPSLocation(latitude: Double, longitude: Double)
     fun getCurrentDate(): String
 }
