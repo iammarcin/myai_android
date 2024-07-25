@@ -25,6 +25,7 @@ import android.view.inputmethod.EditorInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 // class to store favorite chat data
 data class FavoriteChat(val id: String, var chatName: String, var chatCharacter: String)
@@ -491,8 +492,13 @@ class TopMenuHandler(
             orientation = LinearLayout.VERTICAL
             setPadding(16, 16, 16, 16)
 
+            addView(createSwitchRow("Use Groq", mainHandler.getConfigurationManager().getSpeechUseGroq()) { isChecked ->
+                mainHandler.getConfigurationManager().setSpeechUseGroq(isChecked)
+            })
+
             addView(createTextEditRow("Language", mainHandler.getConfigurationManager().getSpeechLanguage()) { value ->
-                mainHandler.getConfigurationManager().setSpeechLanguage(value)
+                // make sure we use only lowercase
+                mainHandler.getConfigurationManager().setSpeechLanguage(value.lowercase(Locale.getDefault()))
             })
             addView(createSeekBarRow("Temperature", 1, 0.05f, mainHandler.getConfigurationManager().getSpeechTemperature()) { value ->
                 mainHandler.getConfigurationManager().setSpeechTemperature(value)

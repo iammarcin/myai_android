@@ -25,6 +25,7 @@ object ConfigurationManager {
     private const val GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING = "general_download_audio_files_before_playing" // its in use in chat adapter / audio player - if we download - seekbar works fine (we can move audio playing to whatever point we want)
     private const val SPEECH_LANGUAGE = "speech_language"
     private const val SPEECH_TEMPERATURE = "speech_temperature"
+    private const val SPEECH_USE_GROQ = "speech_use_groq"
     private const val TTS_STABILITY = "tts_stability"
     private const val TTS_SIMILARITY = "tts_similarity"
     private const val TTS_STYLE_EXAGGERATION = "tts_style_exaggeration"
@@ -68,6 +69,7 @@ object ConfigurationManager {
         GENERAL_DOWNLOAD_AUDIO_FILES_BEFORE_PLAYING to true,
         SPEECH_LANGUAGE to "en",
         SPEECH_TEMPERATURE to 0.0f,
+        SPEECH_USE_GROQ to false,
         TTS_STABILITY to 0.0f,
         TTS_SIMILARITY to 0.0f,
         TTS_STYLE_EXAGGERATION to 0.0f,
@@ -141,6 +143,7 @@ object ConfigurationManager {
     fun getUseTestData() = getBoolean(GENERAL_TEST_DATA, defaultSettings[GENERAL_TEST_DATA] as Boolean)
     fun getSpeechLanguage() = getString(SPEECH_LANGUAGE, defaultSettings[SPEECH_LANGUAGE] as String)
     fun getSpeechTemperature() = getFloat(SPEECH_TEMPERATURE, defaultSettings[SPEECH_TEMPERATURE] as Float)
+    fun getSpeechUseGroq() = getBoolean(SPEECH_USE_GROQ, defaultSettings[SPEECH_USE_GROQ] as Boolean)
     fun getTTSStability() = getFloat(TTS_STABILITY, defaultSettings[TTS_STABILITY] as Float)
     fun getTTSSimilarity() = getFloat(TTS_SIMILARITY, defaultSettings[TTS_SIMILARITY] as Float)
     fun getTTSStyleExaggeration() = getFloat(TTS_STYLE_EXAGGERATION, defaultSettings[TTS_STYLE_EXAGGERATION] as Float)
@@ -175,6 +178,7 @@ object ConfigurationManager {
     fun setUseTestData(value: Boolean) = setBoolean(GENERAL_TEST_DATA, value)
     fun setSpeechLanguage(value: String) = setString(SPEECH_LANGUAGE, value.lowercase())
     fun setSpeechTemperature(value: Float) = setFloat(SPEECH_TEMPERATURE, value)
+    fun setSpeechUseGroq(value: Boolean) = setBoolean(SPEECH_USE_GROQ, value)
     fun setTTSStability(value: Float) = setFloat(TTS_STABILITY, value)
     fun setTTSSimilarity(value: Float) = setFloat(TTS_SIMILARITY, value)
     fun setTTSStyleExaggeration(value: Float) = setFloat(TTS_STYLE_EXAGGERATION, value)
@@ -260,7 +264,8 @@ object ConfigurationManager {
             ),
             "speech" to mapOf(
                 "language" to getSpeechLanguage(),
-                "temperature" to getSpeechTemperature()
+                "temperature" to getSpeechTemperature(),
+                "use_groq" to getSpeechUseGroq(),
             ),
             "image" to mapOf(
                 "model" to getImageModelName(),
