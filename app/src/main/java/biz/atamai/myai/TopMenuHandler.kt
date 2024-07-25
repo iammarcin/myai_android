@@ -198,7 +198,7 @@ class TopMenuHandler(
         val popupWindow = PopupWindow(popupBinding.root, popupWidth, LinearLayout.LayoutParams.WRAP_CONTENT, true)
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4oMini, popupBinding.claude, popupBinding.llama370b)
+        val items = listOf(popupBinding.gpt4o, popupBinding.gpt4oMini, popupBinding.claude, popupBinding.llama3170b)
 
         // Update items to reflect the selected model
         items.forEach { item ->
@@ -221,8 +221,8 @@ class TopMenuHandler(
             popupWindow.dismiss()
         }
 
-        popupBinding.llama370b.setOnClickListener {
-            handleModelSelection(popupBinding.llama370b.text.toString())
+        popupBinding.llama3170b.setOnClickListener {
+            handleModelSelection(popupBinding.llama3170b.text.toString())
             popupWindow.dismiss()
         }
 
