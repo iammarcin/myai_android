@@ -37,12 +37,12 @@
         android:textSize="16sp" />
 
     <TextView
-        android:id="@+id/llama3_70b"
+        android:id="@+id/llama31_70b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:drawablePadding="18dp"
-        android:text="LLama 3 70b"
+        android:text="LLama 3.1 70b"
         android:textSize="16sp" />
 
     <LinearLayout
