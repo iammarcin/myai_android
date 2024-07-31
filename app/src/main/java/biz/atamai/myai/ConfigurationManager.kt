@@ -44,6 +44,7 @@ object ConfigurationManager {
     private const val AUTH_TOKEN_FOR_BACKEND = "auth_token_for_backend"
     private const val FAVORITE_CHATS = "favorite_chats"
     private const val FAVORITE_CHATS_NON_PROD = "favorite_chats_non_prod"
+    private const val FAVORITE_CHARACTERS = "favorite_characters"
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -240,6 +241,37 @@ object ConfigurationManager {
             chat.chatName = newName
             setFavoriteChats(favoriteChats)
         }
+    }
+
+    // favorite characters management
+    fun getFavoriteCharacters(): List<String> {
+        val json = getString(FAVORITE_CHARACTERS, "[]")
+        return Gson().fromJson(json, object : TypeToken<List<String>>() {}.type)
+    }
+
+    fun setFavoriteCharacters(characters: List<String>) {
+        val json = Gson().toJson(characters)
+        setString(FAVORITE_CHARACTERS, json)
+    }
+
+    fun addFavoriteCharacter(characterName: String) {
+        val favoriteCharacters = getFavoriteCharacters().toMutableList()
+        if (!favoriteCharacters.contains(characterName)) {
+            favoriteCharacters.add(characterName)
+            setFavoriteCharacters(favoriteCharacters)
+        }
+    }
+
+    fun removeFavoriteCharacter(characterName: String) {
+        val favoriteCharacters = getFavoriteCharacters().toMutableList()
+        if (favoriteCharacters.contains(characterName)) {
+            favoriteCharacters.remove(characterName)
+            setFavoriteCharacters(favoriteCharacters)
+        }
+    }
+
+    fun isFavoriteCharacter(characterName: String): Boolean {
+        return getFavoriteCharacters().contains(characterName)
     }
 
     // used for API calls - to prepare dict with all settings

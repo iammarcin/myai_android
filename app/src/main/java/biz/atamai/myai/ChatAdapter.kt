@@ -14,6 +14,7 @@ import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -714,14 +715,37 @@ class ChatAdapter(
         binding.characterDescription.text = characterDescription
         binding.characterName.text = characterName
 
-        // Make the TextViews visible if they have content
+        // Make the TextViews with characters data visible if they have content
         if (characterName.isNotEmpty()) {
             binding.characterName.visibility = View.VISIBLE
-        }
-        if (characterDescription.isNotEmpty()) {
-            binding.characterDescription.visibility = View.VISIBLE
+
+            if (characterDescription.isNotEmpty()) {
+                binding.characterDescription.visibility = View.VISIBLE
+            }
+
+            binding.favoriteButton.visibility = View.VISIBLE
+            updateFavoriteButtonIcon(binding.favoriteButton, characterName)
+            binding.favoriteButton.setOnClickListener {
+                if (ConfigurationManager.isFavoriteCharacter(characterName)) {
+                    ConfigurationManager.removeFavoriteCharacter(characterName)
+                } else {
+                    ConfigurationManager.addFavoriteCharacter(characterName)
+                }
+                updateFavoriteButtonIcon(binding.favoriteButton, characterName)
+            }
+
         }
         dialog.show()
+    }
+
+    private fun updateFavoriteButtonIcon(favoriteButton: ImageButton, characterName: String) {
+        val isFavorite = ConfigurationManager.isFavoriteCharacter(characterName)
+        val iconRes = if (isFavorite) {
+            R.drawable.ic_favorite_enabled
+        } else {
+            R.drawable.ic_favorite_disabled
+        }
+        favoriteButton.setImageResource(iconRes)
     }
 
     // Show character full screen with name and description

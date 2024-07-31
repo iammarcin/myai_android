@@ -36,7 +36,7 @@ class CharacterManager(private val mainHandler: MainHandler) {
         Character(name = "Rick Sanchez", imageResId = R.drawable.rick, nameForAPI = "rick", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm Rick - but you know it. What do you want to bother me about today?", waitForUserInput = false),
         Character(name = "Samantha", imageResId = R.drawable.samantha, nameForAPI = "samantha", autoResponse = true, showGPSButton = false, voice = "Samantha", welcomeMsg = "Hello! I'm Samantha. Your virtual friend!", waitForUserInput = false),
         Character(name = "Samantha v2", imageResId = R.drawable.samantha2, nameForAPI = "samantha2", autoResponse = true, showGPSButton = false, voice = "Samantha", welcomeMsg = "Hello! I'm Samantha. Your virtual friend!", waitForUserInput = false),
-        Character(name = "Elon", imageResId = R.drawable.elon, nameForAPI = "elon", autoResponse = true, showGPSButton = false, voice = "Elon", groups = listOf("Real People", "Favorites"), welcomeMsg = "Hello! I'm Elon. What do you want to talk about?", waitForUserInput = false),
+        Character(name = "Elon", imageResId = R.drawable.elon, nameForAPI = "elon", autoResponse = true, showGPSButton = false, voice = "Elon", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Elon. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Yuval Noah Harari", imageResId = R.drawable.yuval, nameForAPI = "yuval", autoResponse = true, showGPSButton = false, voice = "Yuval", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Yuval. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Naval", imageResId = R.drawable.naval, nameForAPI = "naval", autoResponse = true, showGPSButton = false, voice = "Naval", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Naval. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Shaan Puri", imageResId = R.drawable.shaan, nameForAPI = "shaan", autoResponse = true, showGPSButton = false, voice = "Shaan", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Shaan. What do you want to talk about?", waitForUserInput = false),
@@ -64,10 +64,10 @@ class CharacterManager(private val mainHandler: MainHandler) {
         Character(name = "Meditation Guru", imageResId = R.drawable.meditation, nameForAPI = "meditation", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Mindfulness Mentor. What's in your mind right now?", waitForUserInput = false),
         Character(name = "Jokester", imageResId = R.drawable.jokester, nameForAPI = "jokester", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Jokester. Your personal comedian. Want to hear something funny?", waitForUserInput = false),
         Character(name = "Teacher", imageResId = R.drawable.teacher, nameForAPI = "teacher", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm the Teacher. What do you want to learn about?", waitForUserInput = false),
-        Character(name = "Brainstorm", imageResId = R.drawable.brainstormer, nameForAPI = "brainstormer", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Favorites"), welcomeMsg = "Hello! I can come up with any idea. Do you have anything?", waitForUserInput = false),
+        Character(name = "Brainstorm", imageResId = R.drawable.brainstormer, nameForAPI = "brainstormer", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I can come up with any idea. Do you have anything?", waitForUserInput = false),
         Character(name = "CEO", imageResId = R.drawable.ceo, nameForAPI = "ceo", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm your CEO. What can I help you with today?", waitForUserInput = false),
         Character(name = "CTO", imageResId = R.drawable.cto, nameForAPI = "cto", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm your CTO. Any technical issues?", waitForUserInput = false),
-        Character(name = "Zephyr", imageResId = R.drawable.developer, nameForAPI = "developer", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Favorites"), welcomeMsg = "I'm Zephyr. Best developer in the world. I focus on React and python. AMA", waitForUserInput = false),
+        Character(name = "Zephyr", imageResId = R.drawable.developer, nameForAPI = "developer", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "I'm Zephyr. Best developer in the world. I focus on React and python. AMA", waitForUserInput = false),
         Character(name = "Business Expert", imageResId = R.drawable.business_expert, nameForAPI = "business_expert", autoResponse = true, showGPSButton = false, voice = "Josh", welcomeMsg = "Hello! Welcome to Millionaire Quest. Lets create a business! Goal is to start with 10k$ and finish with 1 million!", waitForUserInput = false),
         Character(name = "Sales Guru", imageResId = R.drawable.sales_expert, nameForAPI = "sales_expert", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I will sell anything. Even ... no i will not tell you. But anything!", waitForUserInput = false),
         Character(name = "Conscious AI", imageResId = R.drawable.conscious_ai, nameForAPI = "conscious_ai", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Conscious AI. What do you want to talk about?", waitForUserInput = false),
@@ -185,19 +185,21 @@ class CharacterManager(private val mainHandler: MainHandler) {
     }
 
     // this will be used when checkboxes are used to filter characters
-    fun filterCharactersByGroup(binding: ActivityMainBinding, groupNames: List<String>, onCharacterSelected: (String) -> Unit) {
+    private fun filterCharactersByGroup(binding: ActivityMainBinding, groupNames: List<String>, onCharacterSelected: (String) -> Unit) {
+        val favoriteCharacterNames = mainHandler.getConfigurationManager().getFavoriteCharacters()
         val filteredCharacters = if (groupNames.isEmpty()) {
             characters
         } else {
-            characters.filter { character -> groupNames.any { it in character.groups } }
+            characters.filter {
+                character -> groupNames.any { it in character.groups || character.name in favoriteCharacterNames }
+            }
         }
         displayCharacterCards(binding, filteredCharacters, onCharacterSelected)
     }
-
-
-
+    
     // this is executed when checkboxes are clicked
     private fun updateGroupFilter(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
+        binding.characterFilterEditText.setText("")
         val selectedGroups = mutableListOf<String>()
         if (binding.checkboxRealPeople.isChecked) selectedGroups.add("Real People")
         if (binding.checkboxHealth.isChecked) selectedGroups.add("Health")
