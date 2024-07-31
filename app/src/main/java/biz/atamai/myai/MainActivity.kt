@@ -192,7 +192,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
                     val atIndex = s.lastIndexOf("@", cursorPosition - 1)
                     if (atIndex != -1) {
                         val query = s.substring(atIndex + 1, cursorPosition).trim()
-                        binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
+                        binding.characterMainView.visibility = View.VISIBLE
+                        binding.characterFilterLayout.visibility = View.GONE
+                        binding.checkboxShowFilters.visibility = View.GONE
                         chatHelper.scrollToEnd()
 
                         // while triggering search for new AI character - save original AI character - because new one will be set
@@ -205,7 +207,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
                             chatHelper.insertCharacterName(characterName)
                         }
                     } else {
-                        binding.characterHorizontalMainScrollView.visibility = View.GONE
+                        binding.characterMainView.visibility = View.GONE
                     }
                 }
             }
@@ -227,7 +229,9 @@ class MainActivity : AppCompatActivity(), MainHandler {
         binding.newChatButton.setOnClickListener {
             chatHelper.resetChat()
             binding.btnShareLocation.visibility = View.GONE
-            binding.characterHorizontalMainScrollView.visibility = View.VISIBLE
+
+            characterManager.initializeCharacterView(binding)
+
             ConfigurationManager.setTextAICharacter("assistant")
             ConfigurationManager.setTextCurrentSessionName("New chat")
             originalAICharacter = null
@@ -382,7 +386,7 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // edit position reset
         chatHelper.setEditingMessagePosition(null)
         // hide characters view
-        binding.characterHorizontalMainScrollView.visibility = View.GONE
+        binding.characterMainView.visibility = View.GONE
     }
 
     // streaming request to API - text

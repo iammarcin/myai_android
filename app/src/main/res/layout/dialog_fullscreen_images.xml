@@ -1,6 +1,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <!-- used for full screen image preview when there are images in chat items
+    <!-- dialog_fullscreen_images.xml
+    used for full screen image preview when there are images in chat items
     CC000000
     -->
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -130,7 +130,7 @@ class ChatHelper(
         chatAdapter.notifyItemRangeRemoved(0, size)
         chatAdapter.resetChatAdapter()
         resetInputArea()
-        mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.VISIBLE
+        mainHandler.getMainBinding().characterMainView.visibility = View.VISIBLE
         mainHandler.releaseMediaPlayer()
     }
 
@@ -220,7 +220,7 @@ class ChatHelper(
         mainHandler.getConfigurationManager().setTextCurrentSessionName(sessionName)
 
         setCurrentDBSessionID(sessionData.getString("session_id") ?: "")
-        mainHandler.getMainBinding().characterHorizontalMainScrollView.visibility = View.GONE
+        mainHandler.getMainBinding().characterMainView.visibility = View.GONE
 
         mainHandler.getMainBinding().btnShareLocation.visibility = View.GONE
         if (mainHandler.getMainCharacterManager().getCharacterByNameForAPI(sessionCharacter)?.showGPSButton == true) {

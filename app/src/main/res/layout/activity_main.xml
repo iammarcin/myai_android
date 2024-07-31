@@ -66,22 +66,98 @@
             </androidx.appcompat.widget.Toolbar>
 
             <!-- Horizontal ScrollView with character cards -->
-            <HorizontalScrollView
-                android:id="@+id/characterHorizontalMainScrollView"
+            <LinearLayout
+                android:id="@+id/characterMainView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:scrollbars="none">
+                android:orientation="vertical"
+                android:padding="1dp">
 
-                <LinearLayout
-                    android:id="@+id/characterScrollView"
+                <HorizontalScrollView
+                    android:id="@+id/characterHorizontalMainScrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:paddingBottom="0dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/characterScrollView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="4dp"
+                        android:paddingBottom="0dp"
+                        android:gravity="center" />
+
+                </HorizontalScrollView>
+
+                <CheckBox
+                    android:id="@+id/checkboxShowFilters"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="4dp"
-                    android:gravity="center" />
-            </HorizontalScrollView>
+                    android:textSize="12sp"
+                    android:padding="0dp"
+                    android:text="Filters" />
 
+                <LinearLayout
+                    android:id="@+id/characterFilterLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:padding="2dp"
+                    android:paddingBottom="0dp"
+                    >
+
+                    <EditText
+                        android:id="@+id/characterFilterEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Search"
+                        android:padding="8dp"
+                        android:paddingBottom="0dp"
+                        android:inputType="text" />
+
+                    <LinearLayout
+                        android:id="@+id/characterFilterCheckboxes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingTop="0dp">
+
+                        <CheckBox
+                            android:id="@+id/checkboxFavorites"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:padding="1dp"
+                            android:text="Favorites" />
+                        <CheckBox
+                            android:id="@+id/checkboxHealth"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:padding="1dp"
+                            android:text="Health" />
+                        <CheckBox
+                            android:id="@+id/checkboxRealPeople"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:padding="1dp"
+                            android:text="Real People" />
+                        <CheckBox
+                            android:id="@+id/checkboxStoryModes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:padding="1dp"
+                            android:text="Stories" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
 
             <biz.atamai.myai.CustomRecyclerView
                 android:id="@+id/chatContainer"
