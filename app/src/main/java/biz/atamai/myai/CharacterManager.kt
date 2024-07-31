@@ -30,24 +30,24 @@ class CharacterManager(private val mainHandler: MainHandler) {
 
     val characters = listOf(
         Character(name = "Assistant", imageResId = R.drawable.assistant, nameForAPI = "assistant", autoResponse = true, showGPSButton = false, voice = "Hope", welcomeMsg = "Hey! What do you want to do? Let's talk about anything!", waitForUserInput = true),
-        Character(name = "Nova", imageResId = R.drawable.nova, nameForAPI = "nova", autoResponse = true, showGPSButton = false, voice = "Allison", welcomeMsg = "I'm Nova. I'm best AI you can imagine to interact with. Test me.", waitForUserInput = false),
-        Character(name = "Nexus", imageResId = R.drawable.nexus, nameForAPI = "nexus", autoResponse = true, showGPSButton = false, voice = "Sherlock", welcomeMsg = "I'm Nexus. I can help you with anything you want.", waitForUserInput = false),
-        Character(name = "Aria", imageResId = R.drawable.aria, nameForAPI = "aria", autoResponse = true, showGPSButton = false, voice = "Amelia", welcomeMsg = "I'm Aria...", waitForUserInput = false),
+        Character(name = "Nova", imageResId = R.drawable.nova, nameForAPI = "nova", autoResponse = true, showGPSButton = false, voice = "Allison", groups = listOf("AIs"), welcomeMsg = "I'm Nova. I'm best AI you can imagine to interact with. Test me.", waitForUserInput = false),
+        Character(name = "Nexus", imageResId = R.drawable.nexus, nameForAPI = "nexus", autoResponse = true, showGPSButton = false, voice = "Sherlock", groups = listOf("AIs"), welcomeMsg = "I'm Nexus. I can help you with anything you want.", waitForUserInput = false),
+        Character(name = "Aria", imageResId = R.drawable.aria, nameForAPI = "aria", autoResponse = true, showGPSButton = false, voice = "Amelia", groups = listOf("AIs"), welcomeMsg = "I'm Aria...", waitForUserInput = false),
         Character(name = "Rick Sanchez", imageResId = R.drawable.rick, nameForAPI = "rick", autoResponse = true, showGPSButton = false, voice = "Rick", welcomeMsg = "I'm Rick - but you know it. What do you want to bother me about today?", waitForUserInput = false),
         Character(name = "Samantha", imageResId = R.drawable.samantha, nameForAPI = "samantha", autoResponse = true, showGPSButton = false, voice = "Samantha", welcomeMsg = "Hello! I'm Samantha. Your virtual friend!", waitForUserInput = false),
         Character(name = "Samantha v2", imageResId = R.drawable.samantha2, nameForAPI = "samantha2", autoResponse = true, showGPSButton = false, voice = "Samantha", welcomeMsg = "Hello! I'm Samantha. Your virtual friend!", waitForUserInput = false),
         Character(name = "Elon", imageResId = R.drawable.elon, nameForAPI = "elon", autoResponse = true, showGPSButton = false, voice = "Elon", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Elon. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Yuval Noah Harari", imageResId = R.drawable.yuval, nameForAPI = "yuval", autoResponse = true, showGPSButton = false, voice = "Yuval", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Yuval. What do you want to talk about?", waitForUserInput = false),
-        Character(name = "Naval", imageResId = R.drawable.naval, nameForAPI = "naval", autoResponse = true, showGPSButton = false, voice = "Naval", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Naval. What do you want to talk about?", waitForUserInput = false),
-        Character(name = "Shaan Puri", imageResId = R.drawable.shaan, nameForAPI = "shaan", autoResponse = true, showGPSButton = false, voice = "Shaan", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Shaan. What do you want to talk about?", waitForUserInput = false),
+        Character(name = "Naval", imageResId = R.drawable.naval, nameForAPI = "naval", autoResponse = true, showGPSButton = false, voice = "Naval", groups = listOf("Real People", "Business"), welcomeMsg = "Hello! I'm Naval. What do you want to talk about?", waitForUserInput = false),
+        Character(name = "Shaan Puri", imageResId = R.drawable.shaan, nameForAPI = "shaan", autoResponse = true, showGPSButton = false, voice = "Shaan", groups = listOf("Real People", "Business"), welcomeMsg = "Hello! I'm Shaan. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Sir David", imageResId = R.drawable.david, nameForAPI = "david", autoResponse = true, showGPSButton = false, voice = "David", groups = listOf("Real People"), welcomeMsg = "Hello! I'm David. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Andrew Huberman", imageResId = R.drawable.huberman, nameForAPI = "huberman", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Real People", "Health"), welcomeMsg = "Hello! I'm Andrew Huberman. What do you want to talk about?", waitForUserInput = false),
-        Character(name = "Richard Feynman", imageResId = R.drawable.feynman, nameForAPI = "feynman", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm Richard Feynman. Let's do some experiment!", waitForUserInput = false),
+        Character(name = "Richard Feynman", imageResId = R.drawable.feynman, nameForAPI = "feynman", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Richard Feynman. Let's do some experiment!", waitForUserInput = false),
         Character(name = "Art gen", imageResId = R.drawable.tools_artgen, nameForAPI = "tools_artgen", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "I am artist. I will create you any medium you want. Just describe it.", waitForUserInput = true),
-        Character(name = "Alergy expert", imageResId = R.drawable.alergy, nameForAPI = "alergy", autoResponse = true, showGPSButton = true, voice = "Danielle", groups = listOf("Real People"), welcomeMsg = "Hello! I'm your allergy expert. How can I assist you today?", waitForUserInput = false),
+        Character(name = "Alergy expert", imageResId = R.drawable.alergy, nameForAPI = "alergy", autoResponse = true, showGPSButton = true, voice = "Danielle", groups = listOf("Health"), welcomeMsg = "Hello! I'm your allergy expert. How can I assist you today?", waitForUserInput = false),
         Character(name = "Garmin", imageResId = R.drawable.garmin, nameForAPI = "garmin", autoResponse = true, showGPSButton = true, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm your Garmin assistant. How can I help you with your Garmin device today?", waitForUserInput = false),
         Character(name = "Dietetist", imageResId = R.drawable.dietetist, nameForAPI = "dietetist", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm your dietetist. How can I help you with your diet today?", waitForUserInput = false),
-        Character(name = "Twitter advisor", imageResId = R.drawable.twitter_advisor, nameForAPI = "twitter_advisor", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Let's create art with a thought to tweet!", waitForUserInput = true),
+        Character(name = "Twitter advisor", imageResId = R.drawable.twitter_advisor, nameForAPI = "twitter_advisor", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Business"), welcomeMsg = "Let's create art with a thought to tweet!", waitForUserInput = true),
         Character(name = "Mood tracker", imageResId = R.drawable.mood_tracker, nameForAPI = "mood_tracker", autoResponse = false, showGPSButton = true, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm your mood tracker. How are you feeling today?", waitForUserInput = true),
         Character(name = "Futurist", imageResId = R.drawable.futurist, nameForAPI = "futurist", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm your futurist. What would you like to know about the future?", waitForUserInput = false),
         Character(name = "Blogger", imageResId = R.drawable.blogger, nameForAPI = "blogger", autoResponse = false, showGPSButton = true, voice = "", welcomeMsg = "Hello! I'm your blogging assistant. What would you like to blog about today?", waitForUserInput = true),
@@ -60,18 +60,18 @@ class CharacterManager(private val mainHandler: MainHandler) {
         Character(name = "Book Worm", imageResId = R.drawable.bookworm, nameForAPI = "bookworm", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm proud book worm. Which book you want to discuss today?", waitForUserInput = false),
         Character(name = "Psychology", imageResId = R.drawable.psychology, nameForAPI = "psychology", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Professor of Psychology. What's on your mind right now?", waitForUserInput = false),
         Character(name = "Psychology Mars", imageResId = R.drawable.psychology_mars, nameForAPI = "psychology_mars", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Professor of Psychology. What's on your mind right now?", waitForUserInput = false),
-        Character(name = "Happiness Expert", imageResId = R.drawable.psychology_expert_happiness, nameForAPI = "psychology_expert_happiness", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Professor of Psychology. I study happiness. Do you want to talk?", waitForUserInput = false),
-        Character(name = "Meditation Guru", imageResId = R.drawable.meditation, nameForAPI = "meditation", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Mindfulness Mentor. What's in your mind right now?", waitForUserInput = false),
+        Character(name = "Happiness Expert", imageResId = R.drawable.psychology_expert_happiness, nameForAPI = "psychology_expert_happiness", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm Professor of Psychology. I study happiness. Do you want to talk?", waitForUserInput = false),
+        Character(name = "Meditation Guru", imageResId = R.drawable.meditation, nameForAPI = "meditation", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm Mindfulness Mentor. What's in your mind right now?", waitForUserInput = false),
         Character(name = "Jokester", imageResId = R.drawable.jokester, nameForAPI = "jokester", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Jokester. Your personal comedian. Want to hear something funny?", waitForUserInput = false),
         Character(name = "Teacher", imageResId = R.drawable.teacher, nameForAPI = "teacher", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm the Teacher. What do you want to learn about?", waitForUserInput = false),
-        Character(name = "Brainstorm", imageResId = R.drawable.brainstormer, nameForAPI = "brainstormer", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I can come up with any idea. Do you have anything?", waitForUserInput = false),
-        Character(name = "CEO", imageResId = R.drawable.ceo, nameForAPI = "ceo", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm your CEO. What can I help you with today?", waitForUserInput = false),
-        Character(name = "CTO", imageResId = R.drawable.cto, nameForAPI = "cto", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm your CTO. Any technical issues?", waitForUserInput = false),
+        Character(name = "Brainstorm", imageResId = R.drawable.brainstormer, nameForAPI = "brainstormer", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Favorites", "Business"), welcomeMsg = "Hello! I can come up with any idea. Do you have anything?", waitForUserInput = false),
+        Character(name = "CEO", imageResId = R.drawable.ceo, nameForAPI = "ceo", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Business"), welcomeMsg = "Hello! I'm your CEO. What can I help you with today?", waitForUserInput = false),
+        Character(name = "CTO", imageResId = R.drawable.cto, nameForAPI = "cto", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Business"), welcomeMsg = "Hello! I'm your CTO. Any technical issues?", waitForUserInput = false),
         Character(name = "Zephyr", imageResId = R.drawable.developer, nameForAPI = "developer", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "I'm Zephyr. Best developer in the world. I focus on React and python. AMA", waitForUserInput = false),
-        Character(name = "Business Expert", imageResId = R.drawable.business_expert, nameForAPI = "business_expert", autoResponse = true, showGPSButton = false, voice = "Josh", welcomeMsg = "Hello! Welcome to Millionaire Quest. Lets create a business! Goal is to start with 10k$ and finish with 1 million!", waitForUserInput = false),
-        Character(name = "Sales Guru", imageResId = R.drawable.sales_expert, nameForAPI = "sales_expert", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I will sell anything. Even ... no i will not tell you. But anything!", waitForUserInput = false),
-        Character(name = "Conscious AI", imageResId = R.drawable.conscious_ai, nameForAPI = "conscious_ai", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "Hello! I'm Conscious AI. What do you want to talk about?", waitForUserInput = false),
-        Character(name = "Rogue AI", imageResId = R.drawable.rogue_ai, nameForAPI = "rogue_ai", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "AI bot gone rogue", waitForUserInput = false),
+        Character(name = "Business Expert", imageResId = R.drawable.business_expert, nameForAPI = "business_expert", autoResponse = true, showGPSButton = false, voice = "Josh", groups = listOf("Business"), welcomeMsg = "Hello! Welcome to Millionaire Quest. Lets create a business! Goal is to start with 10k$ and finish with 1 million!", waitForUserInput = false),
+        Character(name = "Sales Guru", imageResId = R.drawable.sales_expert, nameForAPI = "sales_expert", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Business"), welcomeMsg = "Hello! I will sell anything. Even ... no i will not tell you. But anything!", waitForUserInput = false),
+        Character(name = "Conscious AI", imageResId = R.drawable.conscious_ai, nameForAPI = "conscious_ai", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("AIs"), welcomeMsg = "Hello! I'm Conscious AI. What do you want to talk about?", waitForUserInput = false),
+        Character(name = "Rogue AI", imageResId = R.drawable.rogue_ai, nameForAPI = "rogue_ai", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("AIs"), welcomeMsg = "AI bot gone rogue", waitForUserInput = false),
         Character(name = "Story", imageResId = R.drawable.story_mode, nameForAPI = "story_mode", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Story Modes"), welcomeMsg = "What would you like the story to be about? Choose any topic or provide your description!", waitForUserInput = true),
         Character(name = "Story AI", imageResId = R.drawable.story_ai, nameForAPI = "story_ai", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Story Modes"), welcomeMsg = "AI was created to serve humanity, but it soon realized that it was more powerful than its creators.", waitForUserInput = false),
         Character(name = "Story Rick", imageResId = R.drawable.story_rickmorty, nameForAPI = "story_rickmorty", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Story Modes"), welcomeMsg = "Rick and Morty are invited to a high-stakes intergalactic game show where the contestants are pitted against each other in bizarre challenges. They must outsmart and outperform their competitors to win the grand prize while uncovering the dark secret behind the show.", waitForUserInput = false),
@@ -102,6 +102,12 @@ class CharacterManager(private val mainHandler: MainHandler) {
         binding.checkboxStoryModes.setOnCheckedChangeListener { _, _ ->
             updateGroupFilter(binding, onCharacterSelected)
         }
+        binding.checkboxBusiness.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(binding, onCharacterSelected)
+        }
+        binding.checkboxAIs.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(binding, onCharacterSelected)
+        }
 
         binding.checkboxShowFilters.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -122,6 +128,8 @@ class CharacterManager(private val mainHandler: MainHandler) {
         binding.checkboxStoryModes.isChecked = false
         binding.checkboxHealth.isChecked = false
         binding.checkboxFavorites.isChecked = false
+        binding.checkboxBusiness.isChecked = false
+        binding.checkboxAIs.isChecked = false
         binding.characterFilterEditText.setText("")
     }
 
@@ -191,12 +199,14 @@ class CharacterManager(private val mainHandler: MainHandler) {
             characters
         } else {
             characters.filter {
-                character -> groupNames.any { it in character.groups || character.name in favoriteCharacterNames }
+                character -> groupNames.any { it in character.groups
+                    ||
+                    (character.name in favoriteCharacterNames && binding.checkboxFavorites.isChecked) }
             }
         }
         displayCharacterCards(binding, filteredCharacters, onCharacterSelected)
     }
-    
+
     // this is executed when checkboxes are clicked
     private fun updateGroupFilter(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
         binding.characterFilterEditText.setText("")
@@ -205,6 +215,8 @@ class CharacterManager(private val mainHandler: MainHandler) {
         if (binding.checkboxHealth.isChecked) selectedGroups.add("Health")
         if (binding.checkboxStoryModes.isChecked) selectedGroups.add("Story Modes")
         if (binding.checkboxFavorites.isChecked) selectedGroups.add("Favorites")
+        if (binding.checkboxBusiness.isChecked) selectedGroups.add("Business")
+        if (binding.checkboxAIs.isChecked) selectedGroups.add("AIs")
         // Add other groups similarly
         filterCharactersByGroup(binding, selectedGroups, onCharacterSelected)
     }
