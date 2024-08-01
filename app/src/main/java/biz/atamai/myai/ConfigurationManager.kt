@@ -206,8 +206,9 @@ object ConfigurationManager {
                 "http://192.168.1.123:8000/" 
             } else {
                 // local
+                "http://192.168.23.88:8023/" // local
                 //"http://192.168.23.66:8000/" // PT
-                "http://192.168.1.150:8000/" // ES
+                //"http://192.168.1.150:8000/" // ES
             }
         }
         setAppModeApiUrl(url)

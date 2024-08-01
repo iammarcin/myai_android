@@ -2,7 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- dialog_fullscreen_images.xml
     used for full screen image preview when there are images in chat items
-    CC000000
     -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/dialog_fullscreen_images_main_layout"
@@ -22,7 +21,6 @@
             android:layout_margin="16dp"
             android:src="@drawable/ic_close"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Close"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -60,7 +58,6 @@
             android:layout_margin="16dp"
             android:src="@drawable/ic_favorite_disabled"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Favorite"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
