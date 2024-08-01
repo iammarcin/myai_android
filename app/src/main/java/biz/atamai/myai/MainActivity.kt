@@ -70,7 +70,8 @@ class MainActivity : AppCompatActivity(), MainHandler {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         ConfigurationManager.init(this)
-
+        // for new branch
+        
         setContentView(binding.root)
 
         audioRecorder = AudioRecorder(this, ConfigurationManager.getUseBluetooth(), ConfigurationManager.getAppModeApiUrl())
