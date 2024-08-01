@@ -23,7 +23,7 @@ class CharacterManager(private val mainHandler: MainHandler) {
     // autoResponse = when user provides input, should character automatically responds (in general always yes - but there are few cases like blogger then NO)
     // showGPSButton = if character should have button to share GPS location enabled
     // voice = voice of the character - when using TTS. it can be set to null ("") - so then we will take value from settings / options
-    // groupName - group name to filter out characters easily (for checkboxes)
+    // groups - group name to filter out characters easily (for checkboxes)
     // welcomeMsg = depending on waitForUserInput - this message will be displayed when character is selected
     // waitForUserInput = if we wait for user or do we start conversation automatically
     data class Character(val name: String, val imageResId: Int, val nameForAPI: String, val autoResponse: Boolean = true, val showGPSButton: Boolean = false, val voice: String, val groups: List<String> = listOf("General"), val welcomeMsg: String, val waitForUserInput: Boolean)
@@ -44,7 +44,7 @@ class CharacterManager(private val mainHandler: MainHandler) {
         Character(name = "Andrew Huberman", imageResId = R.drawable.huberman, nameForAPI = "huberman", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Real People", "Health"), welcomeMsg = "Hello! I'm Andrew Huberman. What do you want to talk about?", waitForUserInput = false),
         Character(name = "Richard Feynman", imageResId = R.drawable.feynman, nameForAPI = "feynman", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Real People"), welcomeMsg = "Hello! I'm Richard Feynman. Let's do some experiment!", waitForUserInput = false),
         Character(name = "Art gen", imageResId = R.drawable.tools_artgen, nameForAPI = "tools_artgen", autoResponse = true, showGPSButton = false, voice = "", welcomeMsg = "I am artist. I will create you any medium you want. Just describe it.", waitForUserInput = true),
-        Character(name = "Alergy expert", imageResId = R.drawable.alergy, nameForAPI = "alergy", autoResponse = true, showGPSButton = true, voice = "Danielle", groups = listOf("Health"), welcomeMsg = "Hello! I'm your allergy expert. How can I assist you today?", waitForUserInput = false),
+        Character(name = "Allergy expert", imageResId = R.drawable.alergy, nameForAPI = "alergy", autoResponse = true, showGPSButton = true, voice = "Danielle", groups = listOf("Health"), welcomeMsg = "Hello! I'm your allergy expert. How can I assist you today?", waitForUserInput = false),
         Character(name = "Garmin", imageResId = R.drawable.garmin, nameForAPI = "garmin", autoResponse = true, showGPSButton = true, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm your Garmin assistant. How can I help you with your Garmin device today?", waitForUserInput = false),
         Character(name = "Dietetist", imageResId = R.drawable.dietetist, nameForAPI = "dietetist", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Health"), welcomeMsg = "Hello! I'm your dietetist. How can I help you with your diet today?", waitForUserInput = false),
         Character(name = "Twitter advisor", imageResId = R.drawable.twitter_advisor, nameForAPI = "twitter_advisor", autoResponse = true, showGPSButton = false, voice = "", groups = listOf("Business"), welcomeMsg = "Let's create art with a thought to tweet!", waitForUserInput = true),
