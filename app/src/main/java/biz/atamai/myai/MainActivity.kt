@@ -3,6 +3,7 @@
 package biz.atamai.myai
 
 import android.app.Activity
+import androidx.activity.viewModels
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -24,6 +25,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
@@ -32,14 +34,17 @@ import java.io.File
 class MainActivity : AppCompatActivity(), MainHandler {
 
     lateinit var binding: ActivityMainBinding
+
+    private val chatViewModel: MainActivityShared by viewModels()
+
     override val context: Context
         get() = this
     override val activity: AppCompatActivity
         get() = this
-    private lateinit var fileAttachmentHandler: FileAttachmentHandler
+    lateinit var fileAttachmentHandler: FileAttachmentHandler
     private lateinit var cameraHandler: CameraHandler
 
-    private val chatItems: MutableList<ChatItem> = mutableListOf()
+    val chatItems: MutableList<ChatItem> = mutableListOf()
     override val chatItemsList: MutableList<ChatItem>
         get() = this.chatItems
 
@@ -70,9 +75,10 @@ class MainActivity : AppCompatActivity(), MainHandler {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         ConfigurationManager.init(this)
-        // for new branch
-        
+
         setContentView(binding.root)
+        // load standard UI for dynamic fragment
+        loadFragment(MainActivityChatStandard(this))
 
         audioRecorder = AudioRecorder(this, ConfigurationManager.getUseBluetooth(), ConfigurationManager.getAppModeApiUrl())
 
@@ -129,6 +135,12 @@ class MainActivity : AppCompatActivity(), MainHandler {
         // set status bar color (above app -where clock is)
         window.statusBarColor = ContextCompat.getColor(this, R.color.popupmenu_background)
 
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.dynamicFragmentContainer, fragment)
+            .commit()
     }
 
     private fun setupChatAdapter() {
