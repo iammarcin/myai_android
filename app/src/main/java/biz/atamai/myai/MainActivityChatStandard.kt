@@ -2,10 +2,13 @@ package biz.atamai.myai
 
 // MainActivityChatStandard.kt
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.HorizontalScrollView
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.activity.viewModels
 import androidx.fragment.app.activityViewModels
@@ -14,51 +17,39 @@ import androidx.lifecycle.ViewModelProvider
 
 import biz.atamai.myai.databinding.ActivityMainChatStandardBinding
 
-class MainActivityChatStandard(private val mainHandler: MainHandler) : Fragment(){
-
-    private lateinit var binding: ActivityMainChatStandardBinding
-    private val chatViewModel: MainActivityShared by activityViewModels()
+class MainActivityChatStandard : MainActivityBaseFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = ActivityMainChatStandardBinding.inflate(inflater, container, false)
-        binding.lifecycleOwner = viewLifecycleOwner
+        val view = super.onCreateView(inflater, container, savedInstanceState)
 
-        setupListeners()
-        setupChatAdapter()
+        // Customize the UI for standard chat mode
+        //binding.chatContainer.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
 
-        return binding.root
+        // Other customizations
+
+        return view
     }
 
-    private fun setupListeners() {
-        binding.btnSend.setOnClickListener {
-            chatViewModel.sendMessage()
-        }
-
-        binding.btnAttach.setOnClickListener {
-            (activity as MainActivity).fileAttachmentHandler.openFileChooser()
-        }
-
-        // Other listeners...
+    override fun handleTextMessage(
+        message: String,
+        attachedImageLocations: List<String>,
+        attachedFiles: List<Uri>,
+        gpsLocationMessage: Boolean
+    ) {
+        TODO("Not yet implemented")
     }
 
-    fun setChatAdapterHandler(chatAdapterHandler: ChatAdapterHandler) {
-        this.chatAdapterHandler = chatAdapterHandler
+    override fun addMessageToChat(
+        message: String,
+        attachedImageLocations: List<String>,
+        attachedFiles: List<Uri>,
+        gpsLocationMessage: Boolean
+    ): ChatItem {
+        TODO("Not yet implemented")
     }
 
-    private fun setupChatAdapter() {
-        val chatAdapter = ChatAdapter(
-            mainHandler.chatItems,
-            ConfigurationManager.getAppModeApiUrl(),
-            requireContext(),
-            (activity as MainActivity).audioPlayerManager,
-        ) { position, message ->
-            (activity as MainActivity).chatHelper.startEditingMessage(position, message)
-        }
-
-        binding.chatContainer.adapter = chatAdapter
-    }
 
 }

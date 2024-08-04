@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.core.widget.addTextChangedListener
 import biz.atamai.myai.databinding.ActivityMainBinding
+import biz.atamai.myai.databinding.ActivityMainChatStandardBinding
 import biz.atamai.myai.databinding.CharacterCardBinding
 
 class CharacterManager(private val mainHandler: MainHandler) {
@@ -80,57 +81,57 @@ class CharacterManager(private val mainHandler: MainHandler) {
 
 
     // Function to programmatically set up character cards
-    fun setupCharacterCards(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
-        initializeCharacterView(binding)
+    fun setupCharacterCards(bindingMain: ActivityMainBinding, bindingMainBase: ActivityMainChatStandardBinding, onCharacterSelected: (String) -> Unit) {
+        initializeCharacterView(bindingMain)
         // default setting before user selection
         mainHandler.getConfigurationManager().setTextAICharacter("assistant")
-        displayCharacterCards(binding, characters, onCharacterSelected)
+        displayCharacterCards(bindingMain, bindingMainBase, characters, onCharacterSelected)
 
-        binding.characterFilterEditText.addTextChangedListener { text ->
-            filterCharactersByText(binding, text.toString(), onCharacterSelected)
-        }
-
-        binding.checkboxHealth.setOnCheckedChangeListener { _, _ ->
-            updateGroupFilter(binding, onCharacterSelected)
-        }
-        binding.checkboxFavorites.setOnCheckedChangeListener { _, _ ->
-            updateGroupFilter(binding, onCharacterSelected)
-        }
-        binding.checkboxRealPeople.setOnCheckedChangeListener { _, _ ->
-            updateGroupFilter(binding, onCharacterSelected)
-        }
-        binding.checkboxStoryModes.setOnCheckedChangeListener { _, _ ->
-            updateGroupFilter(binding, onCharacterSelected)
-        }
-        binding.checkboxBusiness.setOnCheckedChangeListener { _, _ ->
-            updateGroupFilter(binding, onCharacterSelected)
-        }
-        binding.checkboxAIs.setOnCheckedChangeListener { _, _ ->
-            updateGroupFilter(binding, onCharacterSelected)
+        bindingMain.characterFilterEditText.addTextChangedListener { text ->
+            filterCharactersByText(bindingMain, bindingMainBase, text.toString(), onCharacterSelected)
         }
 
-        binding.checkboxShowFilters.setOnCheckedChangeListener { _, isChecked ->
+        bindingMain.checkboxHealth.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(bindingMain, bindingMainBase, onCharacterSelected)
+        }
+        bindingMain.checkboxFavorites.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(bindingMain, bindingMainBase, onCharacterSelected)
+        }
+        bindingMain.checkboxRealPeople.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(bindingMain, bindingMainBase, onCharacterSelected)
+        }
+        bindingMain.checkboxStoryModes.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(bindingMain, bindingMainBase, onCharacterSelected)
+        }
+        bindingMain.checkboxBusiness.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(bindingMain, bindingMainBase, onCharacterSelected)
+        }
+        bindingMain.checkboxAIs.setOnCheckedChangeListener { _, _ ->
+            updateGroupFilter(bindingMain, bindingMainBase, onCharacterSelected)
+        }
+
+        bindingMain.checkboxShowFilters.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                binding.characterFilterLayout.visibility = View.VISIBLE
-                binding.checkboxShowFilters.visibility = View.GONE
+                bindingMain.characterFilterLayout.visibility = View.VISIBLE
+                bindingMain.checkboxShowFilters.visibility = View.GONE
             } else {
-                binding.characterFilterLayout.visibility = View.GONE
+                bindingMain.characterFilterLayout.visibility = View.GONE
             }
         }
     }
 
-    fun initializeCharacterView(binding: ActivityMainBinding) {
-        binding.characterMainView.visibility = View.VISIBLE
-        binding.characterFilterLayout.visibility = View.GONE
-        binding.checkboxShowFilters.visibility = View.VISIBLE
-        binding.checkboxShowFilters.isChecked = false
-        binding.checkboxRealPeople.isChecked = false
-        binding.checkboxStoryModes.isChecked = false
-        binding.checkboxHealth.isChecked = false
-        binding.checkboxFavorites.isChecked = false
-        binding.checkboxBusiness.isChecked = false
-        binding.checkboxAIs.isChecked = false
-        binding.characterFilterEditText.setText("")
+    fun initializeCharacterView(bindingMain: ActivityMainBinding) {
+        bindingMain.characterMainView.visibility = View.VISIBLE
+        bindingMain.characterFilterLayout.visibility = View.GONE
+        bindingMain.checkboxShowFilters.visibility = View.VISIBLE
+        bindingMain.checkboxShowFilters.isChecked = false
+        bindingMain.checkboxRealPeople.isChecked = false
+        bindingMain.checkboxStoryModes.isChecked = false
+        bindingMain.checkboxHealth.isChecked = false
+        bindingMain.checkboxFavorites.isChecked = false
+        bindingMain.checkboxBusiness.isChecked = false
+        bindingMain.checkboxAIs.isChecked = false
+        bindingMain.characterFilterEditText.setText("")
     }
 
     // return whole character (used in chatHelper)
@@ -140,8 +141,8 @@ class CharacterManager(private val mainHandler: MainHandler) {
         return characters.find { it.nameForAPI == characterName }
     }
 
-    private fun displayCharacterCards(binding: ActivityMainBinding, characters: List<Character>, onCharacterSelected: (String) -> Unit) {
-        binding.characterScrollView.removeAllViews()
+    private fun displayCharacterCards(bindingMain: ActivityMainBinding, bindingMainBase: ActivityMainChatStandardBinding, characters: List<Character>, onCharacterSelected: (String) -> Unit) {
+        bindingMain.characterScrollView.removeAllViews()
         for (character in characters) {
             val cardBinding = CharacterCardBinding.inflate(LayoutInflater.from(mainHandler.context))
             cardBinding.characterName.text = character.name
@@ -150,13 +151,13 @@ class CharacterManager(private val mainHandler: MainHandler) {
             // click listener to choose character
             cardBinding.root.setOnClickListener {
                 mainHandler.createToastMessage("${character.name} selected")
-                binding.characterMainView.visibility = View.GONE
+                bindingMain.characterMainView.visibility = View.GONE
                 mainHandler.getConfigurationManager().setTextAICharacter(character.nameForAPI)
                 // show GPS button, but only for specific characters
                 // first reset in case other character is chosen
-                binding.btnShareLocation.visibility = View.GONE
+                bindingMainBase.btnShareLocation.visibility = View.GONE
                 if (character.showGPSButton) {
-                    binding.btnShareLocation.visibility = View.VISIBLE
+                    bindingMainBase.btnShareLocation.visibility = View.VISIBLE
                 }
                 onCharacterSelected(character.name)
             }
@@ -174,26 +175,26 @@ class CharacterManager(private val mainHandler: MainHandler) {
                 marginEnd = mainHandler.context.resources.getDimensionPixelSize(R.dimen.character_card_margin)
             }
             cardBinding.root.layoutParams = layoutParams
-            binding.characterScrollView.addView(cardBinding.root)
+            bindingMain.characterScrollView.addView(cardBinding.root)
         }
     }
 
     // this will be used when @ is typed in chat
-    fun filterCharacters(binding: ActivityMainBinding, query: String, onCharacterSelected: (String) -> Unit) {
+    fun filterCharacters(bindingMain: ActivityMainBinding, bindingMainBase: ActivityMainChatStandardBinding, query: String, onCharacterSelected: (String) -> Unit) {
         val filteredCharacters = characters.filter { it.name.contains(query, ignoreCase = true) }
-        displayCharacterCards(binding, filteredCharacters, onCharacterSelected)
+        displayCharacterCards(bindingMain, bindingMainBase, filteredCharacters, onCharacterSelected)
     }
 
     // this will be used when we want to search through characters in main screen
-    private fun filterCharactersByText(binding: ActivityMainBinding, query: String, onCharacterSelected: (String) -> Unit) {
+    private fun filterCharactersByText(bindingMain: ActivityMainBinding, bindingMainBase: ActivityMainChatStandardBinding, query: String, onCharacterSelected: (String) -> Unit) {
         val filteredCharacters = characters.filter {
             it.name.contains(query, ignoreCase = true) || it.welcomeMsg.contains(query, ignoreCase = true)
         }
-        displayCharacterCards(binding, filteredCharacters, onCharacterSelected)
+        displayCharacterCards(bindingMain, bindingMainBase, filteredCharacters, onCharacterSelected)
     }
 
     // this will be used when checkboxes are used to filter characters
-    private fun filterCharactersByGroup(binding: ActivityMainBinding, groupNames: List<String>, onCharacterSelected: (String) -> Unit) {
+    private fun filterCharactersByGroup(bindingMain: ActivityMainBinding, bindingMainBase: ActivityMainChatStandardBinding, groupNames: List<String>, onCharacterSelected: (String) -> Unit) {
         val favoriteCharacterNames = mainHandler.getConfigurationManager().getFavoriteCharacters()
         val filteredCharacters = if (groupNames.isEmpty()) {
             characters
@@ -201,24 +202,24 @@ class CharacterManager(private val mainHandler: MainHandler) {
             characters.filter {
                 character -> groupNames.any { it in character.groups
                     ||
-                    (character.name in favoriteCharacterNames && binding.checkboxFavorites.isChecked) }
+                    (character.name in favoriteCharacterNames && bindingMain.checkboxFavorites.isChecked) }
             }
         }
-        displayCharacterCards(binding, filteredCharacters, onCharacterSelected)
+        displayCharacterCards(bindingMain, bindingMainBase, filteredCharacters, onCharacterSelected)
     }
 
     // this is executed when checkboxes are clicked
-    private fun updateGroupFilter(binding: ActivityMainBinding, onCharacterSelected: (String) -> Unit) {
-        binding.characterFilterEditText.setText("")
+    private fun updateGroupFilter(bindingMain: ActivityMainBinding, bindingMainBase: ActivityMainChatStandardBinding, onCharacterSelected: (String) -> Unit) {
+        bindingMain.characterFilterEditText.setText("")
         val selectedGroups = mutableListOf<String>()
-        if (binding.checkboxRealPeople.isChecked) selectedGroups.add("Real People")
-        if (binding.checkboxHealth.isChecked) selectedGroups.add("Health")
-        if (binding.checkboxStoryModes.isChecked) selectedGroups.add("Story Modes")
-        if (binding.checkboxFavorites.isChecked) selectedGroups.add("Favorites")
-        if (binding.checkboxBusiness.isChecked) selectedGroups.add("Business")
-        if (binding.checkboxAIs.isChecked) selectedGroups.add("AIs")
+        if (bindingMain.checkboxRealPeople.isChecked) selectedGroups.add("Real People")
+        if (bindingMain.checkboxHealth.isChecked) selectedGroups.add("Health")
+        if (bindingMain.checkboxStoryModes.isChecked) selectedGroups.add("Story Modes")
+        if (bindingMain.checkboxFavorites.isChecked) selectedGroups.add("Favorites")
+        if (bindingMain.checkboxBusiness.isChecked) selectedGroups.add("Business")
+        if (bindingMain.checkboxAIs.isChecked) selectedGroups.add("AIs")
         // Add other groups similarly
-        filterCharactersByGroup(binding, selectedGroups, onCharacterSelected)
+        filterCharactersByGroup(bindingMain, bindingMainBase, selectedGroups, onCharacterSelected)
     }
 
 }

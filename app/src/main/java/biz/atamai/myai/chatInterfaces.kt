@@ -15,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import biz.atamai.myai.databinding.ActivityMainBinding
+import biz.atamai.myai.databinding.ActivityMainChatStandardBinding
 import org.json.JSONObject
 import java.io.File
 
@@ -26,6 +27,7 @@ interface MainHandler {
     val context: Context
     val activity: AppCompatActivity
     fun getMainBinding(): ActivityMainBinding
+    fun getMainBaseBinding(): ActivityMainChatStandardBinding
     fun getMainBindingContext(): Context
     val chatItemsList: MutableList<ChatItem>
     val mainLayoutInflaterInstance: LayoutInflater

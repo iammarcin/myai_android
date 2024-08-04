@@ -3,6 +3,12 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <data>
+        <variable
+            name="viewModel"
+            type="biz.atamai.myai.MainActivityShared" />
+    </data>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -77,6 +83,7 @@
                     android:inputType="textMultiLine"
                     android:maxLines="10"
                     android:hint="Message"
+                    android:text="@={viewModel.message}"
                     android:textColor="#E0E0E0" />
 
                 <FrameLayout
@@ -109,6 +116,7 @@
                         android:layout_gravity="bottom"
                         android:visibility="gone"
                         android:padding="8dp"
+                        android:onClick="@{() -> viewModel.sendMessage()}"
                         android:src="@drawable/ic_send"
                         android:background="@color/background_primary"
                         app:tint="#E0E0E0" />
