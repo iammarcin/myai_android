@@ -120,14 +120,13 @@ class ChatHelper(
         chatItem.message = message
         chatItem.imageLocations = attachedImageLocations
         chatItem.fileNames = attachedFiles
-        chatAdapter.notifyItemChanged(position)
+        val updatedList = chatAdapter.currentList.toMutableList()
+        updatedList[position] = chatItems[position]
+        chatAdapter.submitList(updatedList)
     }
 
     // when new chat is used - clear everything
     fun resetChat() {
-        val size = chatItems.size
-        chatItems.clear()
-        chatAdapter.notifyItemRangeRemoved(0, size)
         chatAdapter.resetChatAdapter()
         resetInputArea()
         mainHandler.getMainBinding().characterMainView.visibility = View.VISIBLE
@@ -227,7 +226,10 @@ class ChatHelper(
             mainHandler.getMainBinding().btnShareLocation.visibility = View.VISIBLE
         }
 
-        chatAdapter.notifyItemRangeInserted(0, chatItems.size)
+        val updatedList = chatAdapter.currentList.toMutableList()
+        updatedList.addAll(0, chatItems)
+        chatAdapter.submitList(updatedList)
+
         scrollToEnd(autoToEnd = true)
     }
 
@@ -246,7 +248,9 @@ class ChatHelper(
         for (chatItem in selectedChatItems) {
             chatItem.messageId = null
             chatItems.add(chatItem)
-            chatAdapter.notifyItemInserted(chatItems.size - 1)
+            val updatedList = chatAdapter.currentList.toMutableList()
+            updatedList.add(chatItems.size - 1, chatItems.last())
+            chatAdapter.submitList(updatedList)
         }
         scrollToEnd()
     }

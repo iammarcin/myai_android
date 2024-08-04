@@ -18,10 +18,11 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
-import android.widget.PopupWindow
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import biz.atamai.myai.databinding.ChatItemBinding
 import biz.atamai.myai.databinding.DialogFullscreenImagesBinding
@@ -32,13 +33,25 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+/* class to handle chat item changes efficiently */
+class ChatItemDiffCallback : DiffUtil.ItemCallback<ChatItem>() {
+    override fun areItemsTheSame(oldItem: ChatItem, newItem: ChatItem): Boolean {
+        return oldItem.messageId == newItem.messageId
+    }
+
+    override fun areContentsTheSame(oldItem: ChatItem, newItem: ChatItem): Boolean {
+        return oldItem == newItem
+    }
+}
+
 class ChatAdapter(
     private val chatItems: MutableList<ChatItem>,
     private val apiUrl: String,
     private val mainHandler: MainHandler,
     private val audioPlayerManager: AudioPlayerManager,
     private val onEditMessage: (position: Int, message: String) -> Unit,
-) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>(), ChatAdapterHandler {
+) : ListAdapter<ChatItem, ChatAdapter.ChatViewHolder>(ChatItemDiffCallback()), ChatAdapterHandler {
+//) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>(), ChatAdapterHandler {
     //private val audioPlayerManagers: MutableList<AudioPlayerManager> = mutableListOf()
     private lateinit var markwon: Markwon
     private var utilityTools: UtilityTools
@@ -67,11 +80,12 @@ class ChatAdapter(
     }
 
     fun triggerImageGeneration(position: Int) {
-        val chatItem = chatItems[position]
+        val currentList = currentList.toMutableList()
+        val chatItem = currentList[position]
         chatItem.imageLocations = listOf("image_placeholder_url")  // Ensure this list is not empty to prevent multiple triggers
 
-        // Notify the item changed to update the UI
-        notifyItemChanged(position)
+        // Submit the updated list to update the UI
+        submitList(currentList)
     }
 
     inner class ChatViewHolder(val binding: ChatItemBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -189,7 +203,7 @@ class ChatAdapter(
 
                     binding.playButton.setOnClickListener {
                         previousPlayingPosition = currentPlayingPosition
-                        var fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
+                        val fileToPlay: Uri? = chatItem.fileNames.firstOrNull()
 
                         // it was in one long line with conditions - but it got too complex
                         // so i split for my readability - idc if its best practices
@@ -344,8 +358,9 @@ class ChatAdapter(
                             apiUrl,
                             { result ->
                                 CoroutineScope(Dispatchers.Main).launch {
+                                    val updatedList = currentList.toMutableList()
                                     chatItem.imageLocations += result
-                                    notifyItemChanged(adapterPosition)
+                                    submitList(updatedList)
                                     mainHandler.hideProgressBar("Image")
 
                                     chatHelperHandler?.scrollToEnd()
@@ -514,13 +529,15 @@ class ChatAdapter(
                     }
                     R.id.remove -> {
                         // Remove the chat item
-                        chatItems.removeAt(position)
-                        notifyItemRemoved(position)
-                        // if next message is AI message - we should remove it too
-                        if (position < chatItems.size && !chatItems[position].isUserMessage) {
-                            chatItems.removeAt(position)
-                            notifyItemRemoved(position)
+                        val updatedList = currentList.toMutableList()
+                        updatedList.removeAt(position)
+
+                        // If next message is AI message, we should remove it too
+                        if (position < updatedList.size && !updatedList[position].isUserMessage) {
+                            updatedList.removeAt(position)
                         }
+
+                        submitList(updatedList)
 
                         // if session is empty
                         val dbMethodToExecute = if (chatItems.isEmpty()) {
@@ -572,7 +589,8 @@ class ChatAdapter(
             // Update the previously playing item's UI (for example to change icon pause/play and reset seekbar)
             if (previousPlayingPosition != -1 && previousPlayingPosition != adapterPosition) {
                 handler.post {
-                    notifyItemChanged(previousPlayingPosition)
+                    val updatedList = currentList.toMutableList()
+                    submitList(updatedList)
                 }
             }
             currentPlayingPosition = adapterPosition
@@ -640,13 +658,14 @@ class ChatAdapter(
     // upon receiving TTS response - we have to update chat item with audio file
     private fun handleTTSCompletedResponse(result: String, position: Int, action: String, currentSessionID: String) {
         CoroutineScope(Dispatchers.Main).launch {
+            val updatedList = currentList.toMutableList()
             val chatItem = chatItems[position]
             chatItem.fileNames = listOf(Uri.parse(result))
             chatItem.isTTS = true
             chatItem.isAutoPlay = true
-            // if its stream mode - we will notify item changed after uploading to S3 (because other way there is problem with audio player pausing/unpausing)
+            // if its stream mode - we will notify chat adapter item changed after uploading to S3 (because other way there is problem with audio player pausing/unpausing)
             if (action != "tts_stream") {
-                notifyItemChanged(position)
+                submitList(updatedList)
             }
             mainHandler.hideProgressBar("TTS")
 
@@ -663,7 +682,7 @@ class ChatAdapter(
                         onResponseReceived = { response ->
                             CoroutineScope(Dispatchers.Main).launch {
                                 chatItem.fileNames = listOf(Uri.parse(response))
-                                notifyItemChanged(position)
+                                submitList(updatedList)
                                 CoroutineScope(Dispatchers.IO).launch {
                                     // update DB - in order to preserve TTS link (if we restore session later)
                                     mainHandler.getDatabaseHelper().sendDBRequest(
@@ -766,6 +785,11 @@ class ChatAdapter(
 
     // used in chatHelper
     fun resetChatAdapter() {
+        val size = chatItems.size
+        chatItems.clear()
+        val updatedList = currentList.toMutableList()
+        updatedList.subList(0, size).clear()
+        submitList(updatedList)
         currentPlayingPosition = -1
         currentPlayingSeekBar = null
     }
@@ -786,7 +810,7 @@ class ChatAdapter(
     // i set interface to monitor text size changes - (when changed in options via top menu)
     override fun onTextSizeChanged(newSize: Int) {
         fontSize = newSize
-        notifyItemRangeChanged(0, chatItems.size)
+        submitList(currentList)
     }
 
     override fun onCharacterLongPress(character: CharacterManager.Character) {

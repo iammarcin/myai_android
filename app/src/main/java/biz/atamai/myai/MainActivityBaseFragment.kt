@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -134,10 +136,14 @@ abstract class MainActivityBaseFragment : Fragment(), MainHandler {
         topMenuHandler.setupTopMenus(bindingMain)
 
         // Observe changes in chatItems from ViewModel
-        chatSharedViewModel.chatItems.observe(viewLifecycleOwner, { chatItems ->
+        chatSharedViewModel.chatItems.observe(viewLifecycleOwner) { chatItems ->
             chatAdapter.submitList(chatItems)
-            scrollToEnd()
-        })
+
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                scrollToEnd()
+            }, 50)
+        }
 
         return bindingMain.root
     }
@@ -353,14 +359,32 @@ abstract class MainActivityBaseFragment : Fragment(), MainHandler {
             message,
             attachedImageLocations,
             attachedFilePaths,
+            // TODO  - check why false
             false, // Assuming gpsLocationMessage is false
-            chatHelper.getMainCharacterManager(),
+            getMainCharacterManager(),
             chatHelper,
-            chatHelper.getDatabaseHelper(),
-            chatHelper.getConfigurationManager(),
+            chatAdapter,
+            getDatabaseHelper(),
+            getConfigurationManager(),
+            null,
             { toastMessage -> Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show() },
-            { binding.characterMainView.visibility = View.GONE },
-            { scrollToEnd() }
+            { bindingMain.characterMainView.visibility = View.GONE },
+            { scrollToEnd() },
+            { showProgressBar(it) },
+            { hideProgressBar(it) },
+            { position, chunk ->
+                chatSharedViewModel.chatItems.value?.get(position)?.message += chunk
+            },
+            onNotifyItemInserted = { position ->
+                val updatedList = chatAdapter.currentList.toMutableList()
+                updatedList.add(position, chatItems[position])
+                chatAdapter.submitList(updatedList)
+            },
+            onNotifyItemChanged = { position ->
+                val updatedList = chatAdapter.currentList.toMutableList()
+                updatedList[position] = chatItems[position]
+                chatAdapter.submitList(updatedList)
+            }
         )
     }
 
@@ -495,23 +519,45 @@ abstract class MainActivityBaseFragment : Fragment(), MainHandler {
         bindingMainBase.btnRecord.setImageResource(resourceId)
     }
 
+    // utility method to handle sending text requests for normal UI messages and transcriptions
+    // (from ChatAdapter - for regenerate AI message or when transcribe button is clicked (for recordings listed in the chat and audio uploads), from AudioRecorder when recoding is done)
+    // and here in Main - same functionality when Send button is clicked
+    // gpsLocationMessage - if true - it is GPS location message - so will be handled differently in chatAdapter (will show GPS map button and probably few other things)
     override fun handleTextMessage(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean) {
-        // Delegate to ViewModel
         chatSharedViewModel.handleTextMessage(
             message,
             attachedImageLocations,
             attachedFiles,
             gpsLocationMessage,
-            chatHelper.getMainCharacterManager(),
+            getMainCharacterManager(),
             chatHelper,
-            chatHelper.getDatabaseHelper(),
-            chatHelper.getConfigurationManager(),
+            chatAdapter,
+            getDatabaseHelper(),
+            getConfigurationManager(),
+            null,
             { toastMessage -> Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show() },
             { bindingMain.characterMainView.visibility = View.GONE },
-            { scrollToEnd() }
+            { scrollToEnd() },
+            { showProgressBar(it) },
+            { hideProgressBar(it) },
+            { position, chunk ->
+                chatSharedViewModel.chatItems.value?.get(position)?.message += chunk
+            },
+            onNotifyItemInserted = { position ->
+                val updatedList = chatAdapter.currentList.toMutableList()
+                updatedList.add(position, chatItems[position])
+                chatAdapter.submitList(updatedList)
+            },
+            onNotifyItemChanged = { position ->
+                val updatedList = chatAdapter.currentList.toMutableList()
+                updatedList[position] = chatItems[position]
+                chatAdapter.submitList(updatedList)
+            }
         )
     }
 
+    // sending data to chat adapter
+    // used from multiple places (main, audio recorder, file attachment)
     override fun addMessageToChat(message: String, attachedImageLocations: List<String>, attachedFiles: List<Uri>, gpsLocationMessage: Boolean): ChatItem {
         return chatSharedViewModel.addMessageToChat(message, attachedImageLocations, attachedFiles, gpsLocationMessage)
     }
@@ -528,13 +574,21 @@ abstract class MainActivityBaseFragment : Fragment(), MainHandler {
                 bindingMainBase.chatContainer.scrollToPosition(chatItemsList.size - 1)
             }
         }
+
+        /*
+        // slight delay to smooth scrolling on adding chunks to UI
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            currentResponseItemPosition?.let { _ ->
+                chatHelper.scrollToEnd()
+            }
+        }, 50)
+        */
     }
 
     override fun onPause() {
         super.onPause()
-        if (isFinishing) {
-            releaseMediaPlayer()
-        }
+        releaseMediaPlayer()
     }
 
     override fun onDestroy() {
